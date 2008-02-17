@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Content-Language" content="en" />
+	<title>Welcome to Furigana Injector</title>
+	<link rel="stylesheet" type="text/css" media="all" href="../../content/user_guides/user_guides.css" />
+</head>
+<body>
+	<div id="central_content">
+		<p><span id="start_word">Now</span> your Firefox browser has the function to inject furigana, the small hiragana letters above or beside difficult kanji words. <strong>Try it</strong> - click the <img style="position: relative; top: 3px; border-style: solid; border-width: 1px; border-color: #808080;" src="chrome://furiganainjector/skin/status_icon/default.png"alt="振" /> icon in the statusbar.</p>
+		<q>1952年、医学生だったチェ・ゲバラが友人と二人でオートバイにまたがり、アルゼンチンからペルーまでの南米大陸6,400キロを縦断するというストーリーです。旅先で様々な人に出会い、トラブルにも巻き込まれ失恋もしました。南米大陸の民族、貧困、差別などに向き合い懸命に生きている人々に深い同情と愛を深め、大人に成長していきます。この映画の製作・総監督は、監督作品も多いハリウッドの名優ロバート・レッドフォードで、いわゆる革命や思想を描いた映画にはしたくなかったそうです。</q>
+
+		<h2>What should I do first?</h2>
+
+		<div id="XHTML_Ruby_Support_div">
+			<h3><a href="https://addons.mozilla.org/en-US/firefox/addon/1935" target="XHTML-Ruby-Support-add-on-page">Install the XHMTL Ruby support extension</a></h3>
+			<p>(Link to mozilla.org's  page for Shimoda Hiroshi's add-on.)</p>
+			<table class="ruby_simulation"><tr>
+				<td width="160">With ruby support:</td>
+				<td>
+					<td><simulationruby><rb><row><cell>東京</cell></row></rb><rp>(</rp><rt><row><cell>とうきょう</cell></row></rt><rp>)</rp>
+						から<simulationruby><rb><row><cell>大阪</cell></row></rb><rp>(</rp><rt><row><cell>おおさか</cell></row></rt><rp>)</rp>
+						までの...</td>
+				</td>
+			</tr></table>
+			<table><tr>
+				<td width="160">Without ruby support: </td>
+				<td>東京（とうきょう）から大阪（おおさか）までの...</td>
+			</tr></table>
+		</div>
+
+		<h3><a href="../../content/user_guides/simple_kanji_level_selector.html">Select your kanji-reading level</a></h3>
+		<p>Choose the kanji you do and don't want furigana for.</p>
+
+		<br/>
+		<p><span id="start_word">Then </span> use this tool in any web page that has japanese text. <a href="http://www.mozilla.gr.jp/">www.mozilla.gr.jp</a> is a good example that shows:
+			<ul>
+			<li>Words composed of simple kanji won't be processed at all.</li>
+			<li>Words in links wont be processed, unless you change the preference for that.</li>
+			<li>Images are ignored so text in graphics won't be changed, sorry.</li>
+			</ul>
+		</p>
+
+		<br/>
+		<h3 class="fakelink" onclick="document.getElementById('options_explanation_div').style.display = 'block'; this.className = ''; this.innerHTML = 'Other options'; this.onclick='';">Other options ...</h3>
+		<div id="options_explanation_div" style="display: none;">
+			<ul>
+				<li>You can choose to have all pages processed for furigana as soon as they've loaded.</li>
+				<li>You can choose to add furigana to text in hyperlinks as well as normal text.</li>
+			</ul>
+			<p>These options can be accessed directly by right-clicking on the  <img  style="position: relative; top: 3px; border-style: solid; border-width: 1px; border-color: #808080;" src="chrome://furiganainjector/skin/status_icon/default.png"alt="振" /> icon.</p>
+			<p style="padding-left: 20px;"><img src="sb_context_menu_sample.png" alt="context menu sample"/></p>
+		</div>
+
+		<div id="project_homepage">
+			<h3><a href="http://code.google.com/p/furigana-injector/">Development homepage</a></h3>
+		</div>
+
+		<img id="sb_icon_indicator_img" src="chrome://furiganainjector/content/user_guides/sb_icon_arrow.png" alt="振"
+			style="visibility: hidden; position: fixed; bottom: 5px; right: 300px;" onmouseover="var evt = document.createEvent('Events'); evt.initEvent('HideAttentionArrow', true, false); this.dispatchEvent(evt);"/>
+
+	</div>
+</body>
+</html>
