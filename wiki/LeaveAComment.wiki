@@ -1,0 +1,6 @@
+#summary A placeholder wiki document for general comments
+#labels Featured
+
+= Comments =
+
+If you have any comments and you don't want to send an email to akira at yayakoshi dot net, please feel free to attach them to this dummy wiki document
