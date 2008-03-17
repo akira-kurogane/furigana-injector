@@ -16,7 +16,7 @@ var RubyInserter = {
 		var rt_vals;
 		
 		var targetParent = origTextNode.parentNode;
-		var dummyParent = document.createElement("div");
+		var dummyParent = ownerDocument.createElement("div");
 		var mi;
 		var currTextNode;
 		var word_offset;

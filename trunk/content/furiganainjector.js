@@ -377,6 +377,20 @@ dump("Dictionary search of " + totalWordsCount + " words in " + matchingTextNode
 	},
 	
 	setCurrentContentProcessed: function(processingResult) {
+		//*** Block below is temporary requirement for Firefox 3 betas in combination with version 2.0 or 2.1 of XHTML Ruby Support ***
+		if (RubyService && RubyService.isGecko19OrLater) {
+			try {
+				var rubyNodeList = content.document.getElementsByTagName("RUBY");
+				var rubyElemArray = [];
+				var tempRubyElem;
+				for (var x = 0; x < rubyNodeList.length; x++) {
+					RubyService.delayedReformRubyElement(rubyNodeList[x]);
+				}
+			} catch (err) {
+				//
+			}
+		}
+		//*** End of temporary block for Firefox 3 betas in combination with version 2.0 of XHTML Ruby Support ***
 		var bodyElem = content.document.body;
 		if (processingResult) {
 			bodyElem.setAttribute("furigana-injection", processingResult.toString());

@@ -3,7 +3,7 @@
  xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
     <em:id>furiganainjector@yayakoshi.net</em:id>
-	<em:version>0.6.1</em:version>
+	<em:version>0.7</em:version>
 	<em:name>Furigana Injector</em:name>
 	<em:description>Looks up the readings for kanji words and inserts them as furigana.</em:description>
 	<em:creator>Akira Kurogane</em:creator>
@@ -15,7 +15,7 @@
     <em:localized><!-- em:localized will only work for Gecko 1.9+, i.e. Firefox 3.0+ -->
     	<Description>
 			<em:locale>ja-JP</em:locale>
-			<em:name>ふりがな注射器</em:name>
+			<em:name>Furigana Injector</em:name>
 			<em:description>ふりがなを振る</em:description>
 			<em:creator>黒鉄 章</em:creator>
 			<!-- em:translator>XXX XX</em:translator -->
@@ -26,7 +26,7 @@
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
         <em:minVersion>2.0</em:minVersion>
-        <em:maxVersion>2.0.0.*</em:maxVersion>
+        <em:maxVersion>3.0b4</em:maxVersion>
       </Description>
     </em:targetApplication>
   </Description>
