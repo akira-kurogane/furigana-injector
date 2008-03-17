@@ -5,7 +5,7 @@ XPI without its own licensing information.
 --------------------------------------------------------------------------------
 
 Furigana Injector - web page extension to insert furigana.
-Copyright (C) 2007  Akira Kurogane
+Copyright (C) 2008  Akira Kurogane
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
