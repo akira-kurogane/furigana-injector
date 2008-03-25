@@ -1,0 +1,9 @@
+#summary A list of existing libraries
+
+A server version of MeCab:
+[http://mimitako.net/api/mecapi.cgi MECAPI]
+
+[http://chasen.org/~taku/software/TinySegmenter/ TinySegmenter]
+
+A very light javascript tokenizer:
+[http://ablog.seesaa.net/article/24578324.html 形態素解析 SimpleAnalyzer]
