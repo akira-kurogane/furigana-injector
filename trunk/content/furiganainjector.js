@@ -93,7 +93,7 @@ var FuriganaInjector = {
 			var kanjiAdjustMenuItem;
 			var kanjiAdjustMenuItemLabel;
 			var kanjiAdjustMenuItemOnCmd;
-			for (var x = 0; x < selText.length && kanjiCount <= 6; x++) {
+			for (var x = 0; x < selText.length && kanjiCount <= 4; x++) {
 				currKanji = selText.charAt(x);
 				if (VocabAdjuster.isUnihanChar(currKanji)) {
 					kanjiCount++;

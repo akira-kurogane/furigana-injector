@@ -3,7 +3,7 @@
  xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
     <em:id>furiganainjector@yayakoshi.net</em:id>
-	<em:version>0.7.1</em:version>
+	<em:version>0.7.2</em:version>
 	<em:name>Furigana Injector</em:name>
 	<em:description>Looks up the readings for kanji words and inserts them as furigana.</em:description>
 	<em:creator>Akira Kurogane</em:creator>
@@ -23,10 +23,15 @@
 	<em:localized>
     	<Description>
 			<em:locale>it</em:locale>
-			<em:name>Furigana Injector</em:name>
 			<em:description>Guarda le letture per i kanji parole e li inserisce come furigana.</em:description>
-			<em:creator>Akira Kurogane</em:creator>
 			<em:translator>Erii</em:translator>
+		</Description>
+    </em:localized>
+	<em:localized>
+    	<Description>
+			<em:locale>fr</em:locale>
+			<em:description>Recherche les lectures des kanjis et affiche les furigana correspondants.</em:description>
+			<em:translator>Philippe Vignau</em:translator>
 		</Description>
     </em:localized>
     <em:targetApplication>
