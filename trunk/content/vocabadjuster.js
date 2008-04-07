@@ -57,7 +57,7 @@ var VocabAdjuster = {
 		var temp_pref_string = FuriganaInjector.getPref("exclusion_kanji");
 		if (temp_pref_string.indexOf(kanjiChar) >= 0) {
 			if (FuriganaInjector.getPref("enable_tests"))
-				alert("addKanjiToExclusionList(): The kanji \"" + kanjiChar + "\" is already in the kanji exlcusion list");
+				alert("addKanjiToExclusionList(): The kanji \"" + kanjiChar + "\" is already in the kanji exclusion list");
 		} else {
 			temp_pref_string += kanjiChar;
 			FuriganaInjector.setPref("exclusion_kanji", temp_pref_string);
@@ -68,7 +68,7 @@ var VocabAdjuster = {
 		var temp_pref_string = FuriganaInjector.getPref("exclusion_kanji");
 		if (temp_pref_string.indexOf(kanjiChar) < 0) {
 			if (FuriganaInjector.getPref("enable_tests"))
-				alert("removeKanjiFromExclusionList(): The kanji \"" + kanjiChar + "\" is not in the kanji exlcusion list");
+				alert("removeKanjiFromExclusionList(): The kanji \"" + kanjiChar + "\" is not in the kanji exclusion list");
 		} else {
 			temp_pref_string = temp_pref_string.replace(kanjiChar, "");
 			FuriganaInjector.setPref("exclusion_kanji", temp_pref_string);

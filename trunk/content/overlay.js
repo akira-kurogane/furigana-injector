@@ -24,7 +24,7 @@ tempFirstRunPrefs = undefined;
  *	Attach listener for "SetKanjiByMaxFOUValRequest" events if the page loaded is the 'Simple 
  *	  Kanji Selection' page.
  ******************************************************************************/
-var setKanjiLevelURI = "chrome://furiganainjector/content/user_guides/simple_kanji_level_selector.html";
+var setKanjiLevelURI = "chrome://furiganainjector/locale/user_guides/simple_kanji_level_selector.html";
 
 //Devnote: element "appcontent" is defined by Firefox. Use "messagepane" for Thunderbird
 document.getElementById("appcontent").addEventListener("DOMContentLoaded", 
