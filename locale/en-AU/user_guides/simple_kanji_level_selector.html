@@ -4,28 +4,17 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta http-equiv="Content-Language" content="en" />
 	<title>Kanji Selector</title>
-	<link rel="stylesheet" type="text/css" media="all" href="user_guides.css" />
-	<link rel="stylesheet" type="text/css" media="all" href="slider_control/css/luna/luna.css" />
+	<link rel="stylesheet" type="text/css" media="all" href="../../content/user_guides/user_guides.css" />
+	<link rel="stylesheet" type="text/css" media="all" href="../../content/user_guides/slider_control/css/luna/luna.css" />
 	<style>
 		#kanji_selector_slider {
 			height: 300px;
 		}
 	</style>
-	<script type="text/javascript" src="slider_control/js/range.js"></script>
-	<script type="text/javascript" src="slider_control/js/timer.js"></script>
-	<script type="text/javascript" src="slider_control/js/slider.js"></script>
-	<script type="text/javascript">
-	/* <![CDATA[ */
-		var lastSliderVal = 500;
-		function setVisibleRTLevel(fouVal) {
-			var bunronTDElem = document.getElementById("bunron_examples");
-			var rtElems = bunronTDElem.getElementsByTagName("rt");
-			for (var x = 0; x < rtElems.length; x++) {
-				rtElems[x].style.color = rtElems[x].getAttribute("fouMax") < fouVal ? "#ffffff" : "#000000";
-			}
-		}
-	/* ]]> */
-	</script>
+	<script type="text/javascript" src="../../content/user_guides/slider_control/js/range.js"></script>
+	<script type="text/javascript" src="../../content/user_guides/slider_control/js/timer.js"></script>
+	<script type="text/javascript" src="../../content/user_guides/slider_control/js/slider.js"></script>
+	<script type="text/javascript" src="../../content/user_guides/kanji_select_init_script.js"></script>
 </head>
 <body class="fi_help_page" furigana-injection="true"><!-- Setting the "furigana-injection" attribute is just a trick. Hopefully the user won't try to process this page if they see the statusbar icon already ticked. -->
 	<div style="padding-left: 80px;">
@@ -52,28 +41,7 @@
 		<p>To adjust the settings for individual kanji whilst you read web pages, select the word with your text, and then right-click to see the context menu.</p>
 		<img src="chrome://furiganainjector/locale/user_guides/page_context_sample_1.png" alt="Page context menu sample 1" />
 	</div>
-	<script type="text/javascript">
-	/* <![CDATA[ */
-		var kSelSlider = new Slider(document.getElementById("kanji_selector_slider"), document.getElementById("kanji_selector_slider_input"), "vertical");
-		kSelSlider.setMinimum(100);
-		kSelSlider.setMaximum(2500);
-		kSelSlider.setBlockIncrement(50);
-		kSelSlider.onchange = function () {
-			var new_val = 20 * Math.round(kSelSlider.getValue()/20);
-			document.getElementById("kanji_count_div").innerHTML = new_val;
-			if (new_val != lastSliderVal) {
-				lastSliderVal = new_val;
-				setVisibleRTLevel(new_val);
-			}
-		};
-		lastSliderVal = 500;	//Default value
-		setVisibleRTLevel(lastSliderVal);
-		kSelSlider.setValue(lastSliderVal);
-
-		window.onresize = function () {
-			kSelSlider.recalculate();
-		};
-	/* ]]> */
+	<script type="text/javascript" src="../../content/user_guides/kanji_select_finalize_script.js"></script>
 	</script>
 </body>
 </html>

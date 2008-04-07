@@ -6,6 +6,7 @@ var FuriganaInjector = {
 	prefs: null,
 	yomiDict: null,
 	kanjiAdjustMenuItems: [], 
+	strBundle: null,
 	
 	/******************************************************************************
 	 *	Event handlers
@@ -17,6 +18,12 @@ var FuriganaInjector = {
 	 *	  functions instead.
 	 ******************************************************************************/
 	onLoad: function() {
+	
+		this.strBundle = document.getElementById("fi_strings");
+		if (!this.strBundle) {
+			alert ("Major error- the 'fi_strings' file could not be loaded. The Furigana Injector extension will not work without it.");
+			return;
+		}
 	
 		var dictLoadResult = this.loadYomikataDictionary();
 		
@@ -91,11 +98,11 @@ var FuriganaInjector = {
 				if (VocabAdjuster.isUnihanChar(currKanji)) {
 					kanjiCount++;
 					if (exclusionKanji.indexOf(currKanji) >= 0) {
-						kanjiAdjustMenuItemLabel = "Show furigana for \"" + currKanji + "\"";
+						kanjiAdjustMenuItemLabel = FuriganaInjector.strBundle.getFormattedString("menuLabelShowFuriganaForX", [ currKanji ]);
 						kanjiAdjustMenuItemOnCmd = "VocabAdjuster.removeKanjiFromExclusionList('" + currKanji + "'); FuriganaInjector.processContextSection(false);";
 							
 					} else {
-						kanjiAdjustMenuItemLabel = "Ignore furigana for \"" + currKanji + "\"";
+						kanjiAdjustMenuItemLabel = FuriganaInjector.strBundle.getFormattedString("menuLabelIgnoreFuriganaForX", [ currKanji ]);
 						kanjiAdjustMenuItemOnCmd = "VocabAdjuster.addKanjiToExclusionList('" + currKanji + "'); FuriganaInjector.processContextSection(false)";
 					}
 					document.getElementById("contentAreaContextMenu").addMenuItem
@@ -508,7 +515,7 @@ dump("Dictionary search of " + totalWordsCount + " words in " + matchingTextNode
 		}
 		var newMinFOUVal = evt.target.getAttribute("kanjiVal");
 		FuriganaInjector.setPref("exclusion_kanji", KanjiDictionary.freqOfUseList(1, newMinFOUVal).join(""));
-		alert("Your \"Exclusion kanji\" preferences have been set to the most commonly-occuring " + newMinFOUVal + " kanji.");
+		alert(FuriganaInjector.strBundle.getFormattedString("alertExclusionKanjiSetToX", [ newMinFOUVal ]));
 	}
 
 };

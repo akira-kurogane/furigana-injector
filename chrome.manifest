@@ -1,4 +1,5 @@
 content	furiganainjector	content/
 locale	furiganainjector	en-AU	locale/en-AU/
+locale	furiganainjector	it	locale/it/
 skin	furiganainjector	classic/1.0	skin/
 overlay	chrome://browser/content/browser.xul	chrome://furiganainjector/content/overlay.xul
