@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Content-Language" content="en" />
+	<title>Welcome to Furigana Injector</title>
+	<link rel="stylesheet" type="text/css" media="all" href="../../content/user_guides/user_guides.css" />
+</head>
+<body>
+	<div id="central_content">
+		<p><span id="start_word">Maintenant</span> votre navigateur Firefox a la possibilité d'injecter des furigana, ces petits caractères en hiragana au dessus ou à côté des kanji difficiles. <strong>Essayez</strong>, il suffit de cliquer sur l'icône <img style="position: relative; top: 3px; border-style: solid; border-width: 1px; border-color: #808080;" src="chrome://furiganainjector/skin/status_icon/default.png"alt="振" /> dans la barre de status.</p>
+		<q>1952年、医学生だったチェ・ゲバラが友人と二人でオートバイにまたがり、アルゼンチンからペルーまでの南米大陸6,400キロを縦断するというストーリーです。旅先で様々な人に出会い、トラブルにも巻き込まれ失恋もしました。南米大陸の民族、貧困、差別などに向き合い懸命に生きている人々に深い同情と愛を深め、大人に成長していきます。この映画の製作・総監督は、監督作品も多いハリウッドの名優ロバート・レッドフォードで、いわゆる革命や思想を描いた映画にはしたくなかったそうです。</q>
+
+		<h2>Que faire en premier ?</h2>
+
+		<div id="XHTML_Ruby_Support_div">
+			<h3><a href="https://addons.mozilla.org/en-US/firefox/addon/1935" target="XHTML-Ruby-Support-add-on-page">Installer l'extension Support de XHTML Ruby</a></h3>
+			<p>(Link to mozilla.org's  page for Shimoda Hiroshi's add-on.)</p>
+			<table class="ruby_simulation"><tr>
+				<td width="160">Avec le support de ruby :</td>
+				<td>
+					<td><simulationruby><rb><row><cell>東京</cell></row></rb><rp>(</rp><rt><row><cell>とうきょう</cell></row></rt><rp>)</rp>
+						から<simulationruby><rb><row><cell>大阪</cell></row></rb><rp>(</rp><rt><row><cell>おおさか</cell></row></rt><rp>)</rp>
+						までの...</td>
+				</td>
+			</tr></table>
+			<table><tr>
+				<td width="160">Sans le support de ruby :</td>
+				<td>東京（とうきょう）から大阪（おおさか）までの...</td>
+			</tr></table>
+		</div>
+
+		<h3><a href="simple_kanji_level_selector.html">Selectionner votre niveau de lecture des kanji</a></h3>
+		<p>Choisissez les kanji pour lesquels vous désirez des furigana ou pas.</p>
+
+		<br/>
+		<p><span id="start_word">Ensuite, </span> utilisez cet outil dans n'importe quelle page affichant du texte japonais. Le site <a href="http://www.mozilla.gr.jp/">www.mozilla.gr.jp</a> est un bon exemple qui montre :
+			<ul>
+			<li>Des mots composés de kanji simples, qui ne seront pas traités.</li>
+			<li>Des mots à l'intérieur des liens, qui ne seront pas traités, à moins que vous ne changiez cette option.</li>
+			<li>Des images qui seront ignorées, donc leur texte ne sera pas modifié, désolé.</li>
+			</ul>
+		</p>
+
+		<br/>
+		<h3 class="fakelink" onclick="document.getElementById('options_explanation_div').style.display = 'block'; this.className = ''; this.innerHTML = 'Autres options'; this.onclick='';">Autres options ...</h3>
+		<div id="options_explanation_div" style="display: none;">
+			<ul>
+				<li>Vous pouvez choisir d'avoir toutes les pages traitées, afin qu'elles affichent les furigana une fois chargées.</li>
+				<li>Vous pouvez choisir d'injecter les furigana également dans les textes à l'intérieur des liens.</li>
+			</ul>
+			<p>Ces options sont directement accessibles en faisant un click droit sur l'icône <img  style="position: relative; top: 3px; border-style: solid; border-width: 1px; border-color: #808080;" src="chrome://furiganainjector/skin/status_icon/default.png"alt="振" /> dans la barre de status.</p>
+			<p style="padding-left: 20px;"><img src="sb_context_menu_sample.png" alt="context menu sample"/></p>
+		</div>
+
+		<div id="project_homepage">
+			<h3><a href="http://code.google.com/p/furigana-injector/">Page de développement du projet</a></h3>
+		</div>
+
+		<img id="sb_icon_indicator_img" src="chrome://furiganainjector/content/user_guides/sb_icon_arrow.png" alt="振"
+			style="visibility: hidden; position: fixed; bottom: 5px; right: 300px;" onmouseover="var evt = document.createEvent('Events'); evt.initEvent('HideAttentionArrow', true, false); this.dispatchEvent(evt);"/>
+
+	</div>
+</body>
+</html>
