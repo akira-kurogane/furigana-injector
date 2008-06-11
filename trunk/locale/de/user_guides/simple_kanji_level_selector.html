@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -18,8 +18,8 @@
 </head>
 <body class="fi_help_page" furigana-injection="true"><!-- Setting the "furigana-injection" attribute is just a trick. Hopefully the user won't try to process this page if they see the statusbar icon already ticked. -->
 	<div style="padding-left: 80px;">
-		<h2>Wahlen Sie ein Kanji-Niveau</h2>
-		<p>Wahlen Sie uber den Schieberegler auf der linken Seite das ungefahre Niveau der Kanji, fur die Sie Furigana anzeigen und nicht anzeigen mochten.</p>
+		<h2>Wählen Sie ein Kanji-Niveau</h2>
+		<p>Wählen Sie über den Schieberegler auf der linken Seite das ungefähre Niveau der Kanji, für die Sie Furigana anzeigen und nicht anzeigen möchten.</p>
 	</div>
 
 	<table id="kanji_selector_table"><tr><td width="50" style="vertical-align: top; padding: 10px;">
@@ -33,12 +33,12 @@
 
 	<div style="padding-left: 80px;">
 		<br/>
-		<button style="font-weight: bold;" kanjiVal="-1" onclick="this.setAttribute('kanjiVal', lastSliderVal); var evt = document.createEvent('Events'); evt.initEvent('SetKanjiByMaxFOUValRequest', true, false); this.dispatchEvent(evt);">Save</button>
+		<button style="font-weight: bold;" kanjiVal="-1" onclick="this.setAttribute('kanjiVal', lastSliderVal); var evt = document.createEvent('Events'); evt.initEvent('SetKanjiByMaxFOUValRequest', true, false); this.dispatchEvent(evt);">Speichern</button>
 		<p>Stellt die Furigana Einstellungen so ein, dass die <span id="kanji_count_div" style="font-weight: bold;"></span> bekanntesten Kanji ignoriert werden.</p>
 		<br/>
-		<h3>Erklarung</h3>
-		<p>Fur Worter, die nur aus einfachen Kanji bestehen, werden keine Furigana erzeugt. Um die genaue Liste der fur Sie als einfach definierten Kanji zu sehen, offnen Sie die Optionen und betrachten sie die 'Ausgeschlossene Kanji'-Liste.</p>
-		<p>Um die Einstellungen fur einzelne Kanji wahrend dem Lesen von Web-Seite anzupassen, markieren Sie das gewunschte Wort und rechts-klicken Sie, um das Kontext-Menu zu sehen.</p>
+		<h3>Erklärung</h3>
+		<p>Für Wörter, die nur aus einfachen Kanji bestehen, werden keine Furigana erzeugt. Um die genaue Liste der für Sie als einfach definierten Kanji zu sehen, öffnen Sie die Optionen und betrachten Sie die 'Ausgeschlossene Kanji'-Liste.</p>
+		<p>Um die Einstellungen fur einzelne Kanji während dem Lesen von Web-Seiten anzupassen, markieren Sie das gewünschte Wort und rechts-klicken Sie, um das Kontext-Menü anzuzeigen.</p>
 		<img src="chrome://furiganainjector/locale/user_guides/page_context_sample_1.png" alt="Page context menu sample 1" />
 	</div>
 	<script type="text/javascript" src="../../content/user_guides/kanji_select_finalize_script.js"></script>
