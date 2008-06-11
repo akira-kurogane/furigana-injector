@@ -1,4 +1,4 @@
-<!ENTITY prefwindow.title "Furigana Injector Einstellungen">
+﻿<!ENTITY prefwindow.title "Furigana Injector Einstellungen">
 <!ENTITY pane1.title "Furigana Injector Einstellungen">
 <!ENTITY auto_prcs_all_pages.label "jede Seite automatisch verarbeiten">
 <!ENTITY auto_prcs_all_pages.accesskey "a">
