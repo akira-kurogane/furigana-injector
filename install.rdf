@@ -3,7 +3,7 @@
  xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
     <em:id>furiganainjector@yayakoshi.net</em:id>
-	<em:version>0.7.2</em:version>
+	<em:version>0.7.3</em:version>
 	<em:name>Furigana Injector</em:name>
 	<em:description>Looks up the readings for kanji words and inserts them as furigana.</em:description>
 	<em:creator>Akira Kurogane</em:creator>
@@ -11,9 +11,16 @@
 	<em:optionsURL>chrome://furiganainjector/content/options.xul</em:optionsURL>
 	<em:contributor>Electronic Dictionary Research and Development Group, Monash University</em:contributor>
 	<em:iconURL>chrome://furiganainjector/content/furigana_logo_32_32.png</em:iconURL>
-    <em:localized><!-- em:localized will only work for Gecko 1.9+, i.e. Firefox 3.0+ -->
+	<em:localized><!-- em:localized will only work for Gecko 1.9+, i.e. Firefox 3.0+ -->
     	<Description>
-			<em:locale>ja-JP</em:locale>
+			<em:locale>de</em:locale>
+			<em:description>Sucht die Lesungen fur Kanji heraus und fugt sie als Furigana ein.</em:description>
+			<em:translator>Daniel Haferkorn</em:translator>
+		</Description>
+    </em:localized>
+    <em:localized>
+    	<Description>
+			<em:locale>ja</em:locale>
 			<em:name>Furigana Injector</em:name>
 			<em:description>ふりがなを振る</em:description>
 			<em:creator>黒鉄 章</em:creator>
@@ -39,7 +46,7 @@
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
         <em:minVersion>2.0</em:minVersion>
-        <em:maxVersion>3.0b4</em:maxVersion>
+        <em:maxVersion>3.0bpre</em:maxVersion>
       </Description>
     </em:targetApplication>
   </Description>
