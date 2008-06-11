@@ -25,7 +25,17 @@ var FuriganaInjector = {
 			return;
 		}
 	
-		var dictLoadResult = this.loadYomikataDictionary();
+		var dictLoadResult = false;
+		try {
+			dictLoadResult = this.loadYomikataDictionary();
+		} catch (err) {
+			//
+		}
+		if (!dictLoadResult) {
+			alert("The YomikataDictionary XPCOM could not be loaded.\n(N.B. This version of Furigana Injector is only for windows)");
+			this.initialized = false;
+			return;
+		}
 		
 		//Devnote: element "appcontent" is defined by Firefox. Use "messagepane" for Thunderbird
 		document.getElementById("appcontent").addEventListener("DOMContentLoaded", this.onPageLoad, true);
