@@ -23,6 +23,7 @@ var FuriganaInjector = {
 		if (!this.strBundle) {
 			alert ("Major error- the 'fi_strings' file could not be loaded. The Furigana Injector extension will not work without it.");
 			return;
+		}
 
 		// the extension's id from install.rdf
 		var DIC_ID = "furiganainjector-dictionary@yayakoshi.net";
