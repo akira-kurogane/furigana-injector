@@ -1,52 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-	<Description about="urn:mozilla:install-manifest">
-		<em:id>furiganainjector@yayakoshi.net</em:id>
-		<em:version>0.9</em:version>
-		<em:name>Furigana Injector</em:name>
-		<em:description>Looks up the readings for kanji words and inserts them as furigana.</em:description>
-		<em:creator>Akira Kurogane</em:creator>
-		<em:developer>zorkzero@hotmail.com</em:developer>
-		<em:homepageURL>http://code.google.com/p/furigana-injector/</em:homepageURL>
-		<em:optionsURL>chrome://furiganainjector/content/options.xul</em:optionsURL>
-		<em:iconURL>chrome://furiganainjector/content/furigana_logo_32_32.png</em:iconURL>
-		<em:localized><!-- em:localized will only work for Gecko 1.9+, i.e. Firefox 3.0+ -->
-			<Description>
-				<em:locale>de</em:locale>
-				<em:description>Sucht die Lesungen fur Kanji heraus und fugt sie als Furigana ein.</em:description>
-				<em:translator>Daniel Haferkorn</em:translator>
-			</Description>
-		</em:localized>
-		<em:localized>
-			<Description>
-				<em:locale>ja</em:locale>
-				<em:name>Furigana Injector</em:name>
-				<em:description>ふりがなを振る</em:description>
-				<em:creator>黒鉄 章</em:creator>
-				<!-- em:translator>XXX XX</em:translator -->
-			</Description>    
-		</em:localized>
-		<em:localized>
-			<Description>
-				<em:locale>it</em:locale>
-				<em:description>Guarda le letture per i kanji parole e li inserisce come furigana.</em:description>
-				<em:translator>Erii</em:translator>
-			</Description>
-		</em:localized>
-		<em:localized>
-			<Description>
-				<em:locale>fr</em:locale>
-				<em:description>Recherche les lectures des kanjis et affiche les furigana correspondants.</em:description>
-				<em:translator>Philippe Vignau</em:translator>
-			</Description>
-		</em:localized>
-		<em:targetApplication>
-		<!-- Firefox -->
-		<Description>
-			<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-			<em:minVersion>2.0</em:minVersion>
-			<em:maxVersion>3.0.0.*</em:maxVersion>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+ xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>furiganainjector@yayakoshi.net</em:id>
+	<em:version>0.7.3</em:version>
+	<em:name>Furigana Injector</em:name>
+	<em:description>Looks up the readings for kanji words and inserts them as furigana.</em:description>
+	<em:creator>Akira Kurogane</em:creator>
+	<em:homepageURL>http://code.google.com/p/furigana-injector/</em:homepageURL>
+	<em:optionsURL>chrome://furiganainjector/content/options.xul</em:optionsURL>
+	<em:contributor>Electronic Dictionary Research and Development Group, Monash University</em:contributor>
+	<em:iconURL>chrome://furiganainjector/content/furigana_logo_32_32.png</em:iconURL>
+	<em:localized><!-- em:localized will only work for Gecko 1.9+, i.e. Firefox 3.0+ -->
+    	<Description>
+			<em:locale>de</em:locale>
+			<em:description>Sucht die Lesungen fur Kanji heraus und fugt sie als Furigana ein.</em:description>
+			<em:translator>Daniel Haferkorn</em:translator>
 		</Description>
-		</em:targetApplication>
-	</Description>
+    </em:localized>
+    <em:localized>
+    	<Description>
+			<em:locale>ja</em:locale>
+			<em:name>Furigana Injector</em:name>
+			<em:description>ふりがなを振る</em:description>
+			<em:creator>黒鉄 章</em:creator>
+			<!-- em:translator>XXX XX</em:translator -->
+		</Description>    
+    </em:localized>
+	<em:localized>
+    	<Description>
+			<em:locale>it</em:locale>
+			<em:description>Guarda le letture per i kanji parole e li inserisce come furigana.</em:description>
+			<em:translator>Erii</em:translator>
+		</Description>
+    </em:localized>
+	<em:localized>
+    	<Description>
+			<em:locale>fr</em:locale>
+			<em:description>Recherche les lectures des kanjis et affiche les furigana correspondants.</em:description>
+			<em:translator>Philippe Vignau</em:translator>
+		</Description>
+    </em:localized>
+    <em:targetApplication>
+      <!-- Firefox -->
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>2.0</em:minVersion>
+        <em:maxVersion>3.0bpre</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+  </Description>
 </RDF>
