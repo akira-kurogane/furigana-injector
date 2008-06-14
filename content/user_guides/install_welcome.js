@@ -20,9 +20,20 @@ var InstallationWelcomeFX = {
 			tempFirstRunPrefs.setBoolPref("firstrun", false);
 			document.getElementById("appcontent").removeEventListener("DOMContentLoaded", InstallationWelcomeFX.onInstallationWelcomeLoad, true);
 			
-			if (RubyService) {	//A global variable instantiated by the XHTML Ruby support extension
+			if (window.RubyService) {	//A global variable instantiated by the XHTML Ruby support extension
 				var XHTML_Ruby_Support_div = content.document.getElementById("XHTML_Ruby_Support_div");
-				XHTML_Ruby_Support_div.parentNode.removeChild(XHTML_Ruby_Support_div);
+				//XHTML_Ruby_Support_div.parentNode.removeChild(XHTML_Ruby_Support_div);
+				XHTML_Ruby_Support_div.style.display = "none";
+			} else {
+				try {
+					var RubyService_KanjiSelector_div = content.document.getElementById("RubyService_KanjiSelector");
+					var No_RubyService_KanjiSelector_div = content.document.getElementById("No_RubyService_KanjiSelector");
+					RubyService_KanjiSelector_div.style.display = "none";
+					No_RubyService_KanjiSelector_div.style.display = "block";
+				} catch (err) {
+					dump("Dev error- RubyService_KanjiSelector or No_RubyService_KanjiSelector could not be discoved in the installation_welcome " +
+						"page, or their styles could not be set");
+				}
 			}
 			var XHTML_Ruby_Support_div = content.document.getElementById("XHTML_Ruby_Support_div");
 			var sbPanel = document.getElementById("furiganainjector-statusbarpanel");

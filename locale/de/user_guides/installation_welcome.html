@@ -19,9 +19,8 @@
 			<table class="ruby_simulation"><tr>
 				<td width="160">Mit Ruby-Support:</td>
 				<td>
-					<td><simulationruby><rb><row><cell>東京</cell></row></rb><rp>(</rp><rt><row><cell>とうきょう</cell></row></rt><rp>)</rp>
-						から<simulationruby><rb><row><cell>大阪</cell></row></rb><rp>(</rp><rt><row><cell>おおさか</cell></row></rt><rp>)</rp>
-						までの...</td>
+					<td><table class="ruby_simulation"><tr><td class="forced_rt">とうきょう</td><td></td><td class="forced_rt">おおさか</td><td></td></tr>
+						<tr><td>東京</td><td>から</td><td>大阪</td><td>までの...</td></tr></table></td>
 				</td>
 			</tr></table>
 			<table><tr>
@@ -30,8 +29,15 @@
 			</tr></table>
 		</div>
 
-		<h3><a href="simple_kanji_level_selector.html">Wählen Sie ein Kanji-Lese-Niveau</a></h3>
-		<p>Wählen Sie die Kanji, für die Sie keine Furigana anzeigen lassen wollen.</p>
+		<div id="RubyService_KanjiSelector">
+			<h3><a href="simple_kanji_level_selector.html">Wählen Sie ein Kanji-Lese-Niveau</a></h3>
+			<p>Wählen Sie die Kanji, für die Sie keine Furigana anzeigen lassen wollen.</p>
+		</div>
+
+		<div id="No_RubyService_KanjiSelector" style="display: none;">
+			<h3>Setzen Sie Ihre Kanji-Lesung Ebene</h3>
+			<p>Verwenden Sie die "Optionen ..." (siehe unten), um eine Liste der Kanji Sie brauchen nicht zu Furigana. <strong>Hinweis:</strong> Wenn Sie bereits installiert haben die XHTML Ruby Support Addon gibt es eine <a href="simple_kanji_level_selector.html">einfache und schnelle Auswahl von Kanji-Seite</a>, die Sie verwenden können, statt.
+		</div>
 
 		<br/>
 		<p><span id="start_word">Dann</span> nutzen Sie dieses Tool auf jeder beliebigen Web-Seite mit

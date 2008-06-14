@@ -19,9 +19,8 @@
 			<table class="ruby_simulation"><tr>
 				<td width="160">Con supporto Ruby:</td>
 				<td>
-					<td><simulationruby><rb><row><cell>東京</cell></row></rb><rp>(</rp><rt><row><cell>とうきょう</cell></row></rt><rp>)</rp>
-						から<simulationruby><rb><row><cell>大阪</cell></row></rb><rp>(</rp><rt><row><cell>おおさか</cell></row></rt><rp>)</rp>
-						までの...</td>
+					<td><table class="ruby_simulation"><tr><td class="forced_rt">とうきょう</td><td></td><td class="forced_rt">おおさか</td><td></td></tr>
+						<tr><td>東京</td><td>から</td><td>大阪</td><td>までの...</td></tr></table></td>
 				</td>
 			</tr></table>
 			<table><tr>
@@ -30,8 +29,15 @@
 			</tr></table>
 		</div>
 
-		<h3><a href="simple_kanji_level_selector.html">Seleziona il tuo livello di lettura dei kanji</a></h3>
-		<p>Scegli i kanji in cui vuoi o non vuoi venga inserito il Furigana.</p>
+		<div id="RubyService_KanjiSelector">
+			<h3><a href="simple_kanji_level_selector.html">Seleziona il tuo livello di lettura dei kanji</a></h3>
+			<p>Scegli i kanji in cui vuoi o non vuoi venga inserito il Furigana.</p>
+		</div>
+
+		<div id="No_RubyService_KanjiSelector" style="display: none;">
+			<h3>Imposta il tuo livello di lettura Kanji</h3>
+			<p>Utilizzare la funzione "Opzioni ..." (vedi sotto) per impostare un elenco dei kanji non e necessario per furigana. <strong>Nota:</strong> se hai gia installato il supporto Ruby XHTML addon vi e un rapido e <a href="simple_kanji_level_selector.html">facile-Kanji selezionando pagina</a> e possibile utilizzare.</p>
+		</div>
 
 		<br/>
 		<p><span id="start_word">Poi</span> usa questo accessorio in ogni pagina web che contiene del testo in giapponese. <a href="http://www.mozilla.gr.jp/">www.mozilla.gr.jp</a> e' un buon esempio che mostra:

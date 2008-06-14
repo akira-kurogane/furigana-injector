@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,9 +19,8 @@
 			<table class="ruby_simulation"><tr>
 				<td width="160">Avec le support de ruby :</td>
 				<td>
-					<td><simulationruby><rb><row><cell>東京</cell></row></rb><rp>(</rp><rt><row><cell>とうきょう</cell></row></rt><rp>)</rp>
-						から<simulationruby><rb><row><cell>大阪</cell></row></rb><rp>(</rp><rt><row><cell>おおさか</cell></row></rt><rp>)</rp>
-						までの...</td>
+					<td><table class="ruby_simulation"><tr><td class="forced_rt">とうきょう</td><td></td><td class="forced_rt">おおさか</td><td></td></tr>
+						<tr><td>東京</td><td>から</td><td>大阪</td><td>までの...</td></tr></table></td>
 				</td>
 			</tr></table>
 			<table><tr>
@@ -30,8 +29,15 @@
 			</tr></table>
 		</div>
 
-		<h3><a href="simple_kanji_level_selector.html">Selectionner votre niveau de lecture des kanji</a></h3>
-		<p>Choisissez les kanji pour lesquels vous désirez des furigana ou pas.</p>
+		<div id="RubyService_KanjiSelector">
+			<h3><a href="simple_kanji_level_selector.html">Selectionner votre niveau de lecture des kanji</a></h3>
+			<p>Choisissez les kanji pour lesquels vous désirez des furigana ou pas.</p>
+		</div>
+
+		<div id="No_RubyService_KanjiSelector" style="display: none;">
+			<h3>Définissez votre kanji-niveau de lecture</h3>
+			<p>Utilisez les "Options ..." (voir ci-dessous) pour définir une liste des kanji vous n'avez pas besoin de furigana. <strong>Note:</strong> si vous avez déjà installé le XHTML Ruby Support addon, il est un <a href="simple_kanji_level_selector.html">rapide et facile-sélection Kanji page</a>, vous pouvez utiliser.</p>
+		</div>
 
 		<br/>
 		<p><span id="start_word">Ensuite, </span> utilisez cet outil dans n'importe quelle page affichant du texte japonais. Le site <a href="http://www.mozilla.gr.jp/">www.mozilla.gr.jp</a> est un bon exemple qui montre :
