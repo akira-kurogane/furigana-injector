@@ -125,14 +125,24 @@ var RubyInserter = {
 		parentElement.normalize();
 	},
 	
+	//Devnote: the XHMTL Ruby Support extension sometimes inserts html elements such as:
+	//  "転載" --> "<ruby><rb>転<span class="ruby-text-lastLetterBox">載</span></rb><rp>(</rp><rt> ....".
+	//  Note that there is a <span> element inside the <rb> element. For this reason iterations for text nodes go to a second level.
 	rubyBaseText: function (rubyElem) {
 		var tempChildNodes;
 		var rbText = "";
 		tempChildNodes = rubyElem.getElementsByTagName("RB");
 		for (var x = 0; x < tempChildNodes.length; x++) {
-			rbText += tempChildNodes[x].innerHTML;
+			if (tempChildNodes[x].nodeType == Node.TEXT_NODE) {
+				rbText += tempChildNodes[x].data;
+			} else if(tempChildNodes[x].nodeType == Node.ELEMENT_NODE) {
+				for (var y = 0; y < tempChildNodes[x].childNodes.length; y++) {
+					if (tempChildNodes[x].childNodes[y].nodeType == Node.TEXT_NODE)
+						rbText += tempChildNodes[x].childNodes[y].data;
+				}
+			}
 		}
 		return rbText;
-	} 
+	}
 	
 };

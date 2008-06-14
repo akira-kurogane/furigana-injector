@@ -68,15 +68,23 @@ var FuriganaInjector = {
 	},
 	
 	onPageLoad: function() {
-		var bodyElem = content.document.body;
-		if (FuriganaInjector.getPref("auto_process_all_pages") && FuriganaInjector.currentContentProcessed() !== true) 
-			FuriganaInjector.processWholeDocument();
+		if(content.document.contentType == "text/html") {
+			if (FuriganaInjector.getPref("auto_process_all_pages") && FuriganaInjector.currentContentProcessed() !== true) 
+				FuriganaInjector.processWholeDocument();
+		}
 	},
 	
 	onWindowProgressStateStop: function(aProgress, aRequest, aStatus) {
-		var alreadyProcessed = FuriganaInjector.currentContentProcessed() === true;
-		FuriganaInjector.setStatusIcon(alreadyProcessed ? "processed" : "default");
-		document.getElementById("process-whole-page-command").setAttribute("disabled", alreadyProcessed);
+		if(content.document.contentType == "text/html") {
+			var alreadyProcessed = FuriganaInjector.currentContentProcessed() === true;
+			FuriganaInjector.setStatusIcon(alreadyProcessed ? "processed" : "default");
+			document.getElementById("process-context-section-command").setAttribute("disabled", alreadyProcessed);
+			document.getElementById("process-whole-page-command").setAttribute("disabled", alreadyProcessed);
+		} else {
+			FuriganaInjector.setStatusIcon("disabled");
+			document.getElementById("process-context-section-command").setAttribute("disabled", true);
+			document.getElementById("process-whole-page-command").setAttribute("disabled", true);
+		}
 	},
 	
 	/******************************************************************************
@@ -395,7 +403,7 @@ dump("Dictionary search of " + totalWordsCount + " words in " + matchingTextNode
 	
 	setCurrentContentProcessed: function(processingResult) {
 		//*** Block below is temporary requirement for Firefox 3 betas in combination with version 2.0 or 2.1 of XHTML Ruby Support ***
-		if (RubyService && RubyService.isGecko19OrLater) {
+		if (window.RubyService && RubyService.isGecko19OrLater) {
 			try {
 				var rubyNodeList = content.document.getElementsByTagName("RUBY");
 				var rubyElemArray = [];

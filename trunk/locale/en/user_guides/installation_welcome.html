@@ -19,9 +19,8 @@
 			<table class="ruby_simulation"><tr>
 				<td width="160">With ruby support:</td>
 				<td>
-					<td><simulationruby><rb><row><cell>東京</cell></row></rb><rp>(</rp><rt><row><cell>とうきょう</cell></row></rt><rp>)</rp>
-						から<simulationruby><rb><row><cell>大阪</cell></row></rb><rp>(</rp><rt><row><cell>おおさか</cell></row></rt><rp>)</rp>
-						までの...</td>
+					<td><table class="ruby_simulation"><tr><td class="forced_rt">とうきょう</td><td></td><td class="forced_rt">おおさか</td><td></td></tr>
+						<tr><td>東京</td><td>から</td><td>大阪</td><td>までの...</td></tr></table></td>
 				</td>
 			</tr></table>
 			<table><tr>
@@ -30,11 +29,18 @@
 			</tr></table>
 		</div>
 
-		<h3><a href="simple_kanji_level_selector.html">Select your kanji-reading level</a></h3>
-		<p>Choose the kanji you do and don't want furigana for.</p>
+		<div id="RubyService_KanjiSelector">
+			<h3><a href="simple_kanji_level_selector.html">Select your kanji-reading level</a></h3>
+			<p>Choose the kanji you do and don't want furigana for.</p>
+		</div>
+
+		<div id="No_RubyService_KanjiSelector" style="display: none;">
+			<h3>Set your kanji-reading level</h3>
+			<p>Use the "Options..." (see below) to set the list of the kanji you don't need furigana for. <strong>Note:</strong> if you have already installed the XHTML Ruby Support addon there is a <a href="simple_kanji_level_selector.html">quick and easy Kanji-selecting page</a> you can use instead.</p>
+		</div>
 
 		<br/>
-		<p><span id="start_word">Then </span> use this tool in any web page that has japanese text. <a href="http://www.mozilla.gr.jp/">www.mozilla.gr.jp</a> is a good example that shows:
+		<p><span id="start_word">Then</span> use this tool in any web page that has japanese text. <a href="http://www.mozilla.gr.jp/">www.mozilla.gr.jp</a> is a good example that shows:
 			<ul>
 			<li>Words composed of simple kanji won't be processed at all.</li>
 			<li>Words in links wont be processed, unless you change the preference for that.</li>
