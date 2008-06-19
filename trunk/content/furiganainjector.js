@@ -5,6 +5,7 @@ var FuriganaInjector = {
 	initialized: false, 
 	prefs: null,
 	yomiDict: null,
+	mecabLib: null,
 	kanjiAdjustMenuItems: [], 
 	strBundle: null,
 	
@@ -36,6 +37,7 @@ var FuriganaInjector = {
 			this.initialized = false;
 			return;
 		}
+		dump("YomikataDictionary loaded\n");
 		
 		//Devnote: element "appcontent" is defined by Firefox. Use "messagepane" for Thunderbird
 		document.getElementById("appcontent").addEventListener("DOMContentLoaded", this.onPageLoad, true);
@@ -57,6 +59,57 @@ var FuriganaInjector = {
 		} catch (err) {
 			dump("There was an error setting the visibility of the 'open-tests-window-menuitem' object. Debug and fix.\n");
 		}
+		dump("Event listener, prefs stuff finished\n");
+
+/*********** MecabLib dev testing *************************/		
+		this.mecabLib = Components.classes["@yayakoshi.net/mecablib;1"].getService();
+//dump("this.mecabLib: " + this.mecabLib + "\n");
+try {
+		this.mecabLib = this.mecabLib.QueryInterface(Components.interfaces.iMecabLib);
+} catch (err) {
+	dump("mecabLib.QueryInterface error: " + err + "\n");
+}
+		dump("MecabLib attached\n");
+
+		// the extension's id from install.rdf
+		//var DIC_ID = "furiganainjector-dictionary@yayakoshi.net";
+		var MY_ID = "furiganainjector@yayakoshi.net";
+		var em = Components.classes["@mozilla.org/extensions/manager;1"].getService(Components.interfaces.nsIExtensionManager);
+
+		var myPath = em.getInstallLocation(MY_ID).getItemLocation(MY_ID).path + "\\mecab\\libmecab.dll";
+myPath = "C:\\Program Files\\MeCab\\bin\\libmecab.dll";
+dump("myPath = " + myPath + "\n");
+		var dicPath = "";
+
+		/*try {
+			dicPath = em.getInstallLocation(DIC_ID).getItemLocation(DIC_ID).path + "\\chrome\\content\\etc\\mecabrc";
+		} catch(err) {
+			dump("Couln't find local dictionary. Looking for MeCab installation.\n");
+		}*/
+		
+		try {
+			this.mecabLib.createTagger(myPath + ";" + dicPath);
+		} catch(err) {
+			alert("Furigana-injector: Couldn't find dictionary.\n"
+				+ "Either install the dictionary add-on for FireFox from the Furigana-injector home page \n"
+				+ "or install MeCab with UTF-8 dictionary from http://mecab.sf.net/src");
+			this.onUnLoad();
+		}
+		dump("Found MeCab installation.\n");
+		
+		var surface = new String();
+		var feature = new String();
+		var length = new Number();
+		var readings = [];
+		this.mecabLib.parseToNode("東京から大阪まで");
+		do {
+			retVal = this.mecabLib.getNext(surface, feature, length);
+			if (retVal)
+				dump("\t" + surface.value + ", " + feature.value + ", " + length +"\n");
+			if(surface.value.length === 0) continue; //skip "BOS/EOS"
+		} while(retVal);
+dump("Finished the parseToNode()\n");
+/************* End of MecabLib dev test section ************/
 	},
 	
 	onUnload: function() {
