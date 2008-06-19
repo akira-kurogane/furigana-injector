@@ -2,8 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="YomikataDictionary"
-	ProjectGUID="{07323043-98F5-4A2B-AA92-CF9090ACF776}"
+	Name="MecabLib"
+	ProjectGUID="{DDB580C7-104F-4208-AFAF-370E70BCB3B5}"
+	RootNamespace="MecabXPCOM"
 	Keyword="MFCDLLProj"
 	TargetFrameworkVersion="131072"
 	>
@@ -46,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\boost_1_34_1;..\gecko-sdk\include;..\gecko-sdk\idl"
+				AdditionalIncludeDirectories="&quot;..\..\gecko-sdk\include&quot;;&quot;..\..\gecko-sdk\idl&quot;;..\..\mecab\src"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -71,17 +72,18 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xpcomglue_s.lib xpcom.lib nspr4.lib"
-				OutputFile="$(OutDir)/YomikataDictionary.dll"
+				AdditionalDependencies="xpcomglue_s.lib xpcom.lib nspr4.lib libmecab.lib"
+				OutputFile="$(OutDir)/MecabLib.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\boost_1_34_1\lib;..\gecko-sdk\include;..\gecko-sdk\lib"
+				AdditionalLibraryDirectories="&quot;..\..\gecko-sdk\include&quot;;&quot;..\..\gecko-sdk\lib&quot;;..\..\mecab\src"
+				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="msvcrt.lib"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/YomikataDictionary.lib"
+				ImportLibrary="$(OutDir)/MecabLib.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -136,7 +138,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\boost_1_34_1;..\gecko-sdk\include;..\gecko-sdk\idl"
+				AdditionalIncludeDirectories="&quot;..\..\gecko-sdk\include&quot;;&quot;..\..\gecko-sdk\idl&quot;;..\..\mecab\src"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
 				RuntimeLibrary="0"
 				TreatWChar_tAsBuiltInType="true"
@@ -160,9 +162,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="xpcomglue_s.lib xpcom.lib nspr4.lib"
-				OutputFile="$(OutDir)/YomikataDictionary.dll"
+				OutputFile="$(OutDir)/MecabLib.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\boost_1_34_1\lib;..\gecko-sdk\include;..\gecko-sdk\lib"
+				AdditionalLibraryDirectories="&quot;..\..\gecko-sdk\include&quot;;&quot;..\..\gecko-sdk\lib&quot;;..\..\mecab\src"
 				IgnoreDefaultLibraryNames="msvcrt.lib"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
@@ -171,7 +173,7 @@
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/YomikataDictionary.lib"
+				ImportLibrary="$(OutDir)/MecabLib.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -194,7 +196,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(OutDir)\YomikataDictionary.dll &quot;D:\dev\ruby_furigana\furiganainjector\components\YomikataDictionary.dll&quot;&#x0D;&#x0A;"
+				CommandLine="&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -207,11 +209,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\YomikataDictionary.cpp"
+				RelativePath=".\MecabLib.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\YomikataDictionaryModule.cpp"
+				RelativePath=".\MecabLibModule.cpp"
 				>
 			</File>
 		</Filter>
@@ -221,11 +223,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\IYomikataDictionary.h"
+				RelativePath=".\IMecabLib.h"
 				>
 			</File>
 			<File
-				RelativePath=".\YomikataDictionary.h"
+				RelativePath=".\MecabLib.h"
 				>
 			</File>
 		</Filter>
