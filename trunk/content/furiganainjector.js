@@ -290,14 +290,7 @@ for (var zz = 0; zz < matchingTextNodeInstances.length; ++zz) {
 dump("Dictionary search of " + totalWordsCount + " words in " + matchingTextNodeInstances.length + 
 	" text nodes took " + (dictFinishTime - startTime) + " milliseconds\n");*/
 				if (typeof matchingTextNodeInstances != "object")
-					throw("Invalid result came from FuriganaInjector.parseTextNodesForDictionaryMatches() or VocabAdjuster.removeSimpleWords()");
-				if (matchingTextNodeInstances.length > 0) {
-					var tn;
-					for (var x = 0; x < matchingTextNodeInstances.length; x++) {
-						tn = matchingTextNodeInstances[x];
-						RubyInserter.replaceTextNode(textNodesParentElement.ownerDocument, tn.textNode, tn.matchInstances);
-					}
-				}
+					throw("Invalid result came from FuriganaInjector.parseTextNodesForDictionaryMatches()");
 				if (matchingTextNodeInstances.length > 0) {
 					var tn;
 					for (var x = 0, len = matchingTextNodeInstances.length; x < len; ++x) {
