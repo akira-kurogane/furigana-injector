@@ -4,8 +4,8 @@ var FuriganaInjector = {
 
 	initialized: false, 
 	prefs: null,
-	yomiDict: null,
 	mecabLib: null,
+	mecabLoadInfo: null,
 	kanjiAdjustMenuItems: [], 
 	strBundle: null,
 	
@@ -25,19 +25,22 @@ var FuriganaInjector = {
 			alert ("Major error- the 'fi_strings' file could not be loaded. The Furigana Injector extension will not work without it.");
 			return;
 		}
-	
-		var dictLoadResult = false;
+		
+		var mecabLoadResult = false;
 		try {
-			dictLoadResult = this.loadYomikataDictionary();
-		} catch (err) {
-			//
+			mecabLoadResult = this.loadMecabLib();
+		} catch (err) { 
+			/* No action */ 
 		}
-		if (!dictLoadResult) {
-			alert("The YomikataDictionary XPCOM could not be loaded.\n(N.B. This version of Furigana Injector is only for windows)");
+		if (!mecabLoadResult) {
+			alert("The MeCab library XPCOM could not be loaded.\n(N.B. This version of Furigana Injector is only for windows)" + 
+				(this.mecabLoadInfo ? "\n" + this.mecabLoadInfo : ""));
 			this.initialized = false;
+			//this.OnUnload()??
 			return;
+		} else {
+			dump("MecabLib loaded" + (this.mecabLoadInfo ? "\n" + this.mecabLoadInfo : "") + "\n");
 		}
-		dump("YomikataDictionary loaded\n");
 		
 		//Devnote: element "appcontent" is defined by Firefox. Use "messagepane" for Thunderbird
 		document.getElementById("appcontent").addEventListener("DOMContentLoaded", this.onPageLoad, true);
@@ -59,57 +62,8 @@ var FuriganaInjector = {
 		} catch (err) {
 			dump("There was an error setting the visibility of the 'open-tests-window-menuitem' object. Debug and fix.\n");
 		}
-		dump("Event listener, prefs stuff finished\n");
-
-/*********** MecabLib dev testing *************************/		
-		this.mecabLib = Components.classes["@yayakoshi.net/mecablib;1"].getService();
-//dump("this.mecabLib: " + this.mecabLib + "\n");
-try {
-		this.mecabLib = this.mecabLib.QueryInterface(Components.interfaces.iMecabLib);
-} catch (err) {
-	dump("mecabLib.QueryInterface error: " + err + "\n");
-}
-		dump("MecabLib attached\n");
-
-		// the extension's id from install.rdf
-		//var DIC_ID = "furiganainjector-dictionary@yayakoshi.net";
-		var MY_ID = "furiganainjector@yayakoshi.net";
-		var em = Components.classes["@mozilla.org/extensions/manager;1"].getService(Components.interfaces.nsIExtensionManager);
-
-		var myPath = em.getInstallLocation(MY_ID).getItemLocation(MY_ID).path + "\\mecab\\libmecab.dll";
-myPath = "C:\\Program Files\\MeCab\\bin\\libmecab.dll";
-dump("myPath = " + myPath + "\n");
-		var dicPath = "";
-
-		/*try {
-			dicPath = em.getInstallLocation(DIC_ID).getItemLocation(DIC_ID).path + "\\chrome\\content\\etc\\mecabrc";
-		} catch(err) {
-			dump("Couln't find local dictionary. Looking for MeCab installation.\n");
-		}*/
-		
-		try {
-			this.mecabLib.createTagger(myPath + ";" + dicPath);
-		} catch(err) {
-			alert("Furigana-injector: Couldn't find dictionary.\n"
-				+ "Either install the dictionary add-on for FireFox from the Furigana-injector home page \n"
-				+ "or install MeCab with UTF-8 dictionary from http://mecab.sf.net/src");
-			this.onUnLoad();
-		}
-		dump("Found MeCab installation.\n");
-		
-		var surface = new String();
-		var feature = new String();
-		var length = new Number();
-		var readings = [];
-		this.mecabLib.parseToNode("東京から大阪まで");
-		do {
-			retVal = this.mecabLib.getNext(surface, feature, length);
-			if (retVal)
-				dump("\t" + surface.value + ", " + feature.value + ", " + length +"\n");
-			if(surface.value.length === 0) continue; //skip "BOS/EOS"
-		} while(retVal);
-dump("Finished the parseToNode()\n");
-/************* End of MecabLib dev test section ************/
+		//dump("Event listener, prefs stuff finished\n");
+		var ignore = VocabAdjuster.getSimpleKanjiList();	//just to make sure VocabAdjuster._simpleKanjiList is initialized for tooEasy()
 	},
 	
 	onUnload: function() {
@@ -225,8 +179,10 @@ dump("Finished the parseToNode()\n");
 	}, 
 	
 	processContextSection: function(useAllDictMatches) {
+		if (!document.popupNode)
+			return;
 		var selectionObject = content.getSelection();
-		var selText = selectionObject.toString();
+		var selText = selectionObject ? selectionObject.toString() : "";
 		
 		if (selText.length == 0) {
 			var parentBlockElem = document.popupNode;
@@ -250,23 +206,18 @@ dump("Finished the parseToNode()\n");
 		} else {
 			//N.B. this will execute synchronously, i.e. it doesn't use setTimeout() like the whole-page or context-block processing.
 			//Check if the selection is selected back-to-front and reverse it if so.
+			//If the selection was made 'backwards', e.g. the user clicks the mouse and then drags to the left or upwards, then flip it around
 			if (selectionObject.anchorNode.compareDocumentPosition(selectionObject.focusNode) == 2 /*Node.DOCUMENT_POSITION_PRECEDING*/ || 
 				(selectionObject.anchorNode == selectionObject.focusNode && selectionObject.anchorOffset > selectionObject.focusOffset)) {
 				var oldAnchorNode = selectionObject.anchorNode;
 				var oldAnchorOffset = selectionObject.anchorOffset;
 				selectionObject.collapseToStart();
 				selectionObject.extend(oldAnchorNode, oldAnchorOffset);
-			}			
-			var followingHiraganaRegex = new RegExp("^(" + VocabAdjuster.hiraganaPattern + "{1,5})");
-			var followingHiraganaResult = followingHiraganaRegex.exec(selectionObject.focusNode.data.substr(selectionObject.focusOffset));
-			if (followingHiraganaResult) {
-				selectionObject.extend(selectionObject.focusNode, selectionObject.focusOffset + followingHiraganaResult[1].length);
-				selText = selectionObject.toString();
 			}
-			var dictMatches = FuriganaInjector.findAllDictionaryMatches(selText);
-			if (useAllDictMatches != true) 
-				VocabAdjuster.removeSimpleWordsFromDictMatches(dictMatches);
-			
+			//TODO: expand selection to include it's entire grammatical segment. E.g. if the user selects just one word in the 
+			//  middle of a sentence, get the text of the entire sentence and parse that in Mecab. But only apply results to the
+			//  selected range.
+			/* *** OLD   YomikataDictionary-era code ***			
 			var lowestCommonParent = content.document.body;
 			if (selectionObject.anchorNode.parentNode == selectionObject.focusNode.parentNode) {
 				lowestCommonParent = selectionObject.anchorNode.parentNode;
@@ -296,7 +247,21 @@ dump("Finished the parseToNode()\n");
 			for (var x = 0; x < docTextNodes.length; x++) {
 				if (range.comparePoint(docTextNodes[x], 0) == 0 || docTextNodes[x] == selectionObject.anchorNode)
 					RubyInserter.replaceTextNode(content.document, docTextNodes[x], dictMatches);
+			} *** *** */
+			var range = selectionObject.getRangeAt(0);
+			if (range.startContainer !== range.endContainer) {
+				if (range.startContainer.nodeType === Node.TEXT_NODE)
+					range.setStart(range.startContainer, 0);
+				if (range.endContainer.nodeType === Node.TEXT_NODE)
+					range.setEnd(range.endContainer, range.endContainer.data.length);
 			}
+			var rangeFragment = range.extractContents();	//Dev q: why not cloneContents(), and then switch the fragments at the last step?
+			var tempDiv = content.document.createElement("DIV");	
+			tempDiv.appendChild(rangeFragment);
+			FuriganaInjector.lookupAndInjectFurigana(tempDiv, FuriganaInjector.processWholeDocumentCallback);
+			while(tempDiv.lastChild)
+				range.insertNode(tempDiv.lastChild);
+			range.detach();	//Dev q: why detach()? This is a live part of the document, right?
 			selectionObject.collapseToStart();
 			this.processContextSectionCallback(true);
 		}
@@ -311,10 +276,12 @@ dump("Finished the parseToNode()\n");
 		var maxDictionaryRuntime = 5000;	//5 secs
 		this.setStatusIcon("processing");
 		setTimeout(function() {
-				var processingResult = true;
-				try {
+		
+			var processingResult = true;
+			try {
 //var startTime = new Date();
-					var matchingTextNodeInstances = FuriganaInjector.parseTextNodesForDictionaryMatches(textNodesParentElement, maxDictionaryRuntime);
+				var matchingTextNodeInstances = FuriganaInjector.parseTextNodesForDictionaryMatches(textNodesParentElement, 
+					maxDictionaryRuntime);
 /*var dictFinishTime = new Date();
 var totalWordsCount = 0;
 for (var zz = 0; zz < matchingTextNodeInstances.length; ++zz) {
@@ -322,26 +289,42 @@ for (var zz = 0; zz < matchingTextNodeInstances.length; ++zz) {
 }
 dump("Dictionary search of " + totalWordsCount + " words in " + matchingTextNodeInstances.length + 
 	" text nodes took " + (dictFinishTime - startTime) + " milliseconds\n");*/
-					VocabAdjuster.removeSimpleWords(matchingTextNodeInstances);
-//var removeSimpleWordsTime = new Date();
-//dump("removeSimpleWordsTime() took " + (removeSimpleWordsTime - dictFinishTime) + " milliseconds\n");
-					if (typeof matchingTextNodeInstances != "object")
-						throw("Invalid result came from FuriganaInjector.parseTextNodesForDictionaryMatches() or VocabAdjuster.removeSimpleWords()");
-					if (matchingTextNodeInstances.length > 0) {
-						var tn;
-						for (var x = 0; x < matchingTextNodeInstances.length; x++) {
-							tn = matchingTextNodeInstances[x];
-							RubyInserter.replaceTextNode(textNodesParentElement.ownerDocument, tn.textNode, tn.matchInstances);
-						}
+				if (typeof matchingTextNodeInstances != "object")
+					throw("Invalid result came from FuriganaInjector.parseTextNodesForDictionaryMatches() or VocabAdjuster.removeSimpleWords()");
+				if (matchingTextNodeInstances.length > 0) {
+					var tn;
+					for (var x = 0; x < matchingTextNodeInstances.length; x++) {
+						tn = matchingTextNodeInstances[x];
+						RubyInserter.replaceTextNode(textNodesParentElement.ownerDocument, tn.textNode, tn.matchInstances);
 					}
+				}
+				if (matchingTextNodeInstances.length > 0) {
+					var tn;
+					for (var x = 0, len = matchingTextNodeInstances.length; x < len; ++x) {
+						tn = matchingTextNodeInstances[x];
+						if (tn.matchInstances.length === 0) 
+							continue; //skip empty text nodes
+						RubyInserter.replaceTextNode(textNodesParentElement.ownerDocument, tn.textNode, tn.matchInstances);	//TODO: handle the changes/values to the structure of the objects in matchInstances.
+						/* *** NEW Mecab version
+						var rubyResult = RubyInserter.textToRuby(tn.textNode.data, tn.matchInstances);
+						var div = content.document.createElement("div");
+						div.innerHTML = rubyResult;
+						var fragment = content.document.createDocumentFragment();
+						while( div.firstChild) fragment.appendChild( div.firstChild); 
+						tn.textNode.parentNode.replaceChild(fragment, tn.textNode);
+						//while(div.firstChild) tn.textNode.parentNode.insertBefore(div.firstChild, tn.textNode); 
+						//tn.textNode.parentNode.removeChild(tn.textNode);*/
+					}
+				}
 //var rubyInsertFinishTime = new Date();
 //dump("Ruby insert took " + (rubyInsertFinishTime - removeSimpleWordsTime) + " milliseconds\n");
-				} catch(err) {
-					alert(err.toString());
-					processingResult = false;
-				}
-				callbackFunc(processingResult);
-			}, 0);
+			} catch(err) {
+				alert(err.toString());
+				processingResult = false;
+			}
+			callbackFunc(processingResult);
+			
+		}, 0);	//end of setTimeout()
 	},
 
 	findNonRubyTextNodes: function(elem, includeLinkText) {
@@ -356,80 +339,144 @@ dump("Dictionary search of " + totalWordsCount + " words in " + matchingTextNode
 			}
 		}
 		return textNodes;
-	}, 
+	},
 
 	parseTextNodesForDictionaryMatches: function(textNodesParentElement, maxRuntime) {
 		var timeLimited = maxRuntime && maxRuntime > 100;	//must be at least 0.1 secs
 		var startTime = new Date();
 		var currTime;
 		var curpos = 0;
-		var text_nodes = this.findNonRubyTextNodes(textNodesParentElement, FuriganaInjector.getPref("process_link_text"));	
+		var textNodesWithoutRuby = this.findNonRubyTextNodes(textNodesParentElement, FuriganaInjector.getPref("process_link_text"));	
 		//Devnote: a side effect of findNonRubyTextNodes() is that all text nodes will be normalize()'d.
+		var parsedTextNodes = [];
 		var currTextNode;
-		var matchTextNodes = [];
-		var textNodeMatchInstances;
-		var wordMatchResult;
-		var matchlen;
-		var kPat = VocabAdjuster.kanjiPattern;
-		var hPat = VocabAdjuster.hiraganaPattern;
-		var kRevPat = VocabAdjuster.kanjiRevPattern;
-		var hkPat = VocabAdjuster.kanjiHiraganaPattern;
-		var maxSearchPhraseLen = 5;
-		var kanjiWordRegex = new RegExp("(?:^|" + kRevPat + ")(" + kPat + hkPat +"{0," + (maxSearchPhraseLen - 1) + "})", "g");	
-		var regexMatchVals;
-		for (var i = 0; i < text_nodes.length; i++) {
-			currTextNode = text_nodes[i];
-			textNodeMatchInstances = [];
-			curpos = 0;
-			var lastRegexMatchResult = regexMatchVals = kanjiWordRegex.exec(currTextNode.data);	//using "lastRegexMatchResult" to avoid warning about using assignment operators in while() loop
-			while (lastRegexMatchResult) {
-				matchlen = {};
-				wordMatchResult = { word: regexMatchVals[1] };
-				wordMatchResult.yomi = this.yomiDict.findLongestMatch(wordMatchResult.word, matchlen);
-				if (wordMatchResult.yomi) {
-					wordMatchResult.word= wordMatchResult.word.substr(0, matchlen.value);
-					textNodeMatchInstances.push( { word: wordMatchResult.word, yomi: wordMatchResult.yomi } );
-				} 
-				kanjiWordRegex.lastIndex = regexMatchVals.index + wordMatchResult.word.length;
-				lastRegexMatchResult = regexMatchVals = kanjiWordRegex.exec();	//using "lastRegexMatchResult" to avoid warning about using assignment operators in while() loop
-			}
-			if (textNodeMatchInstances.length > 0)
-				matchTextNodes.push( { textNode: currTextNode, matchInstances: textNodeMatchInstances } );
+		for (var i = 0; i < textNodesWithoutRuby.length; i++) {
+			currTextNode = textNodesWithoutRuby[i];
+			parsedTextNodes.push({textNode: currTextNode, matchInstances: this.getReadings(currTextNode.data)});
 			if (timeLimited) {
 				currTime = new Date();
 				if (currTime - startTime > maxRuntime) //time-limiting functionality
 					break;
 			}
 		}
-		return matchTextNodes;
+		return parsedTextNodes;
 	}, 
 
-	findAllDictionaryMatches: function(selectionText) {
-		var matchInstances = [];
-		var wordMatchResult;
-		var matchlen;
+	getReadings: function(data) {
+		var surface = new String();
+		var feature = new String();
+		var length = new Number();
 		var kPat = VocabAdjuster.kanjiPattern;
-		var hPat = VocabAdjuster.hiraganaPattern;
-		var kRevPat = VocabAdjuster.kanjiRevPattern;
-		var hkPat = VocabAdjuster.kanjiHiraganaPattern;
-		var maxSearchPhraseLen = 5;
-		var kanjiWordRegex = new RegExp("(?:^|" + kRevPat + ")(" + kPat + hkPat +"{0," + (maxSearchPhraseLen - 1) + "})", "g");	
-		var regexMatchVals;
-		var curpos = 0;
-		var lastRegexMatchResult = regexMatchVals = kanjiWordRegex.exec(selectionText);	//using "lastRegexMatchResult" to avoid warning about using assignment operators in while() loop
-		while (lastRegexMatchResult) {
-			matchlen = {};
-			wordMatchResult = { word: regexMatchVals[1] };
-			wordMatchResult.yomi = this.yomiDict.findLongestMatch(wordMatchResult.word, matchlen);
-			if (wordMatchResult.yomi) {
-				wordMatchResult.word= wordMatchResult.word.substr(0, matchlen.value);
-				matchInstances.push( { word: wordMatchResult.word, yomi: wordMatchResult.yomi } );
-			} 
-			kanjiWordRegex.lastIndex = regexMatchVals.index + wordMatchResult.word.length;
-			lastRegexMatchResult = regexMatchVals = kanjiWordRegex.exec();	//using "lastRegexMatchResult" to avoid warning about using assignment operators in while() loop
-		}
-		return matchInstances;
+		var retVal;
+		var readings = [];
+		var tempYomi;
+		this.mecabLib.parseToNode(data);
+		do {
+			retVal = this.mecabLib.getNext(surface, feature, length);
+			if (surface.value.length === 0 ||	//skip "BOS/EOS"
+				!surface.value.match(kPat) || //word does not contain kanji
+				VocabAdjuster.tooEasy(surface.value))	//kanji are in the too-easy list.
+				continue; 
+			tempYomi = this.katakanaToHiragana(this.featureToYomi(feature.value));
+			if (!tempYomi)	//no yomi provided (or was empty after katakana -> hiragana translation)
+				continue;
+			(this.createReadingObjects(surface.value, tempYomi,
+						   surface.value.length)).forEach(function(r) { readings.push(r); });
+		} while(retVal);
+		return readings;
 	},
+
+	featureToYomi : function(feature) {
+		var fields = feature.split(",");
+		// length must be greater than 7 for a reading
+		if(fields[0] === "BOS/EOS") return "";
+		else if(fields.length > 7) return fields[7]; // reading
+		else return ""; //no reading
+	},
+
+	katakanaToHiragana: function(str) {
+		var newStr = new Array(str.length);
+		var table = this.katakanaToHiraganaTable;
+
+		for(var i = 0, len = str.length; i < len; ++i) {
+			newStr[i] = table[str[i]];
+		}
+		return newStr.join("");
+	},
+
+	createReadingObjects: function(word, yomi, length) {
+    	var kPat = VocabAdjuster.kanjiPattern;
+		var hPat = VocabAdjuster.hiraganaPattern;
+		var hkPat = VocabAdjuster.kanjiHiraganaPattern;
+		var kMixRegex = new RegExp("^(" + kPat + "+)$");
+		var khMixRegex = new RegExp("^(" + kPat + "+)(" + hPat +"+)$");
+		var khkMixRegex = new RegExp("^(" + kPat + "+)(" + hPat +"+)(" + kPat +"+)$");
+		var khkhMixRegex = new RegExp("^(" + kPat + "+)(" + hPat +"+)(" + kPat +"+)(" + hPat +"+)$");
+		var match;
+		var rt_vals;
+
+		match = kMixRegex.exec(word);
+		if (match) {
+			return [{word: word, yomi: yomi, length: length}]; 
+		}
+		match = khMixRegex.exec(word);
+		if (match) {  //[k1, h2]
+			return [{word: match[1],
+				yomi: yomi.substr(0, yomi.length - match[2].length),
+				length: match[1].length},
+				{word: match[2],
+				yomi: "",
+				length: match[2].length}];
+		}
+		match = khkMixRegex.exec(word); //Won't this break if h2 occurs within the yomi of K1 or K3?
+		if (match) { //[K1, h2, K3]
+			rt_vals = yomi.split(match[2]);
+			return [{word: match[1], 
+				yomi: rt_vals[0],
+				length: match[1].length},
+
+				{word: match[2],
+				yomi: "",
+				length: match[2].length},
+
+				{word: match[3],
+				yomi: rt_vals[1],
+				length: match[3].length}];
+		}
+
+		match = khkhMixRegex.exec(word);
+		if (match) {
+			rt_vals = yomi.substr(0, yomi.length - match[4].length).split(match[2]);	//[h1, h3]
+			//N.B. design flaw: the above will fail if H2 occurs within the yomi of K1.
+			return [{word: match[1], 
+				yomi: rt_vals[0],
+				length: match[1].length},
+
+				{word: match[2],
+				yomi: "",
+				length: match[2].length},
+
+				{word: match[3],
+				yomi: rt_vals[1],
+				length: match[3].length},
+
+				{word: match[4],
+				yomi: "",
+				length: match[4].length}];
+		}
+
+		return [{word: word, yomi: yomi, length: length}]; //if no pattern matches
+	},
+
+	katakanaToHiraganaTable: {'\u30A0':'\u30A0', // don't convert katakana-hiragana double hyphen
+		'\u30A1':'\u3041','\u30A2':'\u3042','\u30A3':'\u3043','\u30A4':'\u3044','\u30A5':'\u3045','\u30A6':'\u3046','\u30A7':'\u3047','\u30A8':'\u3048','\u30A9':'\u3049','\u30AA':'\u304A','\u30AB':'\u304B','\u30AC':'\u304C','\u30AD':'\u304D','\u30AE':'\u304E','\u30AF':'\u304F',
+		'\u30B0':'\u3050','\u30B1':'\u3051','\u30B2':'\u3052','\u30B3':'\u3053','\u30B4':'\u3054','\u30B5':'\u3055','\u30B6':'\u3056','\u30B7':'\u3057','\u30B8':'\u3058','\u30B9':'\u3059','\u30BA':'\u305A','\u30BB':'\u305B','\u30BC':'\u305C','\u30BD':'\u305D','\u30BE':'\u305E','\u30BF':'\u305F',
+		'\u30C0':'\u3060','\u30C1':'\u3061','\u30C2':'\u3062','\u30C3':'\u3063','\u30C4':'\u3064','\u30C5':'\u3065','\u30C6':'\u3066','\u30C7':'\u3067','\u30C8':'\u3068','\u30C9':'\u3069','\u30CA':'\u306A','\u30CB':'\u306B','\u30CC':'\u306C','\u30CD':'\u306D','\u30CE':'\u306E','\u30CF':'\u306F',
+		'\u30D0':'\u3070','\u30D1':'\u3071','\u30D2':'\u3072','\u30D3':'\u3073','\u30D4':'\u3074','\u30D5':'\u3075','\u30D6':'\u3076','\u30D7':'\u3077','\u30D8':'\u3078','\u30D9':'\u3079','\u30DA':'\u307A','\u30DB':'\u307B','\u30DC':'\u307C','\u30DD':'\u307D','\u30DE':'\u307E','\u30DF':'\u307F',
+		'\u30E0':'\u3080','\u30E1':'\u3081','\u30E2':'\u3082','\u30E3':'\u3083','\u30E4':'\u3084','\u30E5':'\u3085','\u30E6':'\u3086','\u30E7':'\u3087','\u30E8':'\u3088','\u30E9':'\u3089','\u30EA':'\u308A','\u30EB':'\u308B','\u30EC':'\u308C','\u30ED':'\u308D','\u30EE':'\u308E','\u30EF':'\u308F',
+		'\u30F0':'\u3090','\u30F1':'\u3091','\u30F2':'\u3092','\u30F3':'\u3093','\u30F4':'\u3074','\u30F5':'\u3095','\u30F6':'\u3096','\u30F7':'\u3097','\u30F8':'\u3098','\u30F9':'\u3099','\u30FA':'\u309A','\u30FB':'\u30FB',
+		'\u30FC':'\u30FC', // don't convert katakana-hiragana prolonged sound mark
+		'\u30FD':'\u309D','\u30FE':'\u309E','\u30FF':'\u30FF'},
 	
 	revertRubys: function(parentElement) {
 		var rubyNodeList = parentElement.getElementsByTagName("RUBY");
@@ -489,46 +536,37 @@ dump("Dictionary search of " + totalWordsCount + " words in " + matchingTextNode
 	/******************************************************************************
 	 *	XPCOM
 	 ******************************************************************************/
-	loadYomikataDictionary: function() {
-	
-		this.yomiDict = Components.classes["@yayakoshi.net/yomikatadictionary;1"].getService();
-		this.yomiDict = this.yomiDict.QueryInterface(Components.interfaces.iYomikataDictionary);
+	loadMecabLib: function() {
+		this.mecabLib = Components.classes["@yayakoshi.net/mecablib;1"].getService();
+		this.mecabLib = this.mecabLib.QueryInterface(Components.interfaces.iMecabLib);
+
+		// the extension's id from install.rdf
+		var DIC_ID = "furiganainjector-dictionary@yayakoshi.net";	//Development of this package is a pre-release TODO
+		var MY_ID = "furiganainjector@yayakoshi.net";
+		var em = Components.classes["@mozilla.org/extensions/manager;1"].getService(Components.interfaces.nsIExtensionManager);
+
+		var myPath = em.getInstallLocation(MY_ID).getItemFile(MY_ID, "mecab/libmecab").path;
+//dump("myPath = " + myPath);
+		var dicPath = "";
+
+		try {
+			dicPath = em.getInstallLocation(DIC_ID).getItemFile(DIC_ID, "chrome/content/etc/mecabrc").path;
+		} catch(err) {
+			dump("Couldn't find the local dictionary. Looking for MeCab installation.\n");
+		}
+		//dump("myPath: " + myPath + "\n");
+		//dump("dicPath: " + dicPath + "\n");
 		
-		var tempFile = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties)
-			.get("ProfD", Components.interfaces.nsIFile);
-		tempFile.append("extensions");
-		tempFile.append("furiganainjector@yayakoshi.net");
-		if (!tempFile.exists()) {
-			alert("No 'furiganainjector@yayakoshi.net' folder (or development folder config file) was found in the extensions folder");
+		try {
+			this.mecabLib.createTagger(myPath + ";" + dicPath);
+		} catch(err) {
+			this.mecabLoadInfo = "Couldn't find the dictionary.\n"
+				+ "Either install the dictionary add-on (TODO) for Firefox from the Furigana-injector home page \n" 
+				+ "or install MeCab with UTF-8 dictionary from http://mecab.sf.net/src";
 			return false;
 		}
-		var yomidictDataFile = Components.classes["@mozilla.org/file/local;1"].createInstance(Components.interfaces.nsILocalFile);
-		if (!tempFile.isDirectory()) {/********* Development environment use only  *********/
-			var dev_extension_path = "";
-			var fstream = Components.classes["@mozilla.org/network/file-input-stream;1"].createInstance(Components.interfaces.nsIFileInputStream);
-			var sstream = Components.classes["@mozilla.org/scriptableinputstream;1"].createInstance(Components.interfaces.nsIScriptableInputStream);
-			fstream.init(tempFile, -1, 0, 0);
-			sstream.init(fstream); 
-			var str = sstream.read(4096);
-			while (str.length > 0) {
-			  dev_extension_path += str;
-			  str = sstream.read(4096);
-			}
-			sstream.close();
-			fstream.close();
-			
-			yomidictDataFile.initWithPath(dev_extension_path);
-		} else { /**** End of development environment **************/
-		
-       		yomidictDataFile.initWithPath(tempFile.path);
-        }
-		yomidictDataFile.append("content");
-		yomidictDataFile.append("yomikata.dat");
-		if (!yomidictDataFile.exists()) {
-			alert("** Furigana Injector extension**\nThe file 'yomikata.dat' could not be found to load the dictionary.\n");
-			return false;
-		}
-        return this.yomiDict.loadFromFile(yomidictDataFile);
+		this.mecabLoadInfo = "DLL path = " + myPath + "; Dictionary path = " + dicPath;
+		return true;
 	},
 		
 	/******************************************************************************
@@ -587,6 +625,48 @@ dump("Dictionary search of " + totalWordsCount + " words in " + matchingTextNode
 		var newMinFOUVal = evt.target.getAttribute("kanjiVal");
 		FuriganaInjector.setPref("exclusion_kanji", KanjiDictionary.freqOfUseList(1, newMinFOUVal).join(""));
 		alert(FuriganaInjector.strBundle.getFormattedString("alertExclusionKanjiSetToX", [ newMinFOUVal ]));
+	},
+		
+	/******************************************************************************
+	 *	Clipboard functions
+	 ******************************************************************************/
+	getTextWithoutFurigana: function(elem, includeLinkText) {
+		var text = [];
+		elem.normalize();	//Drop whitespace-only text nodes and merges adjacent text nodes.
+		var e;
+		for (var i = 0; i < elem.childNodes.length; ++i) {
+			e = elem.childNodes[i];
+			if(e.nodeType === Node.TEXT_NODE) {
+				text.push(e.data);
+			} else if (e.nodeType === Node.ELEMENT_NODE && e.tagName !== "RP" && e.tagName !== "RT" &&
+				(includeLinkText || e.tagName !== "A")) {
+				text = text.concat(this.getTextWithoutFurigana(e, includeLinkText));
+			}
+		}
+		return text.join("");
+	}, 
+
+	copyWithoutFurigana: function() {
+		var selectionObject = content.getSelection();
+
+		if (!selectionObject) return;
+		
+		//N.B. this will execute synchronously, i.e. it doesn't use setTimeout() like the whole-page or context-block processing.
+		//Check if the selection is selected back-to-front and reverse it if so.
+		if (selectionObject.anchorNode.compareDocumentPosition(selectionObject.focusNode) === 2 /*Node.DOCUMENT_POSITION_PRECEDING*/ || 
+			(selectionObject.anchorNode === selectionObject.focusNode && selectionObject.anchorOffset > selectionObject.focusOffset)) {
+			var oldAnchorNode = selectionObject.anchorNode;
+			var oldAnchorOffset = selectionObject.anchorOffset;
+			selectionObject.collapseToStart();
+			selectionObject.extend(oldAnchorNode, oldAnchorOffset);
+		}
+
+		var range = selectionObject.getRangeAt(0);
+		var fragment = range.cloneContents();
+		var div = content.document.createElement("div");
+		div.appendChild(fragment);
+		var text = this.getTextWithoutFurigana(div, FuriganaInjector.getPref("process_link_text"));
+		Utilities.copyTextToClipBoard(text);
 	}
 
 };
@@ -646,9 +726,142 @@ var FuriganaInjectorPrefsObserver =	{
 		switch (aData) {
 		case "exclusion_kanji":
 			VocabAdjuster.flagSimpleKanjiListForReset();
+			var ignore = VocabAdjuster.getSimpleKanjiList();	//To re-initialize VocabAdjuster._simpleKanjiList
 			break;
 		//case "auto_process_all_pages":
 		//	break;
 		}
 	}
 }
+
+/******************************************************************************
+ *	Clipboard Monitor
+ ******************************************************************************/
+var ClipboardMonitor = {
+	timer: null,
+	previousText: "",
+
+	doit: function(flag) {
+		var text = "";
+		if (flag) {
+			// turn monitoring on
+			ClipboardMonitor.previousText = Utilities.getTextFromClipboard();
+			ClipboardMonitor.timer = setInterval(function () {
+						//get text from clipboard. if text hasn't changed ignore it, else paste it into the document
+						text = Utilities.getTextFromClipboard();
+						if (text !== ClipboardMonitor.previousText) {
+							ClipboardMonitor.previousText = text;
+							ClipboardMonitor.appendText(text);
+						}
+					}, 200);
+		} else {
+			// turn monitoring off
+			if (ClipboardMonitor.timer) clearInterval(ClipboardMonitor.timer);
+		}
+	},
+
+	appendText: function(text) {
+		var p = content.document.createElement("p");
+		var textWithRuby = RubyInserter.textToRuby(text, FuriganaInjector.getReadings(text));
+		p.innerHTML = textWithRuby;
+		content.document.body.appendChild(p);
+		content.scrollTo(content.scrollMaxX, content.scrollMaxY);
+	},
+};
+
+/****var RubyInserter = {
+	textToRuby: function(data, matchingInstances) {
+		var posStart = 0;
+		var posEnd = 0;
+		var textWithRuby = [];
+		var mi;
+
+		for (var i = 0, len = matchingInstances.length; i < len; ++i) {
+			mi = matchingInstances[i];
+			// skip whitespace: single space, tab, vertical tab, form feed, carriage return, or newline
+			while (data[posEnd].match(/[ \t\v\f\r\n]/)) {
+				++posEnd;
+			}
+			if (mi.yomi.length === 0) { // skip mi without yomi
+				posEnd += mi.length;
+				continue;
+			}
+			else { // mi has yomi create ruby from yomi
+				textWithRuby.push(Utilities.escapeHTML(data.slice(posStart, posEnd))); // push text before ruby
+				textWithRuby.push(this.createRuby(mi.word, mi.yomi)); // push ruby string
+				posEnd += mi.length;
+				posStart = posEnd; // collapse range
+			}
+		}
+		textWithRuby.push(Utilities.escapeHTML(data.slice(posStart, data.length)));
+		return textWithRuby.join("");
+	},
+
+	createRuby: function(rb_vals, rt_vals) {
+		return "<ruby moz-ruby-parsed='done'><rb>" + rb_vals + "</rb><rp>(</rp><rt>" +
+		       rt_vals + "</rt><rp>)</rp></ruby>";
+	},
+}; ****/
+
+
+/******************************************************************************
+ *	"Utilities object 
+ ******************************************************************************/
+var Utilities = {
+	log: function(msg) {
+		var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
+			.getService(Components.interfaces.nsIConsoleService);
+		consoleService.logStringMessage(msg);
+	},
+
+	getTextFromClipboard: function() {
+		try {
+			var clip  = Components.classes["@mozilla.org/widget/clipboard;1"].getService(Components.interfaces.nsIClipboard);
+			var trans = Components.classes["@mozilla.org/widget/transferable;1"].createInstance(Components.interfaces.nsITransferable);
+
+			trans.addDataFlavor("text/unicode");
+			clip.getData(trans, clip.kGlobalClipboard);
+
+			var str = new Object();
+			var strLength = new Object();
+			var text = "";
+
+			trans.getTransferData("text/unicode", str, strLength);
+			str = str.value.QueryInterface(Components.interfaces.nsISupportsString);
+			text = str.data.substring(0, strLength.value / 2);
+			return text;
+
+		} catch(err) {
+			return "";
+		}
+	},
+	
+	copyTextToClipBoard: function(text) {
+		try {
+			var str = Components.classes["@mozilla.org/supports-string;1"].
+				createInstance(Components.interfaces.nsISupportsString);
+
+			str.data = text;
+
+			var trans = Components.classes["@mozilla.org/widget/transferable;1"].
+				createInstance(Components.interfaces.nsITransferable);
+
+			trans.addDataFlavor("text/unicode");
+			trans.setTransferData("text/unicode", str, text.length * 2);
+
+			var clipid = Components.interfaces.nsIClipboard;
+			var clip = Components.classes["@mozilla.org/widget/clipboard;1"].getService(clipid);
+
+			clip.setData(trans, null, clipid.kGlobalClipboard);
+
+		} catch(err) {
+			return false;
+		}
+	}
+
+	/*escapeHTML: function (str) {
+		return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		//.replace(/"/g, '&quot;');
+	},*/
+};
+
