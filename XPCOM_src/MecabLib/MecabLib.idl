@@ -1,8 +1,0 @@
-#include "nsISupports.idl"
-
-[scriptable, uuid(7b35a120-3c72-11dd-a51e-c7b255d89593)]
-interface iMecabLib : nsISupports {
-	boolean createTagger(in AString arguments);
-	boolean parseToNode(in AString text);
-	boolean getNext(out AString surface, out AString feature, out unsigned long length);
-};
