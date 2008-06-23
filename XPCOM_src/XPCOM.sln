@@ -1,5 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YomikataDictionary", "YomikataDictionary\YomikataDictionary.vcproj", "{07323043-98F5-4A2B-AA92-CF9090ACF776}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MecabLib", "MecabLib\MecabLib.vcproj", "{DDB580C7-104F-4208-AFAF-370E70BCB3B5}"
 EndProject
 Global
@@ -8,6 +10,10 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{07323043-98F5-4A2B-AA92-CF9090ACF776}.Debug|Win32.ActiveCfg = Debug|Win32
+		{07323043-98F5-4A2B-AA92-CF9090ACF776}.Debug|Win32.Build.0 = Debug|Win32
+		{07323043-98F5-4A2B-AA92-CF9090ACF776}.Release|Win32.ActiveCfg = Release|Win32
+		{07323043-98F5-4A2B-AA92-CF9090ACF776}.Release|Win32.Build.0 = Release|Win32
 		{DDB580C7-104F-4208-AFAF-370E70BCB3B5}.Debug|Win32.ActiveCfg = Debug|Win32
 		{DDB580C7-104F-4208-AFAF-370E70BCB3B5}.Debug|Win32.Build.0 = Debug|Win32
 		{DDB580C7-104F-4208-AFAF-370E70BCB3B5}.Release|Win32.ActiveCfg = Release|Win32

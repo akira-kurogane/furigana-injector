@@ -4,8 +4,6 @@
 <!ENTITY InjectFuriganaWholePage.accesskey "d">
 <!ENTITY RemoveFuriganaWholePage.label "Retirer les furigana">
 <!ENTITY RemoveFuriganaWholePage.accesskey "R">
-<!ENTITY CopyWithoutFurigana.label "Copy Without FuriganaXXXXXXXXX">
-<!ENTITY CopyWithoutFurigana.accesskey "C">
 
 <!ENTITY fi_help_welcome.label "Page d'accueil ...">
 <!ENTITY fi_help_welcome.accesskey "a">
@@ -15,5 +13,3 @@
 <!ENTITY fi_open_options.accesskey "O">
 <!ENTITY fi_process_link_text.label "Inclure les liens">
 <!ENTITY fi_process_link_text.accesskey "l">
-<!ENTITY fi_monitor_clipboard.label "Monitor ClipboardXXXXXXXXXX">
-<!ENTITY fi_monitor_clipboard.accesskey "M">

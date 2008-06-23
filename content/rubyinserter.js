@@ -73,8 +73,8 @@ var RubyInserter = {
 				dummyParent.insertBefore(RubyInserter.newRubyElement(ownerDocument, rb_vals, rt_vals), followingTextNode);
 				continue;	//next mi
 			}
-			//dump("Programming Error- unmatched pattern type for word " + mi.word + "/" + mi.yomi + "\n");
-			Utilities.log("Programming Error- unmatched pattern type for word " + mi.word + "/" + mi.yomi + "\n");
+
+			dump("Programming Error- unmatched pattern type for word " + mi.word + "/" + mi.yomi + "\n");
 			dummyParent.insertBefore(RubyInserter.newRubyElement(ownerDocument, mi.word, mi.yomi), followingTextNode);
 			
 		}

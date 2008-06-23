@@ -28,20 +28,17 @@
 		<command id="toggle-whole-page-command" oncommand="if (FuriganaInjector.currentContentProcessed()) { FuriganaInjector.revertAllRubys(); } else { FuriganaInjector.processWholeDocument(); }" />
 		<command id="remove-page-furigana-command" oncommand="FuriganaInjector.revertAllRubys();" />
 		<command id="open-tests-window-command" oncommand="FuriganaInjectorUnitTester.openTestTab();" />
-		<command id="copy-without-furigana-command" oncommand="FuriganaInjector.copyWithoutFurigana();" />
 	</commandset>
 
 	<popup id="contentAreaContextMenu"><!-- "contentAreaContextMenu" is a merge point -->
-		<menuitem id="open-tests-window-menuitem" label="Furigana Injector Tests" 
-			command="open-tests-window-command" hidden="true" />
+		<menuitem id="open-tests-window-menuitem" label="Furigana Injector Tests"  
+			command="open-tests-window-command" insertafter="context-stop" hidden="true" />
 		<menuitem id="remove-page-furigana-context-menuitem" label="&RemoveFuriganaWholePage.label;" accesskey="&RemoveFuriganaWholePage.accesskey;" 
-			command="remove-page-furigana-command" hidden="true" />
+			command="remove-page-furigana-command" insertafter="context-stop" hidden="true" />
 		<menuitem id="process-whole-page-context-menuitem" label="&InjectFuriganaWholePage.label;" accesskey="&InjectFuriganaWholePage.accesskey;" 
-			command="process-whole-page-command" />
+			command="process-whole-page-command" insertafter="context-stop" />
 		<menuitem id="process-context-section-context-menuitem" label="&InjectContextFurigana.label;" accesskey="&InjectContextFurigana.accesskey;" 
-			command="process-context-section-command"/>
-		<menuitem id="copy-without-furigana" label="&CopyWithoutFurigana.label;" accesskey="&CopyWithoutFurigana.accesskey;" 
-			command="copy-without-furigana-command" />
+			command="process-context-section-command" insertafter="context-stop" />
 	</popup>
 
 	<statusbar id="status-bar"><!-- "status-bar" is a merge point -->
@@ -50,16 +47,14 @@
 			context="status-icon-context-menu" /><!-- N.B. the icon is controlled by CSS. The custom "processing_state" attribute is important. -->
 			<!-- N.B. using "if (event.button != 2) ..." is hack way of detecting context click. Will not work for macintosh, obviously -->
 		<menupopup id="status-icon-context-menu" onpopupshowing="FuriganaInjector.initStatusbarPopup();" position="before_start">
-			<menuitem id="fi-open-install-welcome-menuitem" label="&fi_help_welcome.label;" accesskey="&fi_help_welcome.accesskey;" 
+			<menuitem id="fi-open-install-welcome-menuitem" label="&fi_help_welcome.label;" accesskey="&fi_help_welcome.accesskey;"
 				oncommand="InstallationWelcomeFX.addTabWithLoadListener()" />
-			<menuitem id="fi-process-all-pages-menuitem" type="checkbox" label="&fi_process_all_pages.label;" accesskey="&fi_process_all_pages.accesskey;" 
-				oncommand="FuriganaInjector.setPref('auto_process_all_pages', this.hasAttribute('checked'))" />
-			<menuitem id="fi-process-link-text-menuitem" type="checkbox" label="&fi_process_link_text.label;" accesskey="&fi_process_link_text.accesskey;" 
-				oncommand="FuriganaInjector.setPref('process_link_text', this.hasAttribute('checked'))" />
-			<menuitem id="fi-open-options-menuitem" label="&fi_open_options.label;" accesskey="&fi_open_options.accesskey;" 
+			<menuitem id="fi-process-all-pages-menuitem" type="checkbox" label="&fi_process_all_pages.label;" accesskey="&fi_process_all_pages.accesskey;"
+				oncommand="FuriganaInjector.setPref('auto_process_all_pages', this.hasAttribute('checked'))"	/>
+			<menuitem id="fi-process-link-text-menuitem" type="checkbox" label="&fi_process_link_text.label;" accesskey="&fi_process_link_text.accesskey;"
+				oncommand="FuriganaInjector.setPref('process_link_text', this.hasAttribute('checked'))" />			
+			<menuitem id="fi-open-options-menuitem" label="&fi_open_options.label;" accesskey="&fi_open_options.accesskey;"
 				oncommand="FuriganaInjector.openOptionsWindow()" />
-			<menuitem id="fi-monitor-clipboard-menuitem" type="checkbox" label="&fi_monitor_clipboard.label;" accesskey="&fi_monitor_clipboard.accesskey;" 
-				oncommand="ClipboardMonitor.doit(this.hasAttribute('checked'))" />
 		</menupopup>
 	</statusbar>
   
