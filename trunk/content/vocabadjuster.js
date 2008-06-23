@@ -19,7 +19,6 @@ var VocabAdjuster = {
 		return true;
 	}, 
 
-	/*  *** Old YomikataDictionary-era routines *** To delete ***
 	removeSimpleWordsFromDictMatches: function(dictMatches) {
 		var ignore = this.getSimpleKanjiList();	//just to make sure this._simpleKanjiList is initialized for tooEasy()
 		replacementArray = [];
@@ -52,7 +51,7 @@ var VocabAdjuster = {
 			}
 		}
 		return matchingTextNodeInstances;
-	}, */
+	}, 
 	
 	addKanjiToExclusionList: function(kanjiChar) {
 		var temp_pref_string = FuriganaInjector.getPref("exclusion_kanji");

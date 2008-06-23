@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+ xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
     <em:id>furiganainjector@yayakoshi.net</em:id>
-		<em:version>0.9</em:version>
+	<em:version>0.8</em:version>
 	<em:name>Furigana Injector</em:name>
 	<em:description>Looks up the readings for kanji words and inserts them as furigana.</em:description>
 	<em:creator>Akira Kurogane</em:creator>
-	<em:developer>zorkzero@hotmail.com</em:developer>
 	<em:homepageURL>http://code.google.com/p/furigana-injector/</em:homepageURL>
 	<em:optionsURL>chrome://furiganainjector/content/options.xul</em:optionsURL>
+	<em:contributor>Electronic Dictionary Research and Development Group, Monash University</em:contributor>
 	<em:iconURL>chrome://furiganainjector/content/furigana_logo_32_32.png</em:iconURL>
 	<em:localized><!-- em:localized will only work for Gecko 1.9+, i.e. Firefox 3.0+ -->
     	<Description>
