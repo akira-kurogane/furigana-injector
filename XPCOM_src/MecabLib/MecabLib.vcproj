@@ -106,6 +106,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copying DLL to &quot;components&quot; dir"
+				CommandLine="copy $(OutDir)\MecabLib.dll &quot;..\..\components\MecabLib.dll&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -196,7 +198,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="&#x0D;&#x0A;"
+				Description="Copying DLL to &quot;components&quot; dir"
+				CommandLine="copy $(OutDir)\MecabLib.dll &quot;..\..\components\MecabLib.dll&quot;"
 			/>
 		</Configuration>
 	</Configurations>

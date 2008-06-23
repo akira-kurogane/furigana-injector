@@ -46,7 +46,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\boost_1_34_1;..\gecko-sdk\include;..\gecko-sdk\idl"
+				AdditionalIncludeDirectories="..\boost_1_35_0;..\gecko-sdk\include;..\gecko-sdk\idl"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -74,7 +74,7 @@
 				AdditionalDependencies="xpcomglue_s.lib xpcom.lib nspr4.lib"
 				OutputFile="$(OutDir)/YomikataDictionary.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\boost_1_34_1\lib;..\gecko-sdk\include;..\gecko-sdk\lib"
+				AdditionalLibraryDirectories="..\boost_1_35_0\lib;..\gecko-sdk\include;..\gecko-sdk\lib"
 				IgnoreDefaultLibraryNames="msvcrt.lib"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
@@ -104,6 +104,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copying DLL to &quot;components&quot; dir"
+				CommandLine="copy $(OutDir)\YomikataDictionary.dll &quot;..\..\components\YomikataDictionary.dll&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -136,7 +138,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\boost_1_34_1;..\gecko-sdk\include;..\gecko-sdk\idl"
+				AdditionalIncludeDirectories="..\boost_1_35_0;..\gecko-sdk\include;..\gecko-sdk\idl"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL"
 				RuntimeLibrary="0"
 				TreatWChar_tAsBuiltInType="true"
@@ -162,7 +164,7 @@
 				AdditionalDependencies="xpcomglue_s.lib xpcom.lib nspr4.lib"
 				OutputFile="$(OutDir)/YomikataDictionary.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\boost_1_34_1\lib;..\gecko-sdk\include;..\gecko-sdk\lib"
+				AdditionalLibraryDirectories="..\boost_1_35_0\lib;..\gecko-sdk\include;..\gecko-sdk\lib"
 				IgnoreDefaultLibraryNames="msvcrt.lib"
 				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
@@ -194,7 +196,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(OutDir)\YomikataDictionary.dll &quot;D:\dev\ruby_furigana\furiganainjector\components\YomikataDictionary.dll&quot;&#x0D;&#x0A;"
+				Description="Copying DLL to &quot;components&quot; dir"
+				CommandLine="copy $(OutDir)\YomikataDictionary.dll &quot;..\..\components\YomikataDictionary.dll&quot;"
 			/>
 		</Configuration>
 	</Configurations>
