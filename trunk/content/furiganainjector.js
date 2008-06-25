@@ -37,12 +37,13 @@ var FuriganaInjector = {
 			this.initialized = false;
 			return;
 		}
-		dump("YomikataDictionary loaded\n");
+		//dump("YomikataDictionary loaded\n");
 		
 		//Devnote: element "appcontent" is defined by Firefox. Use "messagepane" for Thunderbird
 		document.getElementById("appcontent").addEventListener("DOMContentLoaded", this.onPageLoad, true);
 		
 		getBrowser().addProgressListener(FuriganaInjectorWebProgressListener, Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+		getBrowser().tabContainer.addEventListener("TabSelect", this.onTabSelectionChange, false);
 
 		this.prefs = Components.classes["@mozilla.org/preferences-service;1"].
 			getService(Components.interfaces.nsIPrefService).getBranch("extensions.furiganainjector.");
@@ -59,12 +60,13 @@ var FuriganaInjector = {
 		} catch (err) {
 			dump("There was an error setting the visibility of the 'open-tests-window-menuitem' object. Debug and fix.\n");
 		}
-		dump("Event listener, prefs stuff finished\n");
+		//dump("Event listener, prefs stuff finished\n");
 	},
 	
 	onUnload: function() {
 		FuriganaInjectorPrefsObserver.unregister();
 		getBrowser().removeProgressListener(FuriganaInjectorWebProgressListener);
+		getBrowser().tabContainer.removeProgressListener(this.onTabSelectionChange);
 		document.getElementById("appcontent").removeEventListener("DOMContentLoaded", this.onPageLoad, true);
 		document.getElementById("contentAreaContextMenu").removeEventListener("popupshowing", this.onShowContextMenu, false);
 		document.getElementById("contentAreaContextMenu").removeEventListener("popuphidden", this.onHideContextMenu, false);
@@ -78,6 +80,14 @@ var FuriganaInjector = {
 	},
 	
 	onWindowProgressStateStop: function(aProgress, aRequest, aStatus) {
+		FuriganaInjector.setCurrentStatusIconAndCmdModes();
+	},
+	
+	onTabSelectionChange: function(event) {
+		FuriganaInjector.setCurrentStatusIconAndCmdModes();
+	},
+	
+	setCurrentStatusIconAndCmdModes: function() {
 		if(content.document.contentType == "text/html") {
 			var alreadyProcessed = FuriganaInjector.currentContentProcessed() === true;
 			FuriganaInjector.setStatusIcon(alreadyProcessed ? "processed" : "default");

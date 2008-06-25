@@ -3,5 +3,6 @@ locale	furiganainjector	en	locale/en/
 locale	furiganainjector	de	locale/de/
 locale	furiganainjector	fr	locale/fr/
 locale	furiganainjector	it	locale/it/
+locale	furiganainjector	pl	locale/pl/
 skin	furiganainjector	classic/1.0	skin/
 overlay	chrome://browser/content/browser.xul	chrome://furiganainjector/content/overlay.xul
