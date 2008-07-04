@@ -13,7 +13,8 @@
 		<em:localized><!-- em:localized will only work for Gecko 1.9+, i.e. Firefox 3.0+ -->
 			<Description>
 				<em:locale>de</em:locale>
-				<em:description>Sucht die Lesungen fur Kanji heraus und fugt sie als Furigana ein.</em:description>
+				<em:name>Furigana Injector</em:name>
+				<em:description>Sucht die Lesungen fur Kanji heraus und fügt sie als Furigana ein.</em:description>
 				<em:translator>Daniel Haferkorn</em:translator>
 			</Description>
 		</em:localized>
