@@ -3,17 +3,18 @@
 <!DOCTYPE overlay SYSTEM "chrome://furiganainjector/locale/furiganainjector.dtd">
 <overlay id="furiganainjector-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
+	<script src="fimecabparser.js"/>
 	<script src="furiganainjector.js"/>
 	<script src="kanjidict.js"/>
 	<script src="rubyinserter.js"/>
 	<script src="vocabadjuster.js"/>
 	<!-- It would be more ideal if the javascipt below could be loaded dynamically. It's only used in dev testing-->
 	<script src="unittests/unittester.js"/>
+	<!--script src="unittests/fimecabparser.js"/-->
 	<script src="unittests/furiganainjector.js"/>
 	<script src="unittests/kanjidict.js"/>
 	<script src="unittests/rubyinserter.js"/>
 	<script src="unittests/vocabadjuster.js"/>
-	<script src="unittests/yomikatadict.js"/>
 	<!-- end of javascipt that is only used for dev testing-->
 	<script src="user_guides/install_welcome.js"/>
 	<script src="overlay.js"/>

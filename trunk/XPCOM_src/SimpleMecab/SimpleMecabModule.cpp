@@ -1,15 +1,11 @@
 #include "nsIGenericFactory.h"
-/*#include "nsCOMPtr.h"
-#include "nsIServiceManager.h"
-#include "nsICategoryManager.h"
-#include "nsMemory.h"*/
 
-#include "YomikataDictionary.h"
+#include "SimpleMecab.h"
 
-NS_GENERIC_FACTORY_CONSTRUCTOR(YomikataDictionary);
+NS_GENERIC_FACTORY_CONSTRUCTOR(SimpleMecab);
 
 
-static NS_METHOD nsYomikataDictionaryRegistrationProc(nsIComponentManager *aCompMgr,
+static NS_METHOD nsSimpleMecabRegistrationProc(nsIComponentManager *aCompMgr,
 	nsIFile *aPath, const char *registryLocation, const char *componentType, const nsModuleComponentInfo *info) {
 
 	/*nsresult rv;
@@ -25,14 +21,14 @@ static NS_METHOD nsYomikataDictionaryRegistrationProc(nsIComponentManager *aComp
 		return rv;
 
 	char* previous = nsnull;
-	rv = catmgr->AddCategoryEntry("xpcom-startup", "YomikataDictionary", YOMIKATADICTIONARY_CONTRACTID, PR_TRUE, PR_TRUE, &previous);
+	rv = catmgr->AddCategoryEntry("xpcom-startup", "SimpleMecab", SIMPLEMECAB_CONTRACTID, PR_TRUE, PR_TRUE, &previous);
 	if (previous)
 		nsMemory::Free(previous);
 	return rv;*/
 	return NS_OK;
 }
 
-static NS_METHOD nsYomikataDictionaryUnregistrationProc(nsIComponentManager *aCompMgr, nsIFile *aPath,
+static NS_METHOD nsSimpleMecabUnregistrationProc(nsIComponentManager *aCompMgr, nsIFile *aPath,
 	const char *registryLocation, const nsModuleComponentInfo *info) {
 
 	/*nsresult rv;
@@ -47,18 +43,18 @@ static NS_METHOD nsYomikataDictionaryUnregistrationProc(nsIComponentManager *aCo
 	if (NS_FAILED(rv))
 		return rv;
 
-	rv = catmgr->DeleteCategoryEntry("xpcom-startup", "YomikataDictionary", PR_TRUE);
+	rv = catmgr->DeleteCategoryEntry("xpcom-startup", "SimpleMecab", PR_TRUE);
 	return rv;*/
 	return NS_OK;
 }
 
 static const nsModuleComponentInfo components[] = {
-  { "Yomikata dictionary",
-    YOMIKATADICTIONARY_CID,
-    YOMIKATADICTIONARY_CONTRACTID,
-    YomikataDictionaryConstructor
+  { "Simple MeCab library wrapper",
+    SIMPLMECAB_CID,
+    SIMPLEMECAB_CONTRACTID,
+    SimpleMecabConstructor
   }
 };
 
-NS_IMPL_NSGETMODULE(YomikataDictionary, components)
+NS_IMPL_NSGETMODULE(SimpleMecab, components)
 
