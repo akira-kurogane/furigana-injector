@@ -1,9 +1,0 @@
-#include "nsISupports.idl"
-#include "nsILocalFile.idl"
-
-[scriptable, uuid(1f545cdb-e3b7-401d-a229-02588ec1aac1)]
-interface iYomikataDictionary : nsISupports {
-	boolean loadFromFile(in nsILocalFile dict_file_ref);
-	AString findExact(in AString search_word);
-	AString findLongestMatch(in AString search_word, out short match_length);
-};

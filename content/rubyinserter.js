@@ -3,18 +3,6 @@
 var RubyInserter = {
 
 	replaceTextNode: function(ownerDocument, origTextNode, matchingInstances) {
-		var kPat = VocabAdjuster.kanjiPattern;
-		var hPat = VocabAdjuster.hiraganaPattern;
-		var hkPat = VocabAdjuster.kanjiHiraganaPattern;
-		var kMixRegex = new RegExp("^(" + kPat + "+)$");
-		var khMixRegex = new RegExp("^(" + kPat + "+)(" + hPat +"+)$");
-		var khkMixRegex = new RegExp("^(" + kPat + "+)(" + hPat +"+)(" + kPat +"+)$");
-		var khkhMixRegex = new RegExp("^(" + kPat + "+)(" + hPat +"+)(" + kPat +"+)(" + hPat +"+)$");
-		//Todo: change this to a very long k+h+k+?h+?k+?h+? ... pattern, and use it as far as it matches?
-		var regexResult;
-		var rb_vals;
-		var rt_vals;
-		
 		var targetParent = origTextNode.parentNode;
 		var dummyParent = ownerDocument.createElement("div");
 		var mi;
@@ -40,41 +28,60 @@ var RubyInserter = {
 			currTextNode.deleteData(word_offset, mi.word.length);
 			followingTextNode = currTextNode.splitText(word_offset);
 			
-			regexResult = kMixRegex.exec(mi.word);
+			var regexResult = mi.word.match(/[\u3400-\u9FBF][\u3005\u3400-\u9FBF]*$/);
 			if (regexResult) {
 				dummyParent.insertBefore(RubyInserter.newRubyElement(ownerDocument, mi.word, mi.yomi), followingTextNode);
 				continue;	//next mi
 			}
 			
-			regexResult = khMixRegex.exec(mi.word);
-			if (regexResult) {
-				rb_vals = regexResult.slice(1, 3);
-				rt_vals = [ mi.yomi.substr(0, mi.yomi.length - regexResult[2].length), ""];
-				dummyParent.insertBefore(RubyInserter.newRubyElement(ownerDocument, rb_vals, rt_vals), followingTextNode);
+			//TODO: Remove or disable this check once development is stable.
+			var yomiCheckRegex = new RegExp("^" + mi.word.replace(/([\u3400-\u9FBF][\u3005\u3400-\u9FBF]*)/g, ".+") + "$");
+			if (!mi.yomi.match(yomiCheckRegex)) {
+				FIMecabParser.consoleService.logStringMessage("The yomi \"" + mi.yomi + "\" doesn't seem to be compatible with the word \"" + mi.word + "\"");
 				continue;	//next mi
 			}
-			
-			regexResult = khkMixRegex.exec(mi.word);
-			if (regexResult) {
-				rb_vals = regexResult.slice(1, 4);	//[K1, h2, K3]
-				rt_vals = mi.yomi.split(regexResult[2]);	//[h1, h3]
-				rt_vals = rt_vals.splice(1, 0, "");	//[h1, "", h3]
-				dummyParent.insertBefore(RubyInserter.newRubyElement(ownerDocument, rb_vals, rt_vals), followingTextNode);
-				continue;	//next mi
-			}
-			
-			regexResult = khkhMixRegex.exec(mi.word);
-			if (regexResult) {
-				rb_vals = regexResult.slice(1, 5);	//[K1, h2, K3, h4]
-				rt_vals = mi.yomi.substr(0, mi.yomi.length - regexResult[4].length).split(regexResult[2]);	//[h1, h3]
-				//N.B. design flaw: the above will fail if H2 occurs within the yomi of K1.
-				rt_vals.splice(1, 0, "");	//[h1, "", h3]
-				rt_vals[3] = "";	//[h1, "", h3, ""]
+
+			var kanjiSubStrs = mi.word.match(/([\u3400-\u9FBF][\u3005\u3400-\u9FBF]*)/g)
+			if (kanjiSubStrs) {
+				var rb_vals = [];
+				var rt_vals = [];
+				var tempWord = mi.word;
+				var tempYomi = mi.yomi;
+				var kanjiStartPos;
+				var nextKanjiStartPos;
+				var followingOkurigana;
+				for (var x = 0; x < kanjiSubStrs.length; x++) {
+					kanjiStartPos = tempWord.indexOf(kanjiSubStrs[x]);
+					if (kanjiStartPos > 0) {	//non-kanji substring in tempWord before the kanji word
+						rb_vals.push(tempWord.substr(0, kanjiStartPos));
+						rt_vals.push("");
+						tempWord = tempWord.substring(kanjiStartPos);	//delete tempWord up to that length
+						tempYomi = tempYomi.substring(kanjiStartPos);	//delete tempYomi up to that length
+					}
+					if (x < kanjiSubStrs.length - 1) {
+						nextKanjiStartPos = tempWord.indexOf(kanjiSubStrs[x + 1]);
+						followingOkurigana = tempWord.substring(kanjiSubStrs[x].length, nextKanjiStartPos);
+						rb_vals.push(kanjiSubStrs[x]);
+						rt_vals.push(tempYomi.substring(0, tempYomi.indexOf(followingOkurigana)));
+						rb_vals.push(tempWord.substring(kanjiSubStrs[x].length, nextKanjiStartPos));
+						rt_vals.push("");
+						tempWord = tempWord.substring(nextKanjiStartPos);	//delete tempWord up to that length
+						tempYomi = tempYomi.substring(tempYomi.indexOf(followingOkurigana) + followingOkurigana.length);	//delete tempYomi up to that length
+					} else {
+						rb_vals.push(kanjiSubStrs[x]);
+						tempWord = tempWord.substring(kanjiSubStrs[x].length);
+						rt_vals.push(tempYomi.substring(0, tempYomi.length - tempWord.length));
+						rb_vals.push(tempWord);	//non-kanji trailing part
+						rt_vals.push("");
+					}
+				}
+//FIMecabParser.consoleService.logStringMessage("final rbs = [\"" + rb_vals.join("\", \"") + "\"] and rts = [\"" + rt_vals.join("\", \"") + "\"]");
 				dummyParent.insertBefore(RubyInserter.newRubyElement(ownerDocument, rb_vals, rt_vals), followingTextNode);
 				continue;	//next mi
 			}
 
-			dump("Programming Error- unmatched pattern type for word " + mi.word + "/" + mi.yomi + "\n");
+			//dump("Programming Error- unmatched pattern type for word " + mi.word + "/" + mi.yomi + "\n");
+FIMecabParser.consoleService.logStringMessage("Programming Error- unmatched pattern type for word " + mi.word + "/" + mi.yomi + "\n");
 			dummyParent.insertBefore(RubyInserter.newRubyElement(ownerDocument, mi.word, mi.yomi), followingTextNode);
 			
 		}

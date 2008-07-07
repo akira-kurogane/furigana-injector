@@ -1,0 +1,30 @@
+DEPTH		= ../../../..
+topsrcdir	= @top_srcdir@
+srcdir		= @srcdir@
+VPATH		= @srcdir@
+
+include $(DEPTH)/config/autoconf.mk
+
+IS_COMPONENT = 1
+
+MODULE = furiganainjector
+LIBRARY_NAME =  SimpleMecab
+USE_STATIC_LIBS = 1
+
+XPI_NAME = furiganainjector
+
+REQUIRES	= xpcom \
+		  string \
+		  $(NULL)
+
+CPPSRCS		= \
+		  SimpleMecabModule.cpp \
+		  SimpleMecab.cpp \
+		  $(NULL)
+
+include $(topsrcdir)/config/rules.mk
+
+EXTRA_DSO_LDOPTS += \
+  $(XPCOM_GLUE_LDOPTS) \
+  $(NSPR_LIBS) \
+  $(NULL)
