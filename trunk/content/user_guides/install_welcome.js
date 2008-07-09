@@ -35,7 +35,11 @@ var InstallationWelcomeFX = {
 						"page, or their styles could not be set");
 				}
 			}
-			var XHTML_Ruby_Support_div = content.document.getElementById("XHTML_Ruby_Support_div");
+			var Mecab_Lib_div = content.document.getElementById("Mecab_Lib_div");
+			if (Mecab_Lib_div && window.FIMecabParser && FIMecabParser.initialized) {
+				Mecab_Lib_div.style.display = "none";
+			}
+			
 			var sbPanel = document.getElementById("furiganainjector-statusbarpanel");
 			var attentionArrowImg = content.document.getElementById("sb_icon_indicator_img");
 			var attentionArrowTipInset = 10;	//hardcoded for simplicity.
