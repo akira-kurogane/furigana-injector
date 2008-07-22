@@ -1,7 +1,7 @@
 #summary How to install MeCab on Linux
 #labels Phase-Deploy
 
-_([MecabInstallationWindows Windows] [MecabInstallationMacOSX Mac])_
+_([MecabInstallationWindows Windows instructions],  [MecabInstallationMacOSX Mac instructions])_
 
 === Installing from package ===
 
@@ -9,11 +9,32 @@ _([MecabInstallationWindows Windows] [MecabInstallationMacOSX Mac])_
 
 === Building from source ===
 
-  The source can be obtained .... TODO
+  The source can be obtained from the [http://mecab.sourceforge.net/src official MeCab downloads page]. *Two* packages are required, the "mecab" and "mecab-ipadic". These are `*`.tar.gz archives that contain the typical configure and make scripts. Per the advice on the !MeCab homepage:
+
+==== Main package ====
+{{{
+ % tar zxfv mecab-X.X.tar.gz
+ % cd mecab-X.X
+ % ./configure --with-charset=utf
+ % make
+ % make check
+ % su
+ # make install
+}}}
+
+==== Dictionary package ====
+{{{
+% tar zxfv mecab-ipadic-2.7.0-XXXX.tar.gz
+% mecab-ipadic-2.7.0-XXXX
+% ./configure --with-charset=utf8
+% make
+% su
+# make install
+}}}
 
 === Choice of dictionary encoding ===
 
-  Although `*`-sjis and `*`-eucjp packages for the dictionary files may exist, or configure options to build them from source do exist if building from source, for Furigana Injector you *must use the UTF-8 dictionary*.
+  Although sjis and eucjp config options (or prepared packages) for the dictionary files may exist, for Furigana Injector you *must use the UTF-8 dictionary*.
 
 === This advice is new- comments required ==
 
