@@ -1,8 +1,8 @@
 #summary MeCab
 
-== Official site for MeCab ==
+=== Official site for !MeCab ===
 
-http://mecab.sourceforge.net/ (Nihongo only)
+  [http://mecab.sourceforge.net/ http://mecab.sourceforge.net/] (Nihongo only)
 
 = Details =
 
