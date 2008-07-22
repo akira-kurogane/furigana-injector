@@ -1,17 +1,21 @@
-#summary MeCab
+#summary MeCab. Japanese morphology-analyzing library.
 
-=== Official site for !MeCab ===
+  [http://mecab.sourceforge.net/ Official site for !MeCab] (Nihongo only).
 
-  [http://mecab.sourceforge.net/ http://mecab.sourceforge.net/] (Nihongo only)
+  MeCab is a text-parsing engine that splits Japanese text into it's separate morphemes. For example the sentence 「このような例は極端かもしれない」 will be split into these morphemes:
 
-= Details =
+||Morpheme:||この||よう||な||例||は||極端||かも||しれ||ない||
+||Reading: ||  ||  ||  ||れい||  ||きょくたん||  ||  ||  ||
+||         ||pre-noun adj.||noun||aux. verb||noun||particle||noun||particle||verb||aux. verb||
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+  The author of MeCab is Yuuichi Teranishi.
 
-;; Copyright (C) 2005 Yuuichi Teranishi <teranisi@cmc.osaka-u.ac.jp>
+== Installing ==
 
-;; Author: Yuuichi Teranishi
-;; Keywords: Japanese token
+  MeCab must be installed by itself.
+
+  [MecabInstallationWindows Installation on Windows]
+
+  [MecabInstallationMacOSX Installation on Mac OS X]
+
+  [MecabInstallationLinux Installation on Linux]
