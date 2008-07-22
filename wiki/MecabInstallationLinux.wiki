@@ -1,0 +1,9 @@
+#summary How to install MeCab on Linux
+
+=== Download/Build ===
+
+  Linux users should try to find a "mecab" and "mecab-ipadic" (might be "mecab-ipadic-utf8") rpm package for their distribution before trying to build from source, naturally. E.g. Fedora users can "yum install mecab mecab-ipadic". Those who build from source must use the utf-8 options when configuring.
+
+=== Choice of dictionary encoding ===
+
+  Although `*`-sjis and `*`-eucjp packages for the dictionary files may exist, or configure options to build them from source do exist if building from source, for Furigana Injector you *must use the UTF-8 dictionary*.
