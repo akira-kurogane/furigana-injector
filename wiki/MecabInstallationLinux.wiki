@@ -1,9 +1,19 @@
 #summary How to install MeCab on Linux
 
-=== Download/Build ===
+=== Installing from package ===
 
   Linux users should try to find a "mecab" and "mecab-ipadic" (might be "mecab-ipadic-utf8") rpm package for their distribution before trying to build from source, naturally. E.g. Fedora users can "yum install mecab mecab-ipadic". Those who build from source must use the utf-8 options when configuring.
+
+=== Building from source ===
+
+  The source can be obtained .... TODO
 
 === Choice of dictionary encoding ===
 
   Although `*`-sjis and `*`-eucjp packages for the dictionary files may exist, or configure options to build them from source do exist if building from source, for Furigana Injector you *must use the UTF-8 dictionary*.
+
+=== This advice is new- comments required ==
+
+  Linux users, *your help is required* to confirm the installation instructions above are complete for your distribution. Please attach comments below if you have an different example (e.g. you know a more suitable package that is available
+
+  If you can install MeCab okay but the Furigana Injector extension gives an error on starting firefox (e.g. 'XPCOM module could no be loaded'), please email "akira" at "yayakoshi" dot net rather than just leaving a comment.
