@@ -1,0 +1,17 @@
+#summary MeCab
+
+== Official site for MeCab ==
+
+http://mecab.sourceforge.net/ (Nihongo only)
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
+
+;; Copyright (C) 2005 Yuuichi Teranishi <teranisi@cmc.osaka-u.ac.jp>
+
+;; Author: Yuuichi Teranishi
+;; Keywords: Japanese token
