@@ -12,10 +12,8 @@
 
 == Installing ==
 
-  !MeCab must be installed by itself.
+  !MeCab is installed separately of any client software that runs it, e.g. Furigana Injector. A dynamic lib, a few command-line executables, and a large dictionary file are installed to disk.
 
-  [MecabInstallationWindows Installation on Windows]
-
-  [MecabInstallationMacOSX Installation on Mac OS X]
-
-  [MecabInstallationLinux Installation on Linux]
+  * [MecabInstallationWindows Windows]
+  * [MecabInstallationMacOSX Mac OS X]
+  * [MecabInstallationLinux Linux]
