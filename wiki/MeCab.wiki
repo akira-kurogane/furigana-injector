@@ -2,7 +2,7 @@
 
   [http://mecab.sourceforge.net/ Official site for MeCab] (Nihongo only).
 
-  MeCab is a text-parsing engine that splits Japanese text into it's separate morphemes. For example the sentence 「このような例は極端かもしれない」 will be split into these morphemes:
+  !MeCab is a text-parsing engine that splits Japanese text into it's separate morphemes. For example the sentence 「このような例は極端かもしれない」 will be split into these morphemes:
 
 ||Morpheme:||この||よう||な||例||は||極端||かも||しれ||ない||
 ||Reading: ||  ||  ||  ||れい||  ||きょくたん||  ||  ||  ||
