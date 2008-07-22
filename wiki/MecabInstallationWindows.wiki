@@ -1,6 +1,10 @@
 #summary How to install MeCab on Windows
 #labels Phase-Deploy
 
+  ([MecabInstallationMacOSX Mac OS X] [MecabInstallationLinux Linux])
+
+=== Download ===
+
   Windows users have a simple installation process for !MeCab. Only one installer file needs to be downloaded: Choose the "mecab-win32" package on the [http://mecab.sourceforge.net/src official MeCab downloads page] and download the "mecab-0.X.X.exe" file. This single installer will install both the MeCab binaries (DLL's and command-line client) and the dictionary.
 
 === Choice of dictionary encoding ===
