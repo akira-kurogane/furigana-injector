@@ -1,6 +1,6 @@
 #summary MeCab. Japanese morphology-analyzing library.
 
-  [http://mecab.sourceforge.net/ Official site for !MeCab] (Nihongo only).
+  [http://mecab.sourceforge.net/ Official site for MeCab] (Nihongo only).
 
   MeCab is a text-parsing engine that splits Japanese text into it's separate morphemes. For example the sentence 「このような例は極端かもしれない」 will be split into these morphemes:
 
