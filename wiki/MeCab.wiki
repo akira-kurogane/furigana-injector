@@ -8,11 +8,11 @@
 ||Reading: ||  ||  ||  ||れい||  ||きょくたん||  ||  ||  ||
 ||         ||pre-noun adj.||noun||aux. verb||noun||particle||noun||particle||verb||aux. verb||
 
-  The author of MeCab is Yuuichi Teranishi.
+  The author of !MeCab is Yuuichi Teranishi.
 
 == Installing ==
 
-  MeCab must be installed by itself.
+  !MeCab must be installed by itself.
 
   [MecabInstallationWindows Installation on Windows]
 
