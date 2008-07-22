@@ -1,4 +1,7 @@
 #summary How to install MeCab on Linux
+#labels Phase-Deploy
+
+_([MecabInstallationWindows Windows] [MecabInstallationMacOSX Mac])_
 
 === Installing from package ===
 
