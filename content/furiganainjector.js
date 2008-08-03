@@ -23,13 +23,6 @@ var FuriganaInjector = {
 			alert ("Major error- the 'fi_strings' file could not be loaded. The Furigana Injector extension will not work without it.");
 			return;
 		}
-	
-		FIMecabParser.init();
-		if (!FIMecabParser.initialized) {
-			this.initialized = false;
-			//this.OnUnload()??
-			return;
-		}
 		
 		//Devnote: element "appcontent" is defined by Firefox. Use "messagepane" for Thunderbird
 		document.getElementById("appcontent").addEventListener("DOMContentLoaded", this.onPageLoad, true);
@@ -40,10 +33,28 @@ var FuriganaInjector = {
 		this.prefs = Components.classes["@mozilla.org/preferences-service;1"].
 			getService(Components.interfaces.nsIPrefService).getBranch("extensions.furiganainjector.");
 		FuriganaInjectorPrefsObserver.register(this.prefs);
+		
+		try{
+			var tempEM = Components.classes["@mozilla.org/extensions/manager;1"].getService(Components.interfaces.nsIExtensionManager);
+			var tempFIAddon = em.getItemForID("furiganainjector@yayakoshi.net");
+			this.setPref("last_version", addon.version);
+		} catch (err) {
+			dump("There was an error retrieving the add-on's version. Debug and fix.\n");
+		}
 	
 		//Devnote: just setting the onpopupshowing attribute in overlay.xul didn't seem to work. Besides, the event object will probably be needed later for context actions
 		document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", this.onShowContextMenu, false);
 		document.getElementById("contentAreaContextMenu").addEventListener("popuphidden", this.onHideContextMenu, false);
+	
+		FIMecabParser.init();
+		if (!FIMecabParser.initialized) {
+			this.initialized = false;
+			this.onUnload();
+			return;
+		}
+		
+		var ignore = VocabAdjuster.getSimpleKanjiList();	//just to make sure VocabAdjuster._simpleKanjiList is initialized for VocabAdjuster.tooEasy()
+		FuriganaInjector.setStatusIcon("default");
 		
 		this.initialized = true;
 		
@@ -52,24 +63,6 @@ var FuriganaInjector = {
 		} catch (err) {
 			dump("There was an error setting the visibility of the 'open-tests-window-menuitem' object. Debug and fix.\n");
 		}
-		//dump("Event listener, prefs stuff finished\n");
-		var ignore = VocabAdjuster.getSimpleKanjiList();	//just to make sure VocabAdjuster._simpleKanjiList is initialized for tooEasy()
-		FuriganaInjector.setStatusIcon("default");
-		/*********** SimpleMecab dev testing ************************ /
-		var surface = new String();
-		var feature = new String();
-		var length = new Number();
-		var readings = [];
-		FIMecabParser.parse("東京から大阪まで");
-		var retVal;
-		do {
-			retVal = FIMecabParser.next(surface, feature, length);
-			if (retVal)
-				dump("\t" + surface.value + ": " + feature.value + ", " + length +"\n");
-			if(surface.value.length === 0) continue; //skip "BOS/EOS"
-		} while(retVal);
-		dump("Finished the parse()\n");
-		/ ************* End of MecabLib dev test section ************/
 	},
 	
 	onUnload: function() {

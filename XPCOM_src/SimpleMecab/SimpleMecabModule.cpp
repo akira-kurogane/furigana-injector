@@ -2,7 +2,7 @@
 
 #include "SimpleMecab.h"
 
-NS_GENERIC_FACTORY_CONSTRUCTOR(SimpleMecab);
+NS_GENERIC_FACTORY_CONSTRUCTOR(SimpleMecab)
 
 
 static NS_METHOD nsSimpleMecabRegistrationProc(nsIComponentManager *aCompMgr,
