@@ -63,6 +63,14 @@ var FIMecabParser = {
 		}
 	},
 
+    dummyParse: function() {
+		try {
+			this.mecabComponent.parse("ダミー文字列");
+		} catch (err) {
+			Components.utils.reportError(err);
+		}
+	},		
+
 	/******************************************************************************
 	 *	XPCOM
 	 ******************************************************************************/
@@ -85,7 +93,7 @@ var FIMecabParser = {
 		this.consoleService.logStringMessage("Mecab library loaded at path = " + myPath + " (version = " + this.mecabComponent.version + ")");
 
 		try {
-			this.mecabComponent.createTagger("");
+			this.mecabComponent.createTagger("");	//this will require a "-d /path/to/dic_dir".
 		} catch(err) {
 			Components.utils.reportError(err);
 			if (this.mecabComponent.error.match(/no such file or directory/)) {
