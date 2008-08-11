@@ -15,25 +15,17 @@ window.addEventListener("unload", function(e) { FuriganaInjector.onUnload(e); },
  ******************************************************************************/
 var tempFirstRunPrefs = Components.classes["@mozilla.org/preferences-service;1"].
 	getService(Components.interfaces.nsIPrefService).getBranch("extensions.furiganainjector.");
-
-if (!tempFirstRunPrefs.prefHasUserValue("firstrun") || tempFirstRunPrefs.getBoolPref("firstrun") == true ||	//N.B. don't add a default preference called "firstrun"
-	!tempFirstRunPrefs.prefHasUserValue("last_version") /*|| tempFirstRunPrefs.getCharPref("last_version") < detected_version*/) {
+if (!tempFirstRunPrefs.prefHasUserValue("firstrun") || tempFirstRunPrefs.getBoolPref("firstrun") == true) {	//N.B. don't add a default preference called "firstrun"
 	window.addEventListener("load", InstallationWelcomeFX.addTabWithLoadListener, false);
 }
-tempFirstRunPrefs = undefined;
-/****
-function compareVersions(a,b) {
- var x = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
-                   .getService(Components.interfaces.nsIVersionComparator)
-                   .compare(a,b);
- if(x == 0)
-   return a + "==" + b;
- else if(x > 0)
-   return a + ">" + b;
- return a + "<" + b;
+
+/******************************************************************************
+ *	For the upgrade from 0.8.x to 0.9.x, make sure the new "last_version" preference exists.
+ ******************************************************************************/
+if (!tempFirstRunPrefs.prefHasUserValue("last_version")) {
+	tempFirstRunPrefs.setCharPref("last_version", "");	//The FuriganaInjector object will set the exact value.
 }
-dump(compareVersions("1.0pre", "1.0"));
- *******/
+tempFirstRunPrefs = undefined;
 
 /******************************************************************************
  *	Attach listener for "SetKanjiByMaxFOUValRequest" events if the page loaded is the 'Simple 

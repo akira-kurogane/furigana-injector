@@ -135,6 +135,7 @@ FIMecabParser.consoleService.logStringMessage("Programming Error- unmatched patt
 	//Devnote: the XHMTL Ruby Support extension sometimes inserts html elements such as:
 	//  "転載" --> "<ruby><rb>転<span class="ruby-text-lastLetterBox">載</span></rb><rp>(</rp><rt> ....".
 	//  Note that there is a <span> element inside the <rb> element. For this reason iterations for text nodes go to a second level.
+	//Devnote: if ruby are natively supported by firefox then the second loop for children such as the span class should be skipped.
 	rubyBaseText: function (rubyElem) {
 		var tempChildNodes;
 		var rbText = "";
@@ -150,6 +151,14 @@ FIMecabParser.consoleService.logStringMessage("Programming Error- unmatched patt
 			}
 		}
 		return rbText;
-	}
+	},
 	
+	rubySupportedNatively: function() {
+		var dummyElem = document.createElement("P");
+		dummyElem.style.display = "block";
+		dummyElem.style.display = "ruby";
+		var rubyNativeSupport = dummyElem.style.display == "ruby";
+		dummyElem = null;
+		return rubyNativeSupport;
+	}
 };

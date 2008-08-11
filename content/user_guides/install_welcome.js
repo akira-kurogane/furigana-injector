@@ -35,9 +35,9 @@ var InstallationWelcomeFX = {
 						"page, or their styles could not be set");
 				}
 			}
-			var Mecab_Lib_div = content.document.getElementById("Mecab_Lib_div");
-			if (Mecab_Lib_div && window.FIMecabParser && FIMecabParser.initialized) {
-				Mecab_Lib_div.style.display = "none";
+			var MecabDic_div = content.document.getElementById("MecabDic_div");
+			if (MecabDic_div && window.FIMecabParser && FIMecabParser.initialized) {
+				MecabDic_div.style.display = "none";
 			}
 			
 			var sbPanel = document.getElementById("furiganainjector-statusbarpanel");
@@ -50,7 +50,11 @@ var InstallationWelcomeFX = {
 						InstallationWelcomeFX.animationTimeouts.push(setTimeout(
 							function(tickTime) {
 								var newOpacity = 0.6 + (0.4 * Math.sin((tickTime/200) * (Math.PI/2)));
-								content.document.getElementById("sb_icon_indicator_img").style.opacity = newOpacity;
+								try {
+									content.document.getElementById("sb_icon_indicator_img").style.opacity = newOpacity;
+								} catch (err) {
+									InstallationWelcomeFX.clearAnimationTimeouts();
+								}
 							},
 							3000 + x, x));
 					}
