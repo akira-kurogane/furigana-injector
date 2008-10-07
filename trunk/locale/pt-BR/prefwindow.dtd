@@ -1,0 +1,8 @@
+﻿<!ENTITY prefwindow.title "Preferências do Furigana Injector">
+<!ENTITY pane1.title "Preferências do Furigana Injector">
+<!ENTITY auto_prcs_all_pages.label "Inserir em todas páginas automaticamente">
+<!ENTITY auto_prcs_all_pages.accesskey "T">
+<!ENTITY exclusion_kanji.label "Não gerar furigana nos seguinte kanji:">
+<!ENTITY exclusion_kanji.accesskey "N">
+<!ENTITY process_link_text.label "Inserir furigana também em links">
+<!ENTITY process_link_text.accesskey "L">
