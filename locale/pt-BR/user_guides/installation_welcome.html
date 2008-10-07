@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="Content-Language" content="en" />
+	<title>Bem-vindo ao Furigana Injector</title>
+	<link rel="stylesheet" type="text/css" media="all" href="../../content/user_guides/user_guides.css" />
+</head>
+<body>
+	<div id="central_content">
+		<p><span id="start_word">Agora</span> seu Firefox pode incluir furigana, aquele hiragana pequeno que fica em cima ou ao lado dos kanji, automaticamente. <strong>Teste</strong> clicando no ícone <img style="position: relative; top: 3px; border-style: solid; border-width: 1px; border-color: #808080;" src="chrome://furiganainjector/skin/status_icon/default.png"alt="振" /> que fica lá na barra de status do Firefox.</p>
+		<q>1952年、医学生だったチェ・ゲバラが友人と二人でオートバイにまたがり、アルゼンチンからペルーまでの南米大陸6,400キロを縦断するというストーリーです。旅先で様々な人に出会い、トラブルにも巻き込まれ失恋もしました。南米大陸の民族、貧困、差別などに向き合い懸命に生きている人々に深い同情と愛を深め、大人に成長していきます。この映画の製作・総監督は、監督作品も多いハリウッドの名優ロバート・レッドフォードで、いわゆる革命や思想を描いた映画にはしたくなかったそうです。</q>
+
+		<h2>O que devo fazer primeiro?</h2>
+
+		<div id="XHTML_Ruby_Support_div">
+			<h3><a href="https://addons.mozilla.org/en-US/firefox/addon/1935" target="XHTML-Ruby-Support-add-on-page">Instalar a extensão XHMTL Ruby support</a></h3>
+			<p>(Link para a página mozilla.org do add-on criado por Shimoda Hiroshi's.)</p>
+			<table class="ruby_simulation"><tr>
+				<td width="160">Com suporte ruby:</td>
+				<td>
+					<td><table class="ruby_simulation"><tr><td class="forced_rt">とうきょう</td><td></td><td class="forced_rt">おおさか</td><td></td></tr>
+						<tr><td>東京</td><td>から</td><td>大阪</td><td>までの...</td></tr></table></td>
+				</td>
+			</tr></table>
+			<table><tr>
+				<td width="160">Sem suporte ruby: </td>
+				<td>東京（とうきょう）から大阪（おおさか）までの...</td>
+			</tr></table>
+		</div>
+
+		<div id="RubyService_KanjiSelector">
+			<h3><a href="simple_kanji_level_selector.html">Selecionar seu nível de leitura de kanji</a></h3>
+			<p>Para configurar quais kanji você quer e quais não quer o furigana.</p>
+		</div>
+
+		<div id="No_RubyService_KanjiSelector" style="display: none;">
+                       <h3>Configure seu nível de leitura de kanji</h3>
+                       <p>Use "Opções..." (veja abaixo) para configurar a lista dos kanji que você não precisa de furigana. <strong>Nota:</strong> se você já instalou a extensão do XHTML Ruby Support, tem uma <a href="simple_kanji_level_selector.html">página rápida e fácil para configurar os kanji</a> que você quer.</p>
+               </div>
+
+		<br/>
+		<p><span id="start_word">Então </span> ative essa extensão em qualquer página com textos em japonês. Um bom exemplo é o site <a href="http://www.mozilla.gr.jp/">www.mozilla.gr.jp</a>, que mostra:
+			<ul>
+			<li>Que palavras com kanji simples não serão processadas.</li>
+			<li>Que palavras em links não serão processadas, a não ser que você configure isso.</li>
+			<li>Que textos em imagens não terão furigana, desculpe.</li>
+			</ul>
+		</p>
+
+		<br/>
+		<h3 class="fakelink" onclick="document.getElementById('options_explanation_div').style.display = 'block'; this.className = ''; this.innerHTML = 'Other options'; this.onclick='';">Outras opções ...</h3>
+		<div id="options_explanation_div" style="display: none;">
+			<ul>
+				<li>Você pode selecionar para que todas as páginas já carreguem com furigana.</li>
+				<li>Você pode selecionar para adicionar também furigana em links.</li>
+			</ul>
+			<p>Essas opções podem ser acessadas diretamente clicando com o botão direito no ícone <img  style="position: relative; top: 3px; border-style: solid; border-width: 1px; border-color: #808080;" src="chrome://furiganainjector/skin/status_icon/default.png"alt="振" /> na barra de status.</p>
+			<p style="padding-left: 20px;"><img src="sb_context_menu_sample.png" alt="context menu sample"/></p>
+		</div>
+
+		<div id="project_homepage">
+			<h3><a href="http://code.google.com/p/furigana-injector/">Página Oficial</a></h3>
+		</div>
+
+		<img id="sb_icon_indicator_img" src="chrome://furiganainjector/content/user_guides/sb_icon_arrow.png" alt="振"
+			style="visibility: hidden; position: fixed; bottom: 5px; right: 300px;" onmouseover="var evt = document.createEvent('Events'); evt.initEvent('HideAttentionArrow', true, false); this.dispatchEvent(evt);"/>
+
+	</div>
+</body>
+</html>

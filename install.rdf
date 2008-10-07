@@ -20,6 +20,20 @@
 		</em:localized>
 		<em:localized>
 			<Description>
+				<em:locale>fr</em:locale>
+				<em:description>Recherche les lectures des kanjis et affiche les furigana correspondants.</em:description>
+				<em:translator>Philippe Vignau</em:translator>
+			</Description>
+		</em:localized>
+		<em:localized>
+			<Description>
+				<em:locale>it</em:locale>
+				<em:description>Guarda le letture per i kanji parole e li inserisce come furigana.</em:description>
+				<em:translator>Erii</em:translator>
+			</Description>
+		</em:localized>
+		<em:localized>
+			<Description>
 				<em:locale>ja</em:locale>
 				<em:name>Furigana Injector</em:name>
 				<em:description>ふりがなを振る</em:description>
@@ -29,24 +43,18 @@
 		</em:localized>
 		<em:localized>
 			<Description>
-				<em:locale>it</em:locale>
-				<em:description>Guarda le letture per i kanji parole e li inserisce come furigana.</em:description>
-				<em:translator>Erii</em:translator>
-			</Description>
-			</em:localized>
-		<em:localized>
-			<Description>
-				<em:locale>fr</em:locale>
-				<em:description>Recherche les lectures des kanjis et affiche les furigana correspondants.</em:description>
-				<em:translator>Philippe Vignau</em:translator>
-			</Description>
-		</em:localized>
-		<em:localized>
-			<Description>
 				<em:locale>pl</em:locale>
 				<em:name>Nanoszenie furigany</em:name>
 				<em:description>>Wyszukuje czytania słów kanji i wstawia je jako furiganę.</em:description>
 				<em:translator>Konrad</em:translator>
+			</Description>
+		</em:localized>
+		<em:localized>
+			<Description>
+				<em:locale>pt-BR</em:locale>
+				<em:name>Furigana Injector</em:name>
+				<em:description>Procura a leitura para palavras em kanji e insere furigana nelas.</em:description>
+				<em:translator>André Gil</em:translator>
 			</Description>
 		</em:localized>
 		<em:targetApplication>
