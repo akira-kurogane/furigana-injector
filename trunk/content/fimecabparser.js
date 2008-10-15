@@ -63,14 +63,6 @@ var FIMecabParser = {
 		}
 	},
 
-    dummyParse: function() {
-		try {
-			this.mecabComponent.parse("ダミー文字列");
-		} catch (err) {
-			Components.utils.reportError(err);
-		}
-	},		
-
 	/******************************************************************************
 	 *	XPCOM
 	 ******************************************************************************/
@@ -79,25 +71,24 @@ var FIMecabParser = {
 //dump("getService()\n");
 		this.mecabComponent = this.mecabComponent.QueryInterface(Components.interfaces.iSimpleMecab);
 //dump("QueryInterface\n");
+		this.consoleService.logStringMessage("Mecab library loaded (version = " + this.mecabComponent.version + ")");
 
-		// the extension's id from install.rdf
-		var MY_ID = "furiganainjector@yayakoshi.net";
+		var EXT_ID = "furiganainjector@yayakoshi.net";
 		var em = Components.classes["@mozilla.org/extensions/manager;1"].getService(Components.interfaces.nsIExtensionManager);
 
-		var myPath = em.getInstallLocation(MY_ID).getItemFile(MY_ID, "components/libmecab").path;
-		var dicPath = "junk";
-//dump("this.mecabComponent.loadLib(" + myPath + ")");
-
-		this.mecabComponent.loadLib(myPath);
-//dump("this.mecabComponent.loadLib(\"" + myPath + "\")\n");
-		this.consoleService.logStringMessage("Mecab library loaded at path = " + myPath + " (version = " + this.mecabComponent.version + ")");
+		var extDirPath = em.getInstallLocation(EXT_ID).getItemFile(EXT_ID, "").path;
+		//Devnote: I would prefer to set all arguments in the createTagger() method but Mecab requires that a rcfile can be found
+		//  and opened, even if it's empty. Rather than have two locations where options can be set, I am choosing to use the 
+		//  rcfile in /mecab/etc/ subdirectory. The dictionary location is set there as "dicdir =  $(rcpath)\..\dic\ipadic"
+		//var dicDirPath = extDirPath + "\\mecab\\dic\\ipadic";
+		var rcfilePath = extDirPath + "\\mecab\\etc\\mecabrc";	//using an rc file
 
 		try {
-			this.mecabComponent.createTagger("");	//this will require a "-d /path/to/dic_dir".
+			this.mecabComponent.createTagger("-r \"" + rcfilePath + "\"");
 		} catch(err) {
 			Components.utils.reportError(err);
 			if (this.mecabComponent.error.match(/no such file or directory/)) {
-				this.mecabLoadInfo = "Couldn't find the dictionary.\nPlease install MeCab dictionary (either UTF-8 or Shift-JIS) from http://mecab.sf.net/src";
+				this.mecabLoadInfo = "Couldn't find the Mecab dictionary.";
 			} else {
 				this.mecabLoadInfo = this.mecabComponent.error ? this.mecabComponent.error : "(MeCab library has no error detail)";
 			}

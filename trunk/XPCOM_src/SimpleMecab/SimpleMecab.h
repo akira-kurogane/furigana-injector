@@ -5,7 +5,15 @@
 
 #include "mecab.h"
 #include "nsEmbedString.h"
-#include "prlink.h"
+#include "prlink.h"	//TODO: remove if static linking is applied?
+
+//The extern declarations should be provided by mecab.h but are not unless the preprocessor symbol SWIG is defined.
+extern mecab_t*      mecab_new2(const char *arg);
+extern const char*   mecab_version();
+extern const char*   mecab_strerror(mecab_t *mecab);
+extern void          mecab_destroy(mecab_t *mecab);
+extern const mecab_node_t* mecab_sparse_tonode(mecab_t *mecab, const char*);
+extern const mecab_dictionary_info_t* mecab_dictionary_info(mecab_t *mecab);
 
 using namespace std;
 
@@ -22,9 +30,8 @@ public:
 
 private:
 	~SimpleMecab();
-	bool libInitialized();
 
-	//Functions that contain unsafe function pointers. The IDL-defined interface methods first check that the 
+	//Functions that contain unsafe function pointers. The IDL-defined interface methods first check that the
 	//  the MeCab librarily has been successfully loaded before calling these to do the 'real' work.
 	nsresult _GetVersion(nsAString & aVersion);
 	nsresult _GetError(nsAString & aError);
@@ -37,17 +44,16 @@ private:
 	nsCStringEncoding dictCharEncoding;
 
 protected:
-	PRLibrary *libPtr;
 	mecab_t* tagger;
 	const mecab_node_t *currNode;
 
-	mecab_t* (*mecab_new)(int argc, char **argv);
-	mecab_t* (*mecab_new2)(const char *arg);
-	const char* (*mecab_version)(void);
-	const char* (*mecab_strerror)(mecab_t* m);
-	void (*mecab_destroy)(mecab_t *m);
-	const mecab_node_t* (*mecab_sparse_tonode)(mecab_t *mecab, const char *str);
-	const mecab_dictionary_info_t* (*mecab_dictionary_info)(mecab_t *m);
+//	mecab_t* (*mecab_new)(int argc, char **argv);
+//	mecab_t* (*mecab_new2)(const char *arg);
+//	const char* (*mecab_version)(void);
+//	const char* (*mecab_strerror)(mecab_t* m);
+//	void (*mecab_destroy)(mecab_t *m);
+//	const mecab_node_t* (*mecab_sparse_tonode)(mecab_t *mecab, const char *str);
+//	const mecab_dictionary_info_t* (*mecab_dictionary_info)(mecab_t *m);
 };
 
 #endif /* __SimpleMecab_h__ */

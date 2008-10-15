@@ -1,0 +1,15 @@
+DEPTH		= ../../../..
+topsrcdir	= @top_srcdir@
+srcdir		= @srcdir@
+VPATH		= @srcdir@
+
+include $(DEPTH)/config/autoconf.mk
+
+MODULE = mecab
+
+DIRS		= src \
+	$(NULL)
+
+XPI_NAME = furiganainjector
+
+include $(topsrcdir)/config/rules.mk
