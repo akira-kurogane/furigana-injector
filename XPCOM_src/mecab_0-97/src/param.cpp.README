@@ -1,0 +1,1 @@
+The "Param::open(const char *arg, const Option *opts)" method has been altered to accept double apostrophe around arguments, so that filepaths with spaces in them can be processed.
