@@ -5,7 +5,6 @@ interface iSimpleMecab : nsISupports {
     readonly attribute AString version;	/*means lib version, not dictionary version*/
     readonly attribute AString error;
     readonly attribute AString dictionaryInfo;	/* The mecab_dictionary_info_t members joined in one string formatted as "filename=XXX;charset=YYY;..." */
-	boolean loadLib(in AString libPath);
 	boolean createTagger(in AString arguments);
 	boolean parse(in AString text);
 	boolean next(out AString surface, out AString feature, out unsigned long length);

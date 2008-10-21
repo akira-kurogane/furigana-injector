@@ -20,25 +20,15 @@ SimpleMecab::~SimpleMecab()
 /* readonly attribute AString version; */
 NS_IMETHODIMP SimpleMecab::GetVersion(nsAString & aVersion)
 {
-	return _GetVersion(aVersion);
-}
-
-nsresult SimpleMecab::_GetVersion(nsAString & aVersion)
-{
 	nsCString tempCStr;
 	tempCStr.Assign(mecab_version());
 	NS_CStringToUTF16(tempCStr, NS_CSTRING_ENCODING_UTF8, aVersion);	//should only be ascii
     return NS_OK;
 }
 
-/* readonly attribute AString error; */
-NS_IMETHODIMP SimpleMecab::GetError(nsAString & aError)
-{
-	return _GetError(aError);
-}
 
 /* readonly attribute AString error; */
-nsresult SimpleMecab::_GetError(nsAString & aError)
+NS_IMETHODIMP SimpleMecab::GetError(nsAString & aError)
 {
 	nsCString tempCStr;
 	if(!tagger) {
@@ -50,13 +40,9 @@ nsresult SimpleMecab::_GetError(nsAString & aError)
     return NS_OK;
 }
 
+
 /* readonly attribute AString dictionaryInfo; */
 NS_IMETHODIMP SimpleMecab::GetDictionaryInfo(nsAString & aDictionaryInfo)
-{
-	return _GetDictionaryInfo(aDictionaryInfo);
-}
-
-nsresult SimpleMecab::_GetDictionaryInfo(nsAString & aDictionaryInfo)
 {
 	if (!tagger)
 		return NS_ERROR_FAILURE;
@@ -80,21 +66,10 @@ nsresult SimpleMecab::_GetDictionaryInfo(nsAString & aDictionaryInfo)
 	}
 }
 
-/* boolean loadLib (in AString arguments); */
-NS_IMETHODIMP SimpleMecab::LoadLib(const nsAString & libPath, PRBool *_retval NS_OUTPARAM)
-{
-	return NS_OK;
-}
 
 /* boolean createTagger (in AString arguments); */
 NS_IMETHODIMP SimpleMecab::CreateTagger(const nsAString & arguments, PRBool *_retval NS_OUTPARAM)
 {
-	return _CreateTagger(arguments, _retval);
-}
-
-nsresult SimpleMecab::_CreateTagger(const nsAString & arguments, PRBool *_retval)
-{
-
 	if (tagger)
 		mecab_destroy(tagger);
 	currNode = nsnull;
@@ -124,13 +99,9 @@ nsresult SimpleMecab::_CreateTagger(const nsAString & arguments, PRBool *_retval
     return NS_OK;
 }
 
+
 /* boolean parseToNode (in AString text); */
 NS_IMETHODIMP SimpleMecab::Parse(const nsAString & text, PRBool *_retval NS_OUTPARAM)
-{
-	return _Parse(text, _retval);
-}
-
-nsresult SimpleMecab::_Parse(const nsAString & text, PRBool *_retval)
 {
 	if(!tagger)
 		return NS_ERROR_NULL_POINTER;
@@ -141,14 +112,9 @@ nsresult SimpleMecab::_Parse(const nsAString & text, PRBool *_retval)
     return NS_OK;
 }
 
+
 /* boolean getNext (out AString surface, out AString feature, out unsigned long length); */
 NS_IMETHODIMP SimpleMecab::Next(nsAString & surface NS_OUTPARAM, nsAString & feature NS_OUTPARAM, PRUint32 *length NS_OUTPARAM, PRBool *_retval NS_OUTPARAM)
-{
-
-	return _Next(surface, feature, length, _retval);
-}
-
-nsresult SimpleMecab::_Next(nsAString & surface, nsAString & feature, PRUint32 *length, PRBool *_retval)
 {
 	if(currNode) {
 
