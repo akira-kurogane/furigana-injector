@@ -2,6 +2,9 @@ With un-compiled languages, comments affect the size of the shipped product, so
 to save space, this comment block applies to any file in the Furigana Injector 
 XPI without its own licensing information.
 
+Please note the Mecab code has it's own license. See the "BSD", "GPL" and 
+"LGPL" files in the mecab sub-directory.
+
 --------------------------------------------------------------------------------
 
 Furigana Injector - web page extension to insert furigana.
@@ -18,3 +21,4 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 -------------------------------------------------------------------------------
+

@@ -51,13 +51,75 @@ XPI_NAME		= furiganainjector
 INSTALL_EXTENSION_ID	= furiganainjector@yayakoshi.net
 XPI_PKGNAME		= furiganainjector
 
-#export::
-#	if test ! -d $(FINAL_TARGET)/content; then \
-#		$(NSINSTALL) -D $(FINAL_TARGET)/content; \
-#	fi
-#	$(INSTALL) $(srcdir)/content/* $(FINAL_TARGET)/content
+#This "export" step is processed before compilation, or packaging into an *.xpi.
+export::
+	$(NSINSTALL) $(srcdir)/*.* $(FINAL_TARGET)
+	$(NSINSTALL) -D $(FINAL_TARGET)/content
+	$(NSINSTALL) $(srcdir)/content/*.* $(FINAL_TARGET)/content
+	$(NSINSTALL) -D $(FINAL_TARGET)/content/unittests
+	$(NSINSTALL) $(srcdir)/content/unittests/*.* $(FINAL_TARGET)/content/unittests
+	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides
+	$(NSINSTALL) $(srcdir)/content/user_guides/*.* $(FINAL_TARGET)/content/user_guides
+	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides/slider_control
+	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides/slider_control/css
+	$(NSINSTALL) $(srcdir)/content/user_guides/slider_control/css/*.* $(FINAL_TARGET)/content/user_guides/slider_control/css
+	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides/slider_control/css/bluecurve
+	$(NSINSTALL) $(srcdir)/content/user_guides/slider_control/css/bluecurve/*.* $(FINAL_TARGET)/content/user_guides/slider_control/css/bluecurve
+	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides/slider_control/css/luna
+	$(NSINSTALL) $(srcdir)/content/user_guides/slider_control/css/luna/*.* $(FINAL_TARGET)/content/user_guides/slider_control/css/luna
+	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides/slider_control/css/swing
+	$(NSINSTALL) $(srcdir)/content/user_guides/slider_control/css/swing/*.* $(FINAL_TARGET)/content/user_guides/slider_control/css/swing
+	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides/slider_control/js
+	$(NSINSTALL) $(srcdir)/content/user_guides/slider_control/js/*.* $(FINAL_TARGET)/content/user_guides/slider_control/js
+#	$(NSINSTALL) -D $(FINAL_TARGET)/defaults
+	$(NSINSTALL) -D $(FINAL_TARGET)/defaults/preferences
+	$(NSINSTALL) $(srcdir)/defaults/preferences/*.* $(FINAL_TARGET)/defaults/preferences
+	$(NSINSTALL) -D $(FINAL_TARGET)/locale
+	$(NSINSTALL) -D $(FINAL_TARGET)/locale/de
+	$(NSINSTALL) $(srcdir)/locale/de/*.* $(FINAL_TARGET)/locale/de
+	$(NSINSTALL) -D $(FINAL_TARGET)/locale/de/user_guides
+	$(NSINSTALL) $(srcdir)/locale/de/user_guides/*.* $(FINAL_TARGET)/locale/de/user_guides
+	$(NSINSTALL) -D $(FINAL_TARGET)/locale/en
+	$(NSINSTALL) $(srcdir)/locale/en/*.* $(FINAL_TARGET)/locale/en
+	$(NSINSTALL) -D $(FINAL_TARGET)/locale/en/user_guides
+	$(NSINSTALL) $(srcdir)/locale/en/user_guides/*.* $(FINAL_TARGET)/locale/en/user_guides
+	$(NSINSTALL) -D $(FINAL_TARGET)/locale/fr
+	$(NSINSTALL) $(srcdir)/locale/fr/*.* $(FINAL_TARGET)/locale/fr
+	$(NSINSTALL) -D $(FINAL_TARGET)/locale/fr/user_guides
+	$(NSINSTALL) $(srcdir)/locale/fr/user_guides/*.* $(FINAL_TARGET)/locale/fr/user_guides
+	$(NSINSTALL) -D $(FINAL_TARGET)/locale/it
+	$(NSINSTALL) $(srcdir)/locale/it/*.* $(FINAL_TARGET)/locale/it
+	$(NSINSTALL) -D $(FINAL_TARGET)/locale/it/user_guides
+	$(NSINSTALL) $(srcdir)/locale/it/user_guides/*.* $(FINAL_TARGET)/locale/it/user_guides
+	$(NSINSTALL) -D $(FINAL_TARGET)/locale/pl
+	$(NSINSTALL) $(srcdir)/locale/pl/*.* $(FINAL_TARGET)/locale/pl
+	$(NSINSTALL) -D $(FINAL_TARGET)/locale/pl/user_guides
+	$(NSINSTALL) $(srcdir)/locale/pl/user_guides/*.* $(FINAL_TARGET)/locale/pl/user_guides
+	$(NSINSTALL) -D $(FINAL_TARGET)/locale/pt-BR
+	$(NSINSTALL) $(srcdir)/locale/pt-BR/*.* $(FINAL_TARGET)/locale/pt-BR
+	$(NSINSTALL) -D $(FINAL_TARGET)/locale/pt-BR/user_guides
+	$(NSINSTALL) $(srcdir)/locale/pt-BR/user_guides/*.* $(FINAL_TARGET)/locale/pt-BR/user_guides
+	$(NSINSTALL) -D $(FINAL_TARGET)/mecab
+	$(NSINSTALL) -D $(FINAL_TARGET)/mecab/dic
+	$(NSINSTALL) -D $(FINAL_TARGET)/mecab/dic/ipadic
+	$(NSINSTALL) $(srcdir)/mecab/dic/ipadic/dicrc $(FINAL_TARGET)/mecab/dic/ipadic
+	$(NSINSTALL) $(srcdir)/mecab/dic/ipadic/README $(FINAL_TARGET)/mecab/dic/ipadic
+	$(NSINSTALL) $(srcdir)/mecab/dic/ipadic/char.bin $(FINAL_TARGET)/mecab/dic/ipadic
+	$(NSINSTALL) $(srcdir)/mecab/dic/ipadic/matrix.bin $(FINAL_TARGET)/mecab/dic/ipadic
+	if test $(srcdir)/mecab/dic/ipadic/sys.dic -nt $(FINAL_TARGET)/mecab/dic/ipadic/sys.dic; then $(NSINSTALL) $(srcdir)/mecab/dic/ipadic/sys.dic $(FINAL_TARGET)/mecab/dic/ipadic; fi
+	if test $(srcdir)/mecab/dic/ipadic/unk.dic -nt $(FINAL_TARGET)/mecab/dic/ipadic/unk.dic; then $(NSINSTALL) $(srcdir)/mecab/dic/ipadic/unk.dic $(FINAL_TARGET)/mecab/dic/ipadic; fi
+	$(NSINSTALL) -D $(FINAL_TARGET)/mecab/etc
+	$(NSINSTALL) $(srcdir)/mecab/etc/* $(FINAL_TARGET)/mecab/etc
+#	$(NSINSTALL) -D $(FINAL_TARGET)/public
+	$(NSINSTALL) -D $(FINAL_TARGET)/skin
+	$(NSINSTALL) $(srcdir)/skin/*.* $(FINAL_TARGET)/skin
+	$(NSINSTALL) -D $(FINAL_TARGET)/skin/status_icon
+	$(NSINSTALL) $(srcdir)/skin/status_icon/*.* $(FINAL_TARGET)/skin/status_icon
+#	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src
+#	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src/mecab_0-97
+#	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src/mecab_0-97/src
+#	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src/SimpleMecab
 
-	
-DIST_FILES = install.rdf
+#DIST_FILES = install.rdf	#This DIST_FILES list is being disabled because the nsinstall copy commands in the "export::" section above are achieving the same effect
 	
 include $(topsrcdir)/config/rules.mk

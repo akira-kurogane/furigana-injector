@@ -36,9 +36,6 @@ class NS_NO_VTABLE NS_SCRIPTABLE iSimpleMecab : public nsISupports {
   /* readonly attribute AString dictionaryInfo; */
   NS_SCRIPTABLE NS_IMETHOD GetDictionaryInfo(nsAString & aDictionaryInfo) = 0;
 
-  /* boolean loadLib (in AString libPath); */
-  NS_SCRIPTABLE NS_IMETHOD LoadLib(const nsAString & libPath, PRBool *_retval NS_OUTPARAM) = 0;
-
   /* boolean createTagger (in AString arguments); */
   NS_SCRIPTABLE NS_IMETHOD CreateTagger(const nsAString & arguments, PRBool *_retval NS_OUTPARAM) = 0;
 
@@ -57,7 +54,6 @@ class NS_NO_VTABLE NS_SCRIPTABLE iSimpleMecab : public nsISupports {
   NS_SCRIPTABLE NS_IMETHOD GetVersion(nsAString & aVersion); \
   NS_SCRIPTABLE NS_IMETHOD GetError(nsAString & aError); \
   NS_SCRIPTABLE NS_IMETHOD GetDictionaryInfo(nsAString & aDictionaryInfo); \
-  NS_SCRIPTABLE NS_IMETHOD LoadLib(const nsAString & libPath, PRBool *_retval NS_OUTPARAM); \
   NS_SCRIPTABLE NS_IMETHOD CreateTagger(const nsAString & arguments, PRBool *_retval NS_OUTPARAM); \
   NS_SCRIPTABLE NS_IMETHOD Parse(const nsAString & text, PRBool *_retval NS_OUTPARAM); \
   NS_SCRIPTABLE NS_IMETHOD Next(nsAString & surface NS_OUTPARAM, nsAString & feature NS_OUTPARAM, PRUint32 *length NS_OUTPARAM, PRBool *_retval NS_OUTPARAM);
@@ -67,7 +63,6 @@ class NS_NO_VTABLE NS_SCRIPTABLE iSimpleMecab : public nsISupports {
   NS_SCRIPTABLE NS_IMETHOD GetVersion(nsAString & aVersion) { return _to GetVersion(aVersion); } \
   NS_SCRIPTABLE NS_IMETHOD GetError(nsAString & aError) { return _to GetError(aError); } \
   NS_SCRIPTABLE NS_IMETHOD GetDictionaryInfo(nsAString & aDictionaryInfo) { return _to GetDictionaryInfo(aDictionaryInfo); } \
-  NS_SCRIPTABLE NS_IMETHOD LoadLib(const nsAString & libPath, PRBool *_retval NS_OUTPARAM) { return _to LoadLib(libPath, _retval); } \
   NS_SCRIPTABLE NS_IMETHOD CreateTagger(const nsAString & arguments, PRBool *_retval NS_OUTPARAM) { return _to CreateTagger(arguments, _retval); } \
   NS_SCRIPTABLE NS_IMETHOD Parse(const nsAString & text, PRBool *_retval NS_OUTPARAM) { return _to Parse(text, _retval); } \
   NS_SCRIPTABLE NS_IMETHOD Next(nsAString & surface NS_OUTPARAM, nsAString & feature NS_OUTPARAM, PRUint32 *length NS_OUTPARAM, PRBool *_retval NS_OUTPARAM) { return _to Next(surface, feature, length, _retval); }
@@ -77,7 +72,6 @@ class NS_NO_VTABLE NS_SCRIPTABLE iSimpleMecab : public nsISupports {
   NS_SCRIPTABLE NS_IMETHOD GetVersion(nsAString & aVersion) { return !_to ? NS_ERROR_NULL_POINTER : _to->GetVersion(aVersion); } \
   NS_SCRIPTABLE NS_IMETHOD GetError(nsAString & aError) { return !_to ? NS_ERROR_NULL_POINTER : _to->GetError(aError); } \
   NS_SCRIPTABLE NS_IMETHOD GetDictionaryInfo(nsAString & aDictionaryInfo) { return !_to ? NS_ERROR_NULL_POINTER : _to->GetDictionaryInfo(aDictionaryInfo); } \
-  NS_SCRIPTABLE NS_IMETHOD LoadLib(const nsAString & libPath, PRBool *_retval NS_OUTPARAM) { return !_to ? NS_ERROR_NULL_POINTER : _to->LoadLib(libPath, _retval); } \
   NS_SCRIPTABLE NS_IMETHOD CreateTagger(const nsAString & arguments, PRBool *_retval NS_OUTPARAM) { return !_to ? NS_ERROR_NULL_POINTER : _to->CreateTagger(arguments, _retval); } \
   NS_SCRIPTABLE NS_IMETHOD Parse(const nsAString & text, PRBool *_retval NS_OUTPARAM) { return !_to ? NS_ERROR_NULL_POINTER : _to->Parse(text, _retval); } \
   NS_SCRIPTABLE NS_IMETHOD Next(nsAString & surface NS_OUTPARAM, nsAString & feature NS_OUTPARAM, PRUint32 *length NS_OUTPARAM, PRBool *_retval NS_OUTPARAM) { return !_to ? NS_ERROR_NULL_POINTER : _to->Next(surface, feature, length, _retval); }

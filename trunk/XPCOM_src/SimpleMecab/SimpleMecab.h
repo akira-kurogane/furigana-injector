@@ -33,12 +33,12 @@ private:
 
 	//Functions that contain unsafe function pointers. The IDL-defined interface methods first check that the
 	//  the MeCab librarily has been successfully loaded before calling these to do the 'real' work.
-	nsresult _GetVersion(nsAString & aVersion);
+/*	nsresult _GetVersion(nsAString & aVersion);
 	nsresult _GetError(nsAString & aError);
 	nsresult _GetDictionaryInfo(nsAString & aDictionaryInfo);
 	nsresult _CreateTagger(const nsAString & arguments, PRBool *_retval);
 	nsresult _Parse(const nsAString & text, PRBool *_retval);
-	nsresult _Next(nsAString & surface, nsAString & feature, PRUint32 *length, PRBool *_retval);
+	nsresult _Next(nsAString & surface, nsAString & feature, PRUint32 *length, PRBool *_retval);*/
 
 	nsCString lastParsedText;	//debug
 	nsCStringEncoding dictCharEncoding;
