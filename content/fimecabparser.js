@@ -76,17 +76,19 @@ var FIMecabParser = {
 		var EXT_ID = "furiganainjector@yayakoshi.net";
 		var em = Components.classes["@mozilla.org/extensions/manager;1"].getService(Components.interfaces.nsIExtensionManager);
 
-		var extDirPath = em.getInstallLocation(EXT_ID).getItemFile(EXT_ID, "").path;
+		var extDir = em.getInstallLocation(EXT_ID).getItemFile(EXT_ID, "");
+		extDir.append("mecab");	//add "/mecab/etc/mecabrc" to the extension directory path
+		extDir.append("etc");
+		extDir.append("mecabrc");
+		var rcfilePath = extDir.path;
 		//Devnote: I would prefer to set all arguments in the createTagger() method but Mecab requires that a rcfile can be found
 		//  and opened, even if it's empty. Rather than have two locations where options can be set, I am choosing to use the 
 		//  rcfile in /mecab/etc/ subdirectory. The dictionary location is set there as "dicdir =  $(rcpath)\..\dic\ipadic"
-		//var dicDirPath = extDirPath + "\\mecab\\dic\\ipadic";
-		var rcfilePath = extDirPath + "\\mecab\\etc\\mecabrc";	//using an rc file
 
 		try {
 			this.mecabComponent.createTagger("-r \"" + rcfilePath + "\"");
 		} catch(err) {
-			Components.utils.reportError(err);
+			Components.utils.reportError(err.toString());
 			if (this.mecabComponent.error.match(/no such file or directory/)) {
 				this.mecabLoadInfo = "Couldn't find the Mecab dictionary.";
 			} else {

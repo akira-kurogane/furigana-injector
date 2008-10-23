@@ -106,11 +106,10 @@ export::
 	$(NSINSTALL) $(srcdir)/mecab/dic/ipadic/README $(FINAL_TARGET)/mecab/dic/ipadic
 	$(NSINSTALL) $(srcdir)/mecab/dic/ipadic/char.bin $(FINAL_TARGET)/mecab/dic/ipadic
 	$(NSINSTALL) $(srcdir)/mecab/dic/ipadic/matrix.bin $(FINAL_TARGET)/mecab/dic/ipadic
-	if test $(srcdir)/mecab/dic/ipadic/sys.dic -nt $(FINAL_TARGET)/mecab/dic/ipadic/sys.dic; then $(NSINSTALL) $(srcdir)/mecab/dic/ipadic/sys.dic $(FINAL_TARGET)/mecab/dic/ipadic; fi
-	if test $(srcdir)/mecab/dic/ipadic/unk.dic -nt $(FINAL_TARGET)/mecab/dic/ipadic/unk.dic; then $(NSINSTALL) $(srcdir)/mecab/dic/ipadic/unk.dic $(FINAL_TARGET)/mecab/dic/ipadic; fi
 	$(NSINSTALL) -D $(FINAL_TARGET)/mecab/etc
 	$(NSINSTALL) $(srcdir)/mecab/etc/* $(FINAL_TARGET)/mecab/etc
-#	$(NSINSTALL) -D $(FINAL_TARGET)/public
+	$(NSINSTALL) -D $(FINAL_TARGET)/public
+	$(NSINSTALL) $(srcdir)/public/*.* $(FINAL_TARGET)/public
 	$(NSINSTALL) -D $(FINAL_TARGET)/skin
 	$(NSINSTALL) $(srcdir)/skin/*.* $(FINAL_TARGET)/skin
 	$(NSINSTALL) -D $(FINAL_TARGET)/skin/status_icon
@@ -119,6 +118,7 @@ export::
 #	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src/mecab_0-97
 #	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src/mecab_0-97/src
 #	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src/SimpleMecab
+	if test -f $(FINAL_TARGET)/mecab/dic/ipadic/sys.dic -a -f $(FINAL_TARGET)/mecab/dic/ipadic/unk.dic -a -f $(FINAL_TARGET)/mecab/dic/ipadic/char.bin -a -f $(FINAL_TARGET)/mecab/dic/ipadic/matrix.bin; then echo Mecab binary files found in target directory; else echo Error: mecab binary *.dic and *.bin files need to be copied to $(FINAL_TARGET)/mecab/dic/ipadic/; exit 1; fi
 
 #DIST_FILES = install.rdf	#This DIST_FILES list is being disabled because the nsinstall copy commands in the "export::" section above are achieving the same effect
 	
