@@ -1,6 +1,10 @@
 #summary How to install MeCab on Linux
 #labels Phase-Deploy
 
+*_N.B. This page is not required anymore_*
+
+Since version 0.9.2 the mecab library and dictionary files have been embedded.
+
 _([MecabInstallationWindows Windows instructions],  [MecabInstallationMacOSX Mac instructions])_
 
 === Installing from package ===
