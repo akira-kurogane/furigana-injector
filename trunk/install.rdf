@@ -10,7 +10,15 @@
 		<em:optionsURL>chrome://furiganainjector/content/options.xul</em:optionsURL>
 		<em:contributor>Electronic Dictionary Research and Development Group, Monash University</em:contributor>
 		<em:iconURL>chrome://furiganainjector/content/furigana_logo_32_32.png</em:iconURL>
-		<em:localized><!-- em:localized will only work for Gecko 1.9+, i.e. Firefox 3.0+ -->
+		<em:localized>
+			<Description>
+				<em:locale>ar</em:locale>
+				<em:name>Furigana Injector</em:name>
+				<em:description>ايجاد القراءات لكلمات الكانجي وادخالهم كفوريغانا.</em:description>
+				<em:translator>أحمد بَزّي</em:translator>
+			</Description>
+		</em:localized>
+		<em:localized>
 			<Description>
 				<em:locale>de</em:locale>
 				<em:name>Furigana Injector</em:name>
@@ -38,7 +46,6 @@
 				<em:name>Furigana Injector</em:name>
 				<em:description>ふりがなを振る</em:description>
 				<em:creator>黒鉄 章</em:creator>
-				<!-- em:translator>XXX XX</em:translator -->
 			</Description>		
 		</em:localized>
 		<em:localized>

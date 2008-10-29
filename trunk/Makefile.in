@@ -54,7 +54,7 @@ XPI_PKGNAME		= furiganainjector
 #This "export" step is processed before compilation, or packaging into an *.xpi.
 export::
 	if test -f $(srcdir)/XPCOM_src/mecab_0-97/config.h; then echo Mecab config.h file already found; else echo Error: mecab config.h file is missing- needs to be placed there manually; exit 1; fi
-	if test -f $(FINAL_TARGET)/mecab/dic/ipadic/sys.dic -a -f $(FINAL_TARGET)/mecab/dic/ipadic/unk.dic -a -f $(FINAL_TARGET)/mecab/dic/ipadic/char.bin -a -f $(FINAL_TARGET)/mecab/dic/ipadic/matrix.bin; then echo Mecab binary files found in target directory; else echo Error: mecab binary *.dic and *.bin files need to be copied to $(FINAL_TARGET)/mecab/dic/ipadic/; exit 1; fi
+	if test -f $(FINAL_TARGET)/mecab/dic/ipadic/sys.dic -a -f $(FINAL_TARGET)/mecab/dic/ipadic/unk.dic -a -f $(FINAL_TARGET)/mecab/dic/ipadic/char.bin -a -f $(FINAL_TARGET)/mecab/dic/ipadic/matrix.bin -a -f $(FINAL_TARGET)/mecab/dic/ipadic/dicrc; then echo Mecab dictionary resource files found in target directory; else echo Error: all mecab dictionary resource files need to be copied to $(FINAL_TARGET)/mecab/dic/ipadic/; exit 1; fi
 	$(NSINSTALL) $(srcdir)/*.* $(FINAL_TARGET)
 #	$(NSINSTALL) -D $(FINAL_TARGET)/content
 	$(NSINSTALL) $(srcdir)/content/*.* $(FINAL_TARGET)/content
