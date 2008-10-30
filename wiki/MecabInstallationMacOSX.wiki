@@ -21,7 +21,7 @@ _([MecabInstallationWindows Windows instructions],  [MecabInstallationLinux Linu
 {{{
  % tar zxfv mecab-X.X.tar.gz
  % cd mecab-X.X
- % ./configure --with-charset=utf
+ % ./configure --with-charset=utf8
  % make
  % make check
  % su
