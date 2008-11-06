@@ -63,6 +63,14 @@ var FIMecabParser = {
 		}
 	},
 
+	dummyParse: function() {
+		try {
+			this.mecabComponent.parse("ダミー文字列");
+		} catch (err) {
+			Components.utils.reportError(err);
+		}
+	},
+
 	/******************************************************************************
 	 *	XPCOM
 	 ******************************************************************************/

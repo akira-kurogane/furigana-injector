@@ -35,10 +35,6 @@ var InstallationWelcomeFX = {
 						"page, or their styles could not be set");
 				}
 			}
-			var MecabDic_div = content.document.getElementById("MecabDic_div");
-			if (MecabDic_div && window.FIMecabParser && FIMecabParser.initialized) {
-				MecabDic_div.style.display = "none";
-			}
 			
 			var sbPanel = document.getElementById("furiganainjector-statusbarpanel");
 			var attentionArrowImg = content.document.getElementById("sb_icon_indicator_img");
