@@ -44,3 +44,17 @@ document.getElementById("appcontent").addEventListener("DOMContentLoaded",
 		}
 	}, 
 	false);
+
+/*
+/******************************************************************************
+ *	fiCompareVersions()- a mozilla-specific version number comparing function.
+ ****************************************************************************** /
+function fiCompareVersions(a,b) {
+	var x = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
+		.getService(Components.interfaces.nsIVersionComparator)
+		.compare(a,b);
+
+	return x;
+}
+//dump("1.0pre vs 1.0 = " + fiCompareVersions("1.0pre", "1.0"));
+*/

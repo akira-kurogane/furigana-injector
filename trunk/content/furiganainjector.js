@@ -69,12 +69,16 @@ var FuriganaInjector = {
 	},
 	
 	onUnload: function() {
+		//try {
 		FuriganaInjectorPrefsObserver.unregister();
 		getBrowser().removeProgressListener(FuriganaInjectorWebProgressListener);
 		getBrowser().tabContainer.removeEventListener("TabSelect", this.onTabSelectionChange, false);
 		document.getElementById("appcontent").removeEventListener("DOMContentLoaded", this.onPageLoad, true);
 		document.getElementById("contentAreaContextMenu").removeEventListener("popupshowing", this.onShowContextMenu, false);
 		document.getElementById("contentAreaContextMenu").removeEventListener("popuphidden", this.onHideContextMenu, false);
+		//} catch (err) {
+		//	dump("Error during FuriganaInjector.onUnload(): " + err.toString() + "\n");
+		//}
 	},
 	
 	onPageLoad: function() {
@@ -249,7 +253,7 @@ alert("selection text expanded from '" + selText + "' to '" + selectionTextBlock
 
 	lookupAndInjectFurigana: function(textNodesParentElement, callbackFunc) {
 		var ignore = VocabAdjuster.getSimpleKanjiList();	//To re-initialize VocabAdjuster._simpleKanjiList
-		var textBlocks = this.getTextBlocks(textNodesParentElement);
+		var textBlocks = this.getTextBlocks(textNodesParentElement, FuriganaInjector.getPref("process_link_text"));
 		var tempCharCount = 0;
 		for (var x = 0; x < textBlocks.length; x++) {
 			this.parseTextBlockForWordVsYomi(textBlocks[x]);
@@ -325,7 +329,7 @@ dump("Debug: Not adding " + surface.value + ": " + feature.value + "\n");
 		return this.getPrevTextOrElemNode(foundNode, topElem);
 	},
 	
-	getTextBlocks: function(topElem) {
+	getTextBlocks: function(topElem, includeLinkText) {
 		var safetyCtr = 0;
 		var textBlocks = [];
 		var tempTextNodes = [];
@@ -346,9 +350,17 @@ dump("Debug: Not adding " + surface.value + ": " + feature.value + "\n");
 			} else if (currNode.nodeType == Node.ELEMENT_NODE) {
 				//dump("doing a " + currNode.tagName + " element with display type = \"" + document.defaultView.getComputedStyle(currNode, "").display + "\"\n");
 				var currElemStyle = document.defaultView.getComputedStyle(currNode, "");
-				if (tempTextBlock.textNodes.length == 0 || currElemStyle.display == "inline") {
+				if (!includeLinkText && currNode.tagName == "A") {	//is a link and preference "process_link_text" is false
+					if (currNode.nextSibling) {
+						currNode = currNode.nextSibling;
+						continue;
+					} else if (currNode.hasChildNodes()) {
+						currNode = currNode.lastChild;	//From this lastChild the node will be progressed to next sibling of the parent or sibling of an ancestor by "getNextTextOrElemNode(currNode, topElem);"
+					}
+					//else no action. //Will be progressed to next sibling or sibling of ancestor by "getNextTextOrElemNode(currNode);"
+				} else if (tempTextBlock.textNodes.length == 0 || currElemStyle.display == "inline") {
 					//no action. Just progress to the next node.
-				} else if (currElemStyle.display == "none" || currElemStyle.visibility == "hidden") {	//skip this element and all it's children
+				} else if (currElemStyle.display == "none" || currElemStyle.visibility == "hidden") { //skip this element and all it's children
 					if (currNode.nextSibling) {
 						currNode = currNode.nextSibling;
 						continue;
