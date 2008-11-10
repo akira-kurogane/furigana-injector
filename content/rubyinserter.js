@@ -139,14 +139,17 @@ FIMecabParser.consoleService.logStringMessage("Programming Error- unmatched patt
 	rubyBaseText: function (rubyElem) {
 		var tempChildNodes;
 		var rbText = "";
-		tempChildNodes = rubyElem.getElementsByTagName("RB");
-		for (var x = 0; x < tempChildNodes.length; x++) {
-			if (tempChildNodes[x].nodeType == Node.TEXT_NODE) {
-				rbText += tempChildNodes[x].data;
-			} else if(tempChildNodes[x].nodeType == Node.ELEMENT_NODE) {
-				for (var y = 0; y < tempChildNodes[x].childNodes.length; y++) {
-					if (tempChildNodes[x].childNodes[y].nodeType == Node.TEXT_NODE)
-						rbText += tempChildNodes[x].childNodes[y].data;
+		tempRBNodes = rubyElem.getElementsByTagName("RB");
+		for (var r = 0; r < tempRBNodes.length; r++) {
+			tempChildNodes = tempRBNodes[r].childNodes;
+			for (var x = 0; x < tempChildNodes.length; x++) {
+				if (tempChildNodes[x].nodeType == Node.TEXT_NODE) {
+					rbText += tempChildNodes[x].data;
+				} else if(tempChildNodes[x].nodeType == Node.ELEMENT_NODE) {
+					for (var y = 0; y < tempChildNodes[x].childNodes.length; y++) {
+						if (tempChildNodes[x].childNodes[y].nodeType == Node.TEXT_NODE)
+							rbText += tempChildNodes[x].childNodes[y].data;
+					}
 				}
 			}
 		}

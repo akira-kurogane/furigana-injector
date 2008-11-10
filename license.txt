@@ -2,9 +2,6 @@ With un-compiled languages, comments affect the size of the shipped product, so
 to save space, this comment block applies to any file in the Furigana Injector 
 XPI without its own licensing information.
 
-Please note the Mecab code has it's own license. See the "BSD", "GPL" and 
-"LGPL" files in the mecab sub-directory.
-
 --------------------------------------------------------------------------------
 
 Furigana Injector - web page extension to insert furigana.
@@ -22,3 +19,10 @@ GNU General Public License for more details.
 
 -------------------------------------------------------------------------------
 
+Please note the Mecab code has it's own license. From the "COPYING" file within 
+mecab source package:
+
+    "MeCab is copyrighted free software by Taku Kudo <taku@chasen.org> and
+    Nippon Telegraph and Telephone Corporation, and is released under
+    any of the GPL (see the file GPL), the LGPL (see the file LGPL), or the
+    BSD License (see the file BSD)."
