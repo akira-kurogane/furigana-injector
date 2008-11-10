@@ -53,72 +53,32 @@ XPI_PKGNAME		= furiganainjector
 
 #This "export" step is processed before compilation, or packaging into an *.xpi.
 export::
-	if test -f $(srcdir)/XPCOM_src/mecab_0-97/config.h; then echo Mecab config.h file already found; else echo Error: mecab config.h file is missing- needs to be placed there manually; exit 1; fi
-	if test -f $(FINAL_TARGET)/mecab/dic/ipadic/sys.dic -a -f $(FINAL_TARGET)/mecab/dic/ipadic/unk.dic -a -f $(FINAL_TARGET)/mecab/dic/ipadic/char.bin -a -f $(FINAL_TARGET)/mecab/dic/ipadic/matrix.bin -a -f $(FINAL_TARGET)/mecab/dic/ipadic/dicrc; then echo Mecab dictionary resource files found in target directory; else echo Error: all mecab dictionary resource files need to be copied to $(FINAL_TARGET)/mecab/dic/ipadic/; exit 1; fi
-	$(NSINSTALL) $(srcdir)/*.* $(FINAL_TARGET)
-#	$(NSINSTALL) -D $(FINAL_TARGET)/content
-	$(NSINSTALL) $(srcdir)/content/*.* $(FINAL_TARGET)/content
-#	$(NSINSTALL) -D $(FINAL_TARGET)/content/unittests
-	$(NSINSTALL) $(srcdir)/content/unittests/*.* $(FINAL_TARGET)/content/unittests
-#	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides
-	$(NSINSTALL) $(srcdir)/content/user_guides/*.* $(FINAL_TARGET)/content/user_guides
-#	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides/slider_control
-#	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides/slider_control/css
-	$(NSINSTALL) $(srcdir)/content/user_guides/slider_control/css/*.* $(FINAL_TARGET)/content/user_guides/slider_control/css
-#	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides/slider_control/css/bluecurve
-	$(NSINSTALL) $(srcdir)/content/user_guides/slider_control/css/bluecurve/*.* $(FINAL_TARGET)/content/user_guides/slider_control/css/bluecurve
-#	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides/slider_control/css/luna
-	$(NSINSTALL) $(srcdir)/content/user_guides/slider_control/css/luna/*.* $(FINAL_TARGET)/content/user_guides/slider_control/css/luna
-#	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides/slider_control/css/swing
-	$(NSINSTALL) $(srcdir)/content/user_guides/slider_control/css/swing/*.* $(FINAL_TARGET)/content/user_guides/slider_control/css/swing
-#	$(NSINSTALL) -D $(FINAL_TARGET)/content/user_guides/slider_control/js
-	$(NSINSTALL) $(srcdir)/content/user_guides/slider_control/js/*.* $(FINAL_TARGET)/content/user_guides/slider_control/js
-#	$(NSINSTALL) -D $(FINAL_TARGET)/defaults
-#	$(NSINSTALL) -D $(FINAL_TARGET)/defaults/preferences
-	$(NSINSTALL) $(srcdir)/defaults/preferences/*.* $(FINAL_TARGET)/defaults/preferences
-#	$(NSINSTALL) -D $(FINAL_TARGET)/locale
-#	$(NSINSTALL) -D $(FINAL_TARGET)/locale/de
-	$(NSINSTALL) $(srcdir)/locale/de/*.* $(FINAL_TARGET)/locale/de
-#	$(NSINSTALL) -D $(FINAL_TARGET)/locale/de/user_guides
-	$(NSINSTALL) $(srcdir)/locale/de/user_guides/*.* $(FINAL_TARGET)/locale/de/user_guides
-#	$(NSINSTALL) -D $(FINAL_TARGET)/locale/en
-	$(NSINSTALL) $(srcdir)/locale/en/*.* $(FINAL_TARGET)/locale/en
-#	$(NSINSTALL) -D $(FINAL_TARGET)/locale/en/user_guides
-	$(NSINSTALL) $(srcdir)/locale/en/user_guides/*.* $(FINAL_TARGET)/locale/en/user_guides
-#	$(NSINSTALL) -D $(FINAL_TARGET)/locale/fr
-	$(NSINSTALL) $(srcdir)/locale/fr/*.* $(FINAL_TARGET)/locale/fr
-#	$(NSINSTALL) -D $(FINAL_TARGET)/locale/fr/user_guides
-	$(NSINSTALL) $(srcdir)/locale/fr/user_guides/*.* $(FINAL_TARGET)/locale/fr/user_guides
-#	$(NSINSTALL) -D $(FINAL_TARGET)/locale/it
-	$(NSINSTALL) $(srcdir)/locale/it/*.* $(FINAL_TARGET)/locale/it
-#	$(NSINSTALL) -D $(FINAL_TARGET)/locale/it/user_guides
-	$(NSINSTALL) $(srcdir)/locale/it/user_guides/*.* $(FINAL_TARGET)/locale/it/user_guides
-#	$(NSINSTALL) -D $(FINAL_TARGET)/locale/pl
-	$(NSINSTALL) $(srcdir)/locale/pl/*.* $(FINAL_TARGET)/locale/pl
-#	$(NSINSTALL) -D $(FINAL_TARGET)/locale/pl/user_guides
-	$(NSINSTALL) $(srcdir)/locale/pl/user_guides/*.* $(FINAL_TARGET)/locale/pl/user_guides
-#	$(NSINSTALL) -D $(FINAL_TARGET)/locale/pt-BR
-	$(NSINSTALL) $(srcdir)/locale/pt-BR/*.* $(FINAL_TARGET)/locale/pt-BR
-#	$(NSINSTALL) -D $(FINAL_TARGET)/locale/pt-BR/user_guides
-	$(NSINSTALL) $(srcdir)/locale/pt-BR/user_guides/*.* $(FINAL_TARGET)/locale/pt-BR/user_guides
-#	$(NSINSTALL) -D $(FINAL_TARGET)/mecab
-#	$(NSINSTALL) -D $(FINAL_TARGET)/mecab/dic
-#	$(NSINSTALL) -D $(FINAL_TARGET)/mecab/dic/ipadic
-	$(NSINSTALL) $(srcdir)/mecab/dic/ipadic/dicrc $(FINAL_TARGET)/mecab/dic/ipadic
-	$(NSINSTALL) $(srcdir)/mecab/dic/ipadic/README $(FINAL_TARGET)/mecab/dic/ipadic
-#	$(NSINSTALL) -D $(FINAL_TARGET)/mecab/etc
-	$(NSINSTALL) $(srcdir)/mecab/etc/* $(FINAL_TARGET)/mecab/etc
-#	$(NSINSTALL) -D $(FINAL_TARGET)/public
-	$(NSINSTALL) $(srcdir)/public/*.* $(FINAL_TARGET)/public
-#	$(NSINSTALL) -D $(FINAL_TARGET)/skin
-	$(NSINSTALL) $(srcdir)/skin/*.* $(FINAL_TARGET)/skin
-#	$(NSINSTALL) -D $(FINAL_TARGET)/skin/status_icon
-	$(NSINSTALL) $(srcdir)/skin/status_icon/*.* $(FINAL_TARGET)/skin/status_icon
-#	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src
-#	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src/mecab_0-97
-#	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src/mecab_0-97/src
-#	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src/SimpleMecab
+	if [ ! -f $(srcdir)/XPCOM_src/mecab_0-97/config.h ]; then echo Error: mecab config.h file is missing- needs to be placed there manually; exit 1; fi
+	if [ ! \( -f $(FINAL_TARGET)/mecab/dic/ipadic/sys.dic -a -f $(FINAL_TARGET)/mecab/dic/ipadic/unk.dic -a -f $(FINAL_TARGET)/mecab/dic/ipadic/char.bin -a -f $(FINAL_TARGET)/mecab/dic/ipadic/matrix.bin -a -f $(FINAL_TARGET)/mecab/dic/ipadic/dicrc \) ]; then $(NSINSTALL) -D $(FINAL_TARGET)/mecab/dic/ipadic; echo Error: all mecab dictionary resource files need to be copied to $(FINAL_TARGET)/mecab/dic/ipadic/; exit 1; fi
 
-#DIST_FILES = install.rdf	#This DIST_FILES list is being disabled because the nsinstall copy commands in the "export::" section above are achieving the same effect
+
+#The "libs" target is being used as it occurs at a suitable stage inbetween compilation and packaging/zipping of the *.xpi file. A 'pre-package' target would be more ideal.
+
+#Copy the top-level files (if they match a '*.*' filename pattern) and recursively copy all the directories listed.
+libs::
+	$(NSINSTALL) $(srcdir)/*.* $(FINAL_TARGET)/
+	cp -r -t $(FINAL_TARGET)/ $(srcdir)/content/ $(srcdir)/defaults/ $(srcdir)/locale/ $(srcdir)/public/ $(srcdir)/skin/
+
+#Recursively copy XPCOM_src/SimpleMecab, but only select files in XPCOM_src/mecab_0-97
+libs::
+	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src
+	cp -r $(srcdir)/XPCOM_src/SimpleMecab $(FINAL_TARGET)/XPCOM_src/
+	$(NSINSTALL) $(srcdir)/XPCOM_src/Makefile.in $(FINAL_TARGET)/XPCOM_src/
+	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src/mecab_0-97/src
+	$(NSINSTALL) $(srcdir)/XPCOM_src/mecab_0-97/README.furiganainjector $(FINAL_TARGET)/XPCOM_src/mecab_0-97/
+	$(NSINSTALL) $(srcdir)/XPCOM_src/mecab_0-97/Makefile.in $(FINAL_TARGET)/XPCOM_src/mecab_0-97/
+	$(NSINSTALL) $(srcdir)/XPCOM_src/mecab_0-97/src/Makefile.in $(FINAL_TARGET)/XPCOM_src/mecab_0-97/src/
+
+#Mecab resource directory: copy only the contents of mecab/etc and the README in /mecab/dic/ipadic. The binary dictionary files and the dicrc file need to place manually.
+libs::
+	$(NSINSTALL) $(srcdir)/mecab/dic/ipadic/README $(FINAL_TARGET)/mecab/dic/ipadic
+	$(NSINSTALL) $(srcdir)/mecab/etc/* $(FINAL_TARGET)/mecab/etc
+
+#DIST_FILES = install.rdf	#This DIST_FILES list is being disabled because the copy commands in the "export::" section above are achieving the same effect
 	
 include $(topsrcdir)/config/rules.mk

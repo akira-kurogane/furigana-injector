@@ -51,11 +51,8 @@ var FuriganaInjector = {
 			this.initialized = false;
 			this.onUnload();
 			return;
-		} else {
-			//run a Mecab parse once to cause the dictionary to be loaded before the first time the user explicitly uses it.
-			setTimeout(function() { try { FIMecabParser.dummyParse(); } catch (err) { /*nothing*/ } }, 8000 );
 		}
-		
+
 		var ignore = VocabAdjuster.getSimpleKanjiList();	//just to make sure VocabAdjuster._simpleKanjiList is initialized for VocabAdjuster.tooEasy()
 		FuriganaInjector.setStatusIcon("default");
 		
@@ -197,8 +194,6 @@ var FuriganaInjector = {
 		var selectionObject = content.getSelection();
 		var selText = selectionObject.toString();
 		var parentBlockElem = document.popupNode;
-		if (document.popupNode.nodeType == Node.TEXT_NODE) 
-			parentBlockElem.parentNode;
 		//The element types below are deliberately chosen. A similar rule such as 'style.display == "block" || .. "table"' was considered but rejected.
 		while (!["P", "TABLE", "DIV", "BODY", "FRAME", "IFRAME", "Q", "PRE", "SAMP"].indexOf(parentBlockElem.tagName) < 0) 
 			parentBlockElem = parentBlockElem.parentNode;
@@ -218,7 +213,6 @@ var FuriganaInjector = {
 			}
 			
 		} else {
-alert("processContextSection() is not redeveloped for specific text selection yet");
 			//N.B. this will execute synchronously, i.e. it doesn't use setTimeout() like the whole-page or context-block processing.
 
 			//Check if the selection is selected back-to-front and reverse it if so.
@@ -229,18 +223,10 @@ alert("processContextSection() is not redeveloped for specific text selection ye
 				selectionObject.collapseToStart();
 				selectionObject.extend(oldAnchorNode, oldAnchorOffset);
 			}
-			var selectionTextBlock = new FITextBlock(content.document.ownerDocument, selectionObject.focusNode, selectionObject.focusOffset, selectionObject.anchorNode, selectionObject.anchorOffset);
-			var currTextNode = selectionObject.focusNode;
-			while (currNode && currNode.compareDocumentPosition(selectionObject.focusNode) == Node.DOCUMENT_POSITION_PRECEDING) {
-				selectionTextBlock.addTextNode(currNode);
-				currNode = this.getNextTextOrElemNode(currNode, null);
-				while (currNode.nodeType != Node.TEXT_NODE)
-					currNode = this.getNextTextOrElemNode(currNode, null);
-			}
-			selectionTextBlock.addTextNode(selectionObject.focusNode);
+			var selectionTextBlock = new FITextBlock(selectionObject.anchorNode.ownerDocument, selectionObject.anchorNode, selectionObject.anchorOffset, selectionObject.focusNode, selectionObject.focusOffset);
 			selectionTextBlock.expandToFullContext();
-alert("selection text expanded from '" + selText + "' to '" + selectionTextBlock.concatText + "'");
 			selectionObject.collapseToStart();
+			this.parseTextBlockForWordVsYomi(selectionTextBlock);
 			selectionTextBlock.insertRubyElements();
 			this.processContextSectionCallback(true);
 		}
@@ -259,9 +245,6 @@ alert("selection text expanded from '" + selText + "' to '" + selectionTextBlock
 			this.parseTextBlockForWordVsYomi(textBlocks[x]);
 			tempCharCount += textBlocks[x].concatText.length;
 			textBlocks[x].insertRubyElements();
-			//if(tempCharCount >= 1500)
-			//	textBlocks[x].replaceTextNodes();
-			//	tempCharCount = 0;
 		}
 		
 		callbackFunc(true);
@@ -278,13 +261,15 @@ alert("selection text expanded from '" + selText + "' to '" + selectionTextBlock
 				features = feature.value.split(",");
 				if (features.length > 7) {
 					textBlock.wordsVsYomis.push( {word: surface.value, yomi: FuriganaInjector.converKatakanaToHiragana(features[7]) } );//convert to hiragana
-				} else {
-dump("Debug: Not adding " + surface.value + ": " + feature.value + "\n");
-				}
+				} //else {	//No reading was found for the surface value, probably because it was a  rare/difficult word not in the mecab dic. 
+					//Usually these are given the result "<surface_value>: 名詞,一般,*,*,*,*,*"
+					//Devnote: should I try to place readings by seeing if a likely match can be found in kanjidict? E.g. 蜀 has only one kunyomi (いもむし)
+				//}
 			}
 		}
 	},
 	
+	//Devnote: there is potential for this to be significantly shortened by using NodeIterator which will become available in FF3.1
 	getNextTextOrElemNode: function(nd, topElem) {
 		var foundNode;
 		if (nd.nodeType == Node.ELEMENT_NODE && nd.hasChildNodes()) {
@@ -307,28 +292,25 @@ dump("Debug: Not adding " + surface.value + ": " + feature.value + "\n");
 		return this.getNextTextOrElemNode(foundNode, topElem);
 	},
 	
+	//Devnote: there is potential for this to be significantly shortened by using NodeIterator which will become available in FF3.1
 	getPrevTextOrElemNode: function(nd, topElem) {
 		var foundNode;
-		if (nd.nodeType == Node.ELEMENT_NODE && nd.hasChildNodes()) {
-			foundNode = nd.lastChild;
-		} else if (nd.previousSibling) {
+		if (nd.previousSibling) {
 			foundNode = nd.previousSibling;
-		} else {
-			var tempParent = nd.parentNode;
-			if (tempParent == topElem)
+			while (foundNode.hasChildNodes())	//go to the bottom-most lastChild.
+				foundNode = foundNode.lastChild;
+		} else { //no previous sibling. Go up, then go to last child, and the last child if child has children, etc.
+			if (nd.parentNode == topElem)
 				return null;
-			while (!tempParent.nextSibling) {
-				if (tempParent == topElem || !tempParent.parentNode)
-					return null;
-				tempParent = tempParent.previousSibling;
+			foundNode = nd.parentNode;
+if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond the top of the DOM heirarchy");	//TODO delete
 			}
-			foundNode = tempParent.previousSibling;
-		}
 		if (foundNode.nodeType == Node.TEXT_NODE || foundNode.nodeType == Node.ELEMENT_NODE)
 			return foundNode;
 		return this.getPrevTextOrElemNode(foundNode, topElem);
 	},
 	
+	//Devnote: there is potential for this to be significantly shortened by using NodeIterator which will become available in FF3.1
 	getTextBlocks: function(topElem, includeLinkText) {
 		var safetyCtr = 0;
 		var textBlocks = [];
@@ -344,7 +326,7 @@ dump("Debug: Not adding " + surface.value + ": " + feature.value + "\n");
 		if (!currNode)
 			return textBlocks;
 		
-		while (currNode && safetyCtr < 1000) {
+		while (currNode && safetyCtr < 2000) {	//Devnote: it seems it's quite easy for a HTML document to have thousands of nodes, so this safetyCtr constraint can easily truncate processing mid-page.
 			if (currNode.nodeType == Node.TEXT_NODE && currNode.data.match(/^[\s\t\r\n]*$/)) {	//whitespace-only text node
 				//no action. Just progress to the next node.
 			} else if (currNode.nodeType == Node.ELEMENT_NODE) {
@@ -488,13 +470,13 @@ dump("Debug: Not adding " + surface.value + ": " + feature.value + "\n");
 			this.prefs.setBoolPref(prefName, newPrefVal);
 		} else if (prefType == this.prefs.PREF_INT) {
 			this.prefs.setIntPref(prefName, newPrefVal);
-		} else if (prefType == this.prefs.PREF_STRING) {
-			this.prefs.setCharPref(prefName, newPrefVal);
 		} else {	//N.B. Mozilla evaluates 'complex' types as nsIPrefBranch.PREF_STRING
 			if (prefName == "exclusion_kanji") {
 				var newPrefValStr = Components.classes["@mozilla.org/supports-string;1"].createInstance(Components.interfaces.nsISupportsString);
 				newPrefValStr.data = newPrefVal;
 				this.prefs.setComplexValue(prefName, Components.interfaces.nsISupportsString, newPrefValStr);
+			} else if (prefName == "last_version") {	//an ascii-type string
+				return this.prefs.setCharPref(prefName, newPrefVal);
 			//} else if (prefName == "known_string_preference") {
 			//	return this.prefs.setCharPref(prefName, newPrefVal);
 			} else {
@@ -583,20 +565,48 @@ var FuriganaInjectorPrefsObserver =	{
  ******************************************************************************/
 function FITextBlock(ownerDoc, selStartNode, selStartOffset, selEndNode, selEndOffset) {
 	this.ownerDocument = ownerDoc;
-	this.selStartNode = selStartNode;
+	this.selStartNode = selStartNode;		//Should be the focusNode
 	this.selStartOffset = selStartOffset;
-	this.selEndNode = selEndNode;
+	this.selEndNode = selEndNode;	//Should be the anchorNode
 	this.selEndOffset = selEndOffset;
 	this.textNodes = [ ];
 	this.skipRubyInserts = [ ];
 	this.concatText = "";
 	this.wordsVsYomis = [ ];
+	
+	//Devnote: there is potential for this to be shortened by using NodeIterator which will become available in FF3.1
+	if (this.selStartNode) {
+		if (!this.selEndNode)
+			alert("Development error: no selEndNode specified despite there being a selStartNode");
+		if (this.selStartNode.compareDocumentPosition(this.selEndNode) == Node.DOCUMENT_POSITION_PRECEDING)
+			alert("Development error: the selEndNode (" + this.selEndNode.data + ") is before the selStartNode (" + this.selStartNode.data + ")");
+
+		this.addTextNode(this.selStartNode, null);
+		var currNode = FuriganaInjector.getNextTextOrElemNode(this.selStartNode, null);
+		while (currNode.nodeType != Node.TEXT_NODE)
+			currNode = FuriganaInjector.getNextTextOrElemNode(currNode, null);
+
+		while (currNode && this.selEndNode.compareDocumentPosition(currNode) == Node.DOCUMENT_POSITION_PRECEDING) {
+			this.addTextNode(currNode, null);
+			currNode = FuriganaInjector.getNextTextOrElemNode(currNode, null);
+			while (currNode.nodeType != Node.TEXT_NODE)
+				currNode = FuriganaInjector.getNextTextOrElemNode(currNode, null);
+		}
+		if (this.selStartNode != this.selEndNode) 
+			this.addTextNode(this.selEndNode, null);
+	}
 }
 
 FITextBlock.prototype.addTextNode = function(txtnd, skipRuby) {
 	this.textNodes.push(txtnd);
 	this.skipRubyInserts.push(skipRuby);
 	this.concatText += txtnd.data;
+}
+
+FITextBlock.prototype.addTextNodeAtFront = function(txtnd, skipRuby) {
+	this.textNodes.unshift(txtnd);
+	this.skipRubyInserts.unshift(skipRuby);
+	this.concatText = txtnd.data + this.concatText;
 }
 
 FITextBlock.prototype.insertRubyElements = function() {
@@ -622,8 +632,25 @@ FITextBlock.prototype.insertRubyElements = function() {
 			}
 		}
 		for (var x = 0; x < this.textNodes.length; x++) {
-			if (!this.skipRubyInserts[x] && separatedWordsVsYomis[x])
-				RubyInserter.replaceTextNode(this.ownerDocument, this.textNodes[x], separatedWordsVsYomis[x]);
+			if (!this.skipRubyInserts[x] && separatedWordsVsYomis[x]) {
+				var strTemp = this.textNodes[x].data;
+				var tempWordVsYomis = [ ];
+				if (this.textNodes[x] == this.selStartNode || this.textNodes[x] == this.selEndNode) {
+					if (this.textNodes[x] == this.selStartNode && this.textNodes[x] == this.selEndNode)
+						strTemp = strTemp.substring(this.selStartOffset,  this.selEndOffset);
+					else if (this.textNodes[x] == this.selStartNode)
+						strTemp = strTemp.substring(this.selStartOffset);
+					else if (this.textNodes[x] == this.selEndNode)
+						strTemp = strTemp.substring(0, this.selEndOffset);
+					for (var y = 0; y < separatedWordsVsYomis[x].length; y++) {
+						if (strTemp.indexOf(separatedWordsVsYomis[x][y].word) >= 0)
+							tempWordVsYomis.push(separatedWordsVsYomis[x][y]);
+		}
+				} else {
+					tempWordVsYomis = separatedWordsVsYomis[x];
+	}
+				RubyInserter.replaceTextNode(this.ownerDocument, this.textNodes[x], tempWordVsYomis);
+			}
 		}
 	}
 	//This FITextBlock is now invalid- delete everything.
@@ -635,61 +662,56 @@ FITextBlock.prototype.insertRubyElements = function() {
 
 FITextBlock.prototype.expandToFullContext = function() {
 	if (!this.textNodes)
-		return;
+		alert("Error: expandToFullContext() called on a FITextBlock object that had an uninitialized or empty textNodes array member");
+
+	//hiragana: \u3041-\u309F; katakana:  \u30A1-\u30FF; cjk ideographs: \u3400-\u4DBF and \u4E00-\u9FFF; half-width katakana: \uFF65-\uFF9F
+	//fullwidth ! and ?: \uFF01, \uFF1F; half-width katakana period: \uFF61
+	var reSentenceBoundaryAtStart = /^[^\w\u3041-\u309F\u30A1-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uFF65-\uFF9F]*[\.\?!。！？ \uFF61]/; 
+	var reSentenceBoundaryAtEnd = /[\.\?!。！？ \uFF61][^\w\u3041-\u309F\u30A1-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uFF65-\uFF9F]*$/;
+	var reSentenceBoundaryAnywhere = /[\.\?!。！？ \uFF61]/;
 
 	var safetyCtr = 0;
-	var currNode = FuriganaInjector.getPrevTextOrElemNode(textNodes[0], null);
-	while (currNode && safetyCtr < 1000) {
-		if (currNode.nodeType == Node.ELEMENT_NODE) {
-			var currElemStyle = document.defaultView.getComputedStyle(currNode, "");
-			if (currElemStyle.display != "inline") {
-				currNode = null;
-				break;
-			}
-		} else if (currNode.nodeType == Node.TEXT_NODE) {
-			if (currNode.data.match(/^[\s\t\r\n]*$/)) {	//whitespace-only text node
-				//no action. Just progress to the next node.
-			} else {
-				this.textNodes.unshift(currNode);	//i.e. insert to front
-				this.skipRubyInserts.unshift(true);	//i.e insert to front
-				this.concatText = currNode.data + this.concatText;
-				if (currNode.indexOf(/\.。/) >= 0) {
-					currNode = null;
-					break;
-				}
-			}
-		} else {
-			dump("Error: doing a " + currNode.nodeType + " node (only text or element nodes were expected.)\n");
-		}
+	var currNode = this.textNodes[0];
+	if (reSentenceBoundaryAtStart.test(currNode.data)) {	//if a period found before word/numeral chars, do not attempt to expand back from the startnode
+		//Nothing. 
+	} else {
 		currNode = FuriganaInjector.getPrevTextOrElemNode(currNode, null);
-		safetyCtr++;
+		while (currNode && safetyCtr < 1000) {
+			if (currNode.nodeType == Node.TEXT_NODE) {
+				if (reSentenceBoundaryAtEnd.test(currNode.data))	//Do not even add the text node if there's a period after all word/numerical chars)
+					break;
+				this.addTextNodeAtFront(currNode, true);
+				if (reSentenceBoundaryAnywhere(currNode.data))	//look for a period, break if found;
+					break;
+			} else {	//currNode.nodeType == Node.ELEMENT_NODE
+				if (["P", "TABLE", "DIV", "BODY", "FRAME", "IFRAME", "Q", "PRE", "SAMP"].indexOf(currNode.tagName) >= 0) 
+					break;
+			}
+			safetyCtr++;
+			currNode = FuriganaInjector.getPrevTextOrElemNode(currNode, null);
+		}
 	}
 
 	safetyCtr = 0;
-	currNode = FuriganaInjector.getNextTextOrElemNode(textNodes[textNodes.length - 1], null);
-	while (currNode && safetyCtr < 1000) {
-		if (currNode.nodeType == Node.ELEMENT_NODE) {
-			var currElemStyle = document.defaultView.getComputedStyle(currNode, "");
-			if (currElemStyle.display != "inline") {
-				currNode = null;
-				break;
-			}
-		} else if (currNode.nodeType == Node.TEXT_NODE) {
-			if (currNode.data.match(/^[\s\t\r\n]*$/)) {	//whitespace-only text node
-				//no action. Just progress to the next node.
-			} else {
-				this.textNodes.push(currNode);
-				this.skipRubyInserts.push(true);
-				this.concatText += currNode.data;
-				if (currNode.indexOf(/\.。/) >= 0) {
-					currNode = null;
-					break;
-				}
-			}
-		} else {
-			dump("Error: doing a " + currNode.nodeType + " node (only text or element nodes were expected.)\n");
-		}
+	currNode = this.textNodes[this.textNodes.length - 1];
+	if (reSentenceBoundaryAtEnd.test(currNode.data)) {	//if  period after all word/numeral chars, do not attempt to expand forwards from the end
+		//Nothing. 
+	} else {
 		currNode = FuriganaInjector.getNextTextOrElemNode(currNode, null);
-		safetyCtr++;
+		while (currNode && safetyCtr < 1000) {
+			if (currNode.nodeType == Node.TEXT_NODE) {
+				if (reSentenceBoundaryAtStart.test(currNode.data))	//Do not even add the text node if there's a period at the start of it
+					break;
+				this.addTextNode(currNode, true);
+				if (reSentenceBoundaryAnywhere(currNode.data))	//look for a period, break if found;
+					break;
+			} else {	//currNode.nodeType == Node.ELEMENT_NODE
+				if (["P", "TABLE", "DIV", "BODY", "FRAME", "IFRAME", "Q", "PRE", "SAMP"].indexOf(currNode.tagName) >= 0) 
+					break;
+			}
+			safetyCtr++;
+			currNode = FuriganaInjector.getNextTextOrElemNode(currNode, null);
+		}
 	}
+
 }

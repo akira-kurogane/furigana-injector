@@ -9,6 +9,9 @@ var FIMecabParser = {
 	
 	init: function() {
 	
+		if (this.initialized)
+			return;
+	
 		this.consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
 
 		var mecabLoadResult = false;
@@ -44,6 +47,9 @@ var FIMecabParser = {
 	},
 	
 	parse: function(orig_string) {
+		if (!this.initialized) {
+			this.init();
+		}
 		try {
 			return this.mecabComponent.parse(orig_string);
 		} catch (err) {
@@ -58,14 +64,6 @@ var FIMecabParser = {
 		}
 		try {
 			return this.mecabComponent.next(surface, feature, length);
-		} catch (err) {
-			Components.utils.reportError(err);
-		}
-	},
-
-	dummyParse: function() {
-		try {
-			this.mecabComponent.parse("ダミー文字列");
 		} catch (err) {
 			Components.utils.reportError(err);
 		}
