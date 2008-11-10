@@ -1,4 +1,6 @@
 content	furiganainjector	content/
+#N.B. using ja as the default locale
+locale	furiganainjector	ja	locale/ja/
 locale	furiganainjector	ar	locale/ar/
 locale	furiganainjector	en	locale/en/
 locale	furiganainjector	de	locale/de/
