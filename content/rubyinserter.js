@@ -107,7 +107,7 @@ FIMecabParser.consoleService.logStringMessage("Programming Error- unmatched patt
 	
 	newRubyElement: function(ownerDocument, rb_vals, rt_vals) {
 		var new_ruby = ownerDocument.createElement("ruby");
-		//new_ruby.setAttribute('_moz-userdefined', true);	//this didn't have any apparent affect in testing 2007/12/29
+		//TODO: check if this attribute is still needed by recent versions of the XHTML Ruby Support module
 		new_ruby.setAttribute('moz-ruby-parsed', "done");	//Removing this will prevent CSS styling from the Ruby Support extension from being applied
 		
 		if (typeof rb_vals == "object") {	//i.e. this is complex ruby

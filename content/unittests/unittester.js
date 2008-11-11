@@ -100,16 +100,22 @@ var FuriganaInjectorUnitTester = {
 		for (var uti_idx = 0; uti_idx < unitTestModule.testItemsLength(); uti_idx++) {
 			chkbox_elem = content.document.getElementById("ut_chk_" + module_no + "_" + uti_idx);
 			results_display_elem = content.document.getElementById("results_td_" + module_no + "_" + uti_idx);
+			info_display_elem = content.document.getElementById("info_td_" + module_no + "_" + uti_idx);
 			if (chkbox_elem && chkbox_elem.checked) {
 				unitTest = unitTestModule.getItem(uti_idx);
 				unitTestResult = unitTest.test();
 				if (unitTestResult) {
 					results_display_elem.innerHTML = "OK";
+					if (unitTest.infoMessage) {
+						info_display_elem.innerHTML = unitTest.infoMessage;
+					}
 				} else {
-					results_display_elem.innerHTML = "NG [" + unitTest.caughtErrMsg + "]";
+					results_display_elem.innerHTML = "NG";
+					info_display_elem.innerHTML =  unitTest.caughtErrMsg;
 				}
 			} else {
 				results_display_elem.innerHTML = "";
+				info_display_elem.innerHTML = "";
 			}
 		}
 	}
@@ -127,6 +133,7 @@ function UnitTestItem(label, testFunc) {
 	//this.executeTime = null;
 	this.success = false;
 	this.caughtErrMsg = null;
+	this.infoMessage = null;
 }
 
 UnitTestItem.prototype.routine = function () {}
@@ -184,7 +191,8 @@ UnitTestModule.prototype.printHTMLDiv = function(parentDiv, utm_idx) {
 	for (var ut_idx = 0; ut_idx < this.testItemArray.length; ut_idx++) {
 		sHTML += "\t<tr><td><input type=\"checkbox\" checked=\"true\"id=\"ut_chk_" + utm_idx + "_" + ut_idx + "\" />" + 
 			this.testItemArray[ut_idx].label.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;") + 
-			"</td><td id=\"results_td_" + utm_idx + "_" + ut_idx + "\"></td></tr>\n"
+			"</td><td id=\"results_td_" + utm_idx + "_" + ut_idx + "\"></td>" + 
+			"</td><td id=\"info_td_" + utm_idx + "_" + ut_idx + "\"></td></tr>\n"
 	}
 	sHTML += "</table>\n";
 	new_div.innerHTML = sHTML;
