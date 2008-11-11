@@ -10,7 +10,7 @@
 	<script src="vocabadjuster.js"/>
 	<!-- It would be more ideal if the javascipt below could be loaded dynamically. It's only used in dev testing-->
 	<script src="unittests/unittester.js"/>
-	<!--script src="unittests/fimecabparser.js"/-->
+	<script src="unittests/fimecabparser.js"/>
 	<script src="unittests/furiganainjector.js"/>
 	<script src="unittests/kanjidict.js"/>
 	<script src="unittests/rubyinserter.js"/>

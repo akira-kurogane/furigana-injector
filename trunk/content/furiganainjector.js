@@ -208,6 +208,7 @@ var FuriganaInjector = {
 				setTimeout(function() { parentBlockElem.style.visibility = "hidden"}, 700 );
 				setTimeout(function() { parentBlockElem.style.visibility = "visible"}, 800 );
 				setTimeout(function() { 
+					//Dev question: why no FuriganaInjector.getTextBlocks(parentBlockElem, FuriganaInjector.getPref("process_link_text"))?
 					FuriganaInjector.lookupAndInjectFurigana(parentBlockElem, FuriganaInjector.processContextSectionCallback);
 					}, 810);
 			}
@@ -223,10 +224,14 @@ var FuriganaInjector = {
 				selectionObject.collapseToStart();
 				selectionObject.extend(oldAnchorNode, oldAnchorOffset);
 			}
-			var selectionTextBlock = new FITextBlock(selectionObject.anchorNode.ownerDocument, selectionObject.anchorNode, selectionObject.anchorOffset, selectionObject.focusNode, selectionObject.focusOffset);
+			//The ignoreVocabAdjuster parameter in parseTextBlockForWordVsYomi() and the includeLinkText parameter in 
+			//  selectionTextBlock() are set to true. If a user selected it manually, I assume they want it regardless of the general 
+			//  "process_link_text" preference
+			var selectionTextBlock = new FITextBlock(selectionObject.anchorNode.ownerDocument, selectionObject.anchorNode, selectionObject.anchorOffset, 
+				selectionObject.focusNode, selectionObject.focusOffset, true);
 			selectionTextBlock.expandToFullContext();
 			selectionObject.collapseToStart();
-			this.parseTextBlockForWordVsYomi(selectionTextBlock);
+			this.parseTextBlockForWordVsYomi(selectionTextBlock, true);	//This should pay no attention to VocabAdjuster's kanji list.
 			selectionTextBlock.insertRubyElements();
 			this.processContextSectionCallback(true);
 		}
@@ -238,11 +243,11 @@ var FuriganaInjector = {
 	}, 
 
 	lookupAndInjectFurigana: function(textNodesParentElement, callbackFunc) {
-		var ignore = VocabAdjuster.getSimpleKanjiList();	//To re-initialize VocabAdjuster._simpleKanjiList
+		var ignore = VocabAdjuster.getSimpleKanjiList();	//Just to re-initialize VocabAdjuster._simpleKanjiList member variable
 		var textBlocks = this.getTextBlocks(textNodesParentElement, FuriganaInjector.getPref("process_link_text"));
 		var tempCharCount = 0;
 		for (var x = 0; x < textBlocks.length; x++) {
-			this.parseTextBlockForWordVsYomi(textBlocks[x]);
+			this.parseTextBlockForWordVsYomi(textBlocks[x], null);
 			tempCharCount += textBlocks[x].concatText.length;
 			textBlocks[x].insertRubyElements();
 		}
@@ -250,20 +255,20 @@ var FuriganaInjector = {
 		callbackFunc(true);
 	},
 	
-	parseTextBlockForWordVsYomi: function (textBlock) {
+	parseTextBlockForWordVsYomi: function (textBlock, ignoreVocabAdjuster) {
 		FIMecabParser.parse(textBlock.concatText);
 		var surface = new String();
 		var feature = new String();
 		var length = new Number();
 		var features = [];
 		while (FIMecabParser.next(surface, feature, length)) {	
-			if (surface.value.match(VocabAdjuster.kanjiPattern) && !VocabAdjuster.tooEasy(surface.value)) {
+			if (ignoreVocabAdjuster == true || (surface.value.match(VocabAdjuster.kanjiPattern) && !VocabAdjuster.tooEasy(surface.value))) {
 				features = feature.value.split(",");
 				if (features.length > 7) {
 					textBlock.wordsVsYomis.push( {word: surface.value, yomi: FuriganaInjector.converKatakanaToHiragana(features[7]) } );//convert to hiragana
 				} //else {	//No reading was found for the surface value, probably because it was a  rare/difficult word not in the mecab dic. 
 					//Usually these are given the result "<surface_value>: 名詞,一般,*,*,*,*,*"
-					//Devnote: should I try to place readings by seeing if a likely match can be found in kanjidict? E.g. 蜀 has only one kunyomi (いもむし)
+					//Devnote: should I try to place readings by seeing if a likely match can be found in kanjidict? E.g. "蜀" has only one kunyomi (いもむし)
 				//}
 			}
 		}
@@ -311,6 +316,8 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 	},
 	
 	//Devnote: there is potential for this to be significantly shortened by using NodeIterator which will become available in FF3.1
+	//Devnote: should this just be made the default construction action to FITextBlock when no start and end nodes are specified?
+	//  The only out-of-place item is the includeLinkText parameter.
 	getTextBlocks: function(topElem, includeLinkText) {
 		var safetyCtr = 0;
 		var textBlocks = [];
@@ -554,8 +561,6 @@ var FuriganaInjectorPrefsObserver =	{
 			VocabAdjuster.flagSimpleKanjiListForReset();
 			var ignore = VocabAdjuster.getSimpleKanjiList();	//To re-initialize VocabAdjuster._simpleKanjiList
 			break;
-		//case "auto_process_all_pages":
-		//	break;
 		}
 	}
 }
@@ -563,7 +568,7 @@ var FuriganaInjectorPrefsObserver =	{
 /******************************************************************************
  *	Plug for text blocks that will be parsed and replaced as a group.
  ******************************************************************************/
-function FITextBlock(ownerDoc, selStartNode, selStartOffset, selEndNode, selEndOffset) {
+function FITextBlock(ownerDoc, selStartNode, selStartOffset, selEndNode, selEndOffset, includeLinkText) {
 	this.ownerDocument = ownerDoc;
 	this.selStartNode = selStartNode;		//Should be the focusNode
 	this.selStartOffset = selStartOffset;
@@ -576,23 +581,30 @@ function FITextBlock(ownerDoc, selStartNode, selStartOffset, selEndNode, selEndO
 	
 	//Devnote: there is potential for this to be shortened by using NodeIterator which will become available in FF3.1
 	if (this.selStartNode) {
+		var bSkipRubyInserts = false;	//extra loop variable to see if textnodes should skipRubyInsert becuase they are within <ruby> tags 
+		
 		if (!this.selEndNode)
 			alert("Development error: no selEndNode specified despite there being a selStartNode");
 		if (this.selStartNode.compareDocumentPosition(this.selEndNode) == Node.DOCUMENT_POSITION_PRECEDING)
 			alert("Development error: the selEndNode (" + this.selEndNode.data + ") is before the selStartNode (" + this.selStartNode.data + ")");
 
 		this.addTextNode(this.selStartNode, null);
-		var currNode = FuriganaInjector.getNextTextOrElemNode(this.selStartNode, null);
-		while (currNode.nodeType != Node.TEXT_NODE)
+		var currNode = this.selStartNode;
+		do {
+			if (currNode.nodeType == Node.ELEMENT_NODE) 
+				bSkipRubyInserts =  ["RB", "RT", "RP"].indexOf(currNode.tagName) >= 0 || !(includeLinkText && currNode.tagName == "A");
 			currNode = FuriganaInjector.getNextTextOrElemNode(currNode, null);
+		} while (currNode.nodeType != Node.TEXT_NODE)
 
 		while (currNode && this.selEndNode.compareDocumentPosition(currNode) == Node.DOCUMENT_POSITION_PRECEDING) {
-			this.addTextNode(currNode, null);
-			currNode = FuriganaInjector.getNextTextOrElemNode(currNode, null);
-			while (currNode.nodeType != Node.TEXT_NODE)
+			this.addTextNode(currNode, bSkipRubyInserts);
+			do {
+				if (currNode.nodeType == Node.ELEMENT_NODE) 
+					bSkipRubyInserts =  ["RB", "RT", "RP"].indexOf(currNode.tagName) >= 0 || !(includeLinkText && currNode.tagName == "A");
 				currNode = FuriganaInjector.getNextTextOrElemNode(currNode, null);
+			} while (currNode.nodeType != Node.TEXT_NODE)
 		}
-		if (this.selStartNode != this.selEndNode) 
+		if (this.selStartNode != this.selEndNode)
 			this.addTextNode(this.selEndNode, null);
 	}
 }
@@ -645,10 +657,10 @@ FITextBlock.prototype.insertRubyElements = function() {
 					for (var y = 0; y < separatedWordsVsYomis[x].length; y++) {
 						if (strTemp.indexOf(separatedWordsVsYomis[x][y].word) >= 0)
 							tempWordVsYomis.push(separatedWordsVsYomis[x][y]);
-		}
+					}
 				} else {
 					tempWordVsYomis = separatedWordsVsYomis[x];
-	}
+				}
 				RubyInserter.replaceTextNode(this.ownerDocument, this.textNodes[x], tempWordVsYomis);
 			}
 		}
