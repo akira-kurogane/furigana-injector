@@ -47,51 +47,100 @@ var utmodFuriganaInjector = new UnitTestModule("FuriganaInjector", [
 			FuriganaInjector.setPref("auto_process_all_pages", origBoolVal);	//restore the pref value
 			return FuriganaInjector.getPref("auto_process_all_pages") == origBoolVal;
 		}
-	), 
-		
-	new UnitTestItem("isUnihanChar(testChar)", 
+	),
+
+	new UnitTestItem("parseTextBlockForWordVsYomi(textBlock, ignoreVocabAdjuster)", //test in co-ord with VocabAdjuster
 		function() { 
-			return VocabAdjuster.isUnihanChar("一") /*\u4E00*/ && VocabAdjuster.isUnihanChar("件") /*\u4EF6*/ && //common ideographs
-				VocabAdjuster.isUnihanChar("\u9FBB") && VocabAdjuster.isUnihanChar("\u3400") &&	//less common ideographs
-				VocabAdjuster.isUnihanChar("\u34FF") && VocabAdjuster.isUnihanChar("\u4DB5") && 	//less common ideographs
-				//False cases below
-				!VocabAdjuster.isUnihanChar("0") && !VocabAdjuster.isUnihanChar("a") &&   //latin
-				!VocabAdjuster.isUnihanChar("\u0113") && !VocabAdjuster.isUnihanChar("\u0E05") &&   //extended latin, thai
-				!VocabAdjuster.isUnihanChar("ぁ") && !VocabAdjuster.isUnihanChar("を") &&   //hiragana
-				!VocabAdjuster.isUnihanChar("マ") && !VocabAdjuster.isUnihanChar("\u31FD") &&   //katakana, ext. katakan
-				!VocabAdjuster.isUnihanChar("９") && !VocabAdjuster.isUnihanChar("ｹ") &&   //fullwidth latin and half-width katakana
-				!VocabAdjuster.isUnihanChar("\u3109") && !VocabAdjuster.isUnihanChar("\u31B7") &&   //bopomofo
-				!VocabAdjuster.isUnihanChar("\u2EC7") && !VocabAdjuster.isUnihanChar("\u2F00") &&   //CJK radical, Ki radical
-				!VocabAdjuster.isUnihanChar("\u31C1");  //CJK stroke
+			var before_pref_string = FuriganaInjector.getPref("exclusion_kanji");
+			FuriganaInjector.setPref("exclusion_kanji", "試込");
+			VocabAdjuster.flagSimpleKanjiListForReset();
+			var ignore = VocabAdjuster.getSimpleKanjiList();	//Just to re-initialize VocabAdjuster._simpleKanjiList member variable
+			
+			var result = false;
+			
+			try {
+			
+				var dummyBody = content.document.createElement("body");
+				var dummyDiv = content.document.createElement("div");
+				dummyDiv.innerHTML = "試し日本語の<b>文字列</b>。取り込む。<a href=''>参照</a>。"
+				dummyBody.appendChild(dummyDiv);
+
+				var textnode0 = dummyDiv.childNodes[0];	//"試し日本語の"
+				var textnode1 = dummyDiv.childNodes[1].childNodes[0];	//"文字列"
+				var textnode2 = dummyDiv.childNodes[2];	//"。取り込む。"
+				var textnode3 = dummyDiv.childNodes[3].childNodes[0];	//"参照"
+				var textnode4 = dummyDiv.childNodes[4];	//"。"
+
+				var tempFITB = new FITextBlock(dummyDiv);
+				tempFITB.addTextNode(textnode0, false);	//"試し日本語の" 試し should be ignored, 日本語 included
+				tempFITB.addTextNode(textnode1, true);	//"文字列"	Has the 'skip-ruby' flag, but that does not mean that wordsVsYomis array should be truncated here.
+				tempFITB.addTextNode(textnode2, false);	//"。取り込む。" Should be matched for 取り込む because 取 is not an exclusion kanji
+				tempFITB.addTextNode(textnode3, false);	//"参照" Choosing to include this, despite being an <a> element
+				tempFITB.addTextNode(textnode4, false);	//"。" nothing
+
+				FuriganaInjector.parseTextBlockForWordVsYomi(tempFITB, false);
+
+				var concatFoundWords = "";
+				var concatFoundYomis = "";
+				for (var x = 0; x < tempFITB.wordsVsYomis.length; x++) {
+					concatFoundWords += tempFITB.wordsVsYomis[x].word;
+					concatFoundYomis += tempFITB.wordsVsYomis[x].yomi;
+				}
+				result = concatFoundWords == "日本語文字列取り込む参照" && concatFoundYomis == "にほんごもじれつとりこむさんしょう";
+				if (!result)
+					return false;
+
+				tempFITB.wordsVsYomis = [ ];	//Dirty way of resetting the textblock object
+				FuriganaInjector.parseTextBlockForWordVsYomi(tempFITB, true);	//this time ignore VocabAdjuster's exclusion list
+
+				concatFoundWords = "";
+				concatFoundYomis = "";
+				for (var x = 0; x < tempFITB.wordsVsYomis.length; x++) {
+					concatFoundWords += tempFITB.wordsVsYomis[x].word;
+					concatFoundYomis += tempFITB.wordsVsYomis[x].yomi;
+				}
+				result = concatFoundWords == "試し日本語文字列取り込む参照" && concatFoundYomis == "ためしにほんごもじれつとりこむさんしょう";
+			
+			} catch (err) {
+				FuriganaInjector.setPref("exclusion_kanji", before_pref_string);
+				VocabAdjuster.flagSimpleKanjiListForReset();
+				throw (err);
+			}
+			
+			FuriganaInjector.setPref("exclusion_kanji", before_pref_string);
+			VocabAdjuster.flagSimpleKanjiListForReset();
+			
+			return result;
 		}
 	)
 	
-	//TODO:
-	//FuriganaInjector.lookupAndInjectFurigana(text_parent_element, process_links)
-	//FuriganaInjector.parseTextBlockForWordVsYomi(textBlock, ignoreVocabAdjuster) - test in co-ord with VocabAdjuster
-	//getNextTextOrElemNode(nd, topElem) 
-	//getPrevTextOrElemNode(nd, topElem)
-	//getTextBlocks(topElem, includeLinkText)	//N.B. maybe this functionality will be moved into FITextBlock.prototype
-	//converKatakanaToHiragana(katakanaStr)
-	//revertRubys(parentElement)
+	//getNextTextOrElemNode(nd, topElem)	//skip for now; maybe NodeIterator will replace this
+	//getPrevTextOrElemNode(nd, topElem)	//skip for now; maybe NodeIterator will replace this
+	//getTextBlocks(topElem, includeLinkText)	//skip for now; N.B. maybe this functionality will be moved into FITextBlock.prototype
+	//No test for converKatakanaToHiragana(katakanaStr), the function is too simple to need it.
 		
 	]
 );
 
 FuriganaInjectorUnitTester.addUTM(utmodFuriganaInjector);
 
-/******* Testing notes ********************************************************
+/******* Testing notes for FuriganaInjector ***********************************
 	There are number of GUI events, or window-level events that can only be tested by manual 
 	  GUI testing. These are:
 	  	* That the onLoad(), onPageLoad(), onUnload(), onLocationChange(), and 
 	  	  onWindowProgressStateStop actions occur.
-	  	* The options window, status bar menu and context menu open when clicked, and that 
-	  	  the actions for their items also work when clicked.
+	  	* The options window, status bar menu and context menu open when clicked, and 
+	  	  that the actions for their items also work when clicked.
 	  	* That the statusbar icon changes to the correct icon after various actions.
 	  	* That processWholeDocument does do the whole document, and the 
 	  	  processWholeDocumentCallback() function is called at the end.
 	  	* Ditto for the context selection functions.
-	  	* revertAllRubys()
+	  	* revertRubys(), revertAllRubys(). So long as RubyInserter.revertRuby() 
+	  	  unittests are fine just check manually.
+	  	* lookupAndInjectFurigana() requires a callback. If the unit tests for 
+	  	  getTextBlocks() and parseTextBlockForWordVsYomi() and 
+	  	  FITextBlock.prototype.insertRubyElements() are OK then just 
+	  	  manually check that all textblocks on a page are processed.
  ******************************************************************************/
 
 

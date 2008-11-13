@@ -59,7 +59,7 @@ var KanjiDictionary = {
 		return this._freqOfUseOrder.length - 1;	//N.B. the frequency-of-order numbers are 1-based., but Javascript will create an undefined value at the 0-index
 	},
 	
-	maxFOUofPhrase: function(phrase) {
+	/*maxFOUofPhrase: function(phrase) {
 		var rv = 0;
 		var currChar;
 		for (var x = 0; x < phrase.length; x++) {
@@ -69,7 +69,7 @@ var KanjiDictionary = {
 			}
 		}
 		return rv;
-	},
+	},*/
 	
 	char_list: {
 "一":	{ f:   2,	u:"4e00", g: 1,	o: ["イチ","イツ"], k: ["ひと-","ひと.つ"], t1:["かず","い","いっ","いる","かつ","かづ","てん","はじめ","ひ","ひとつ","まこと"] },

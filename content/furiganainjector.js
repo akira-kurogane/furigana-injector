@@ -225,8 +225,8 @@ var FuriganaInjector = {
 				selectionObject.extend(oldAnchorNode, oldAnchorOffset);
 			}
 			//The ignoreVocabAdjuster parameter in parseTextBlockForWordVsYomi() and the includeLinkText parameter in 
-			//  selectionTextBlock() are set to true. If a user selected it manually, I assume they want it regardless of the general 
-			//  "process_link_text" preference
+			//  selectionTextBlock() are being set to true. If a user selected it manually, I assume they want it regardless of 
+			//  the general "process_link_text" preference.
 			var selectionTextBlock = new FITextBlock(selectionObject.anchorNode.ownerDocument, selectionObject.anchorNode, selectionObject.anchorOffset, 
 				selectionObject.focusNode, selectionObject.focusOffset, true);
 			selectionTextBlock.expandToFullContext();
@@ -245,10 +245,10 @@ var FuriganaInjector = {
 	lookupAndInjectFurigana: function(textNodesParentElement, callbackFunc) {
 		var ignore = VocabAdjuster.getSimpleKanjiList();	//Just to re-initialize VocabAdjuster._simpleKanjiList member variable
 		var textBlocks = this.getTextBlocks(textNodesParentElement, FuriganaInjector.getPref("process_link_text"));
-		var tempCharCount = 0;
+		//var tempCharCount = 0;
 		for (var x = 0; x < textBlocks.length; x++) {
 			this.parseTextBlockForWordVsYomi(textBlocks[x], null);
-			tempCharCount += textBlocks[x].concatText.length;
+			//tempCharCount += textBlocks[x].concatText.length;
 			textBlocks[x].insertRubyElements();
 		}
 		
@@ -261,8 +261,9 @@ var FuriganaInjector = {
 		var feature = new String();
 		var length = new Number();
 		var features = [];
+		var reKanji = new RegExp(VocabAdjuster.kanjiPattern);
 		while (FIMecabParser.next(surface, feature, length)) {	
-			if (ignoreVocabAdjuster == true || (surface.value.match(VocabAdjuster.kanjiPattern) && !VocabAdjuster.tooEasy(surface.value))) {
+			if (reKanji.test(surface.value) && (ignoreVocabAdjuster == true || !VocabAdjuster.tooEasy(surface.value))) {
 				features = feature.value.split(",");
 				if (features.length > 7) {
 					textBlock.wordsVsYomis.push( {word: surface.value, yomi: FuriganaInjector.converKatakanaToHiragana(features[7]) } );//convert to hiragana
@@ -315,9 +316,10 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 		return this.getPrevTextOrElemNode(foundNode, topElem);
 	},
 	
-	//Devnote: there is potential for this to be significantly shortened by using NodeIterator which will become available in FF3.1
 	//Devnote: should this just be made the default construction action to FITextBlock when no start and end nodes are specified?
-	//  The only out-of-place item is the includeLinkText parameter.
+	//  Only the includeLinkText parameter seems to be out of place for a constructor.
+	//Devnote: there is potential for this to be significantly shortened by using NodeIterator which will become available in FF3.1 
+	//  (Regardless of whether it is a method of FuriganaInjector or FITextBlock.prototype).
 	getTextBlocks: function(topElem, includeLinkText) {
 		var safetyCtr = 0;
 		var textBlocks = [];
@@ -388,6 +390,9 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 	},
 	
 	revertRubys: function(parentElement) {
+		//Devnote: this function will not find <RB>..<RT>.. tag sets that existed without being properly 
+		//  enclosed within <RUBY> tags. I.e. any badly formatted tags such as these that were 
+		//  originally in the document will be left untouched, whereas properly formatted ones will be reverted.
 		var rubyNodeList = parentElement.getElementsByTagName("RUBY");
 		var rubyElemArray = [];
 		var tempRubyElem;
