@@ -19,6 +19,8 @@ var utmodRubyInserter = new UnitTestModule("RubyInserter", [
 				{ word: "日本語", yomi: "nihongo" }, 
 				{ word: "文字列", yomi: "もじれつ" }, 
 				{ word: "取り込む", yomi: "とりこむ" }
+				//TODO: should I include some bad matches in here, e.g. 'surfaces' changed from full-width to half-width or v.v. 
+				//  to test that they are ignored/matched suitably?
 			];
 			RubyInserter.replaceTextNode(content.document, origTextNode, matchingInstances);
 
@@ -35,7 +37,7 @@ var utmodRubyInserter = new UnitTestModule("RubyInserter", [
 				dummyDiv.childNodes[6].data == "。";
 		}
 	), 
-		
+
 	new UnitTestItem("RubyInserter.newRubyElement(ownerDocument, rb_val, rt_val)", 
 		function() { 
 			var simpleDummyRuby = RubyInserter.newRubyElement(content.document, "RBTEXT", "RTTEXT");
@@ -50,7 +52,35 @@ var utmodRubyInserter = new UnitTestModule("RubyInserter", [
 				return false;
 			return complexDummyRuby.innerHTML == "<rbc><rb>RB1</rb><rb>RB2</rb></rbc><rtc><rt>RT1</rt><rt></rt></rtc>";
 		}
+	) , 
+
+	new UnitTestItem("revertRuby(rubyElem)", 
+		function() { 
+			var dummyDiv = content.document.createElement("div");
+			var headTextNode = content.document.createTextNode("RBTEXT in leading text node: ");
+			dummyDiv.appendChild(headTextNode);
+			var rubyElem2 = content.document.createElement("RUBY"); 
+			rubyElem2.innerHTML = "<rb>RBTEXT</rb><rp>(</rp><rt>RTTEXT</rt><rp>)</rp";
+			var rubyElem3 = content.document.createElement("RUBY");
+			rubyElem3.innerHTML = "<rbc><rb>取</rb><rb>り</rb><rb>込</rb><rb>む</rb></rbc>" + 
+					"<rtc><rt>と</rt><rt></rt><rt>こ</rt><rt></rt></rtc>";
+			dummyDiv.appendChild(rubyElem2);
+			dummyDiv.appendChild(rubyElem3);
+			var trailingTextNode = content.document.createTextNode("。");
+			dummyDiv.appendChild(trailingTextNode);
+			
+			//Devnote: no testing for the type of badly-formatted ruby which has text outside of the RB, RP or RT tags.
+
+			RubyInserter.revertRuby(rubyElem2);
+			if (!dummyDiv.innerHTML.match(/^RBTEXT in leading text node: RBTEXT<ruby[^\>]*><rbc><rb>取<\/rb><rb>り<\/rb><rb>込<\/rb><rb>む<\/rb><\/rbc><rtc><rt>と<\/rt><rt><\/rt><rt>こ<\/rt><rt><\/rt><\/rtc><\/ruby>。$/i))
+				return false;
+			
+			RubyInserter.revertRuby(rubyElem3);
+			return dummyDiv.innerHTML.match(/^RBTEXT in leading text node: RBTEXT取り込む。$/i);
+		}
 	) 
+	
+	//No way to unit-test rubySupportedNatively, except by comparing the result against a fixed list of Firefox versions vs true/false (and all would be false for now).
 		
 	]
 );

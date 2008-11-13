@@ -10,6 +10,41 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 			return VocabAdjuster && typeof VocabAdjuster == "object"; 
 		}
 	), 
+
+	new UnitTestItem("Regex tests", 
+		function() { 
+			var testsArray = [
+				{ ptn: VocabAdjuster.kanjiPattern, str: "xxx", rslt: false }, 
+				{ ptn: VocabAdjuster.kanjiPattern, str: "あい", rslt: false }, 
+				{ ptn: VocabAdjuster.kanjiPattern, str: "aaa電話。", rslt: true }, 
+				{ ptn: VocabAdjuster.kanjiRevPattern, str: "xxx", rslt: true }, 
+				{ ptn: VocabAdjuster.kanjiRevPattern, str: "あい", rslt: true }, 
+				{ ptn: VocabAdjuster.kanjiRevPattern, str: "aaa電話。", rslt: true }, 
+				{ ptn: VocabAdjuster.hiraganaPattern, str: "xxx", rslt: false }, 
+				{ ptn: VocabAdjuster.hiraganaPattern, str: "ア", rslt: false }, 
+				{ ptn: VocabAdjuster.hiraganaPattern, str: "う", rslt: true }, 
+				{ ptn: VocabAdjuster.hiraganaPattern, str: "aaa電話。", rslt: false }, 
+				{ ptn: VocabAdjuster.hiraganaRevPattern, str: "xxx", rslt: true }, 
+				{ ptn: VocabAdjuster.hiraganaRevPattern, str: "あい", rslt: false }, 
+				{ ptn: VocabAdjuster.hiraganaRevPattern, str: "タタキうヴィ", rslt: true }, 
+				{ ptn: VocabAdjuster.hiraganaRevPattern, str: "aaa電話。", rslt: true }, 
+				{ ptn: VocabAdjuster.kanjiHiraganaPattern, str: "xxx", rslt: false }, 
+				{ ptn: VocabAdjuster.kanjiHiraganaPattern, str: "タタキ", rslt: false }, 
+				{ ptn: VocabAdjuster.kanjiHiraganaPattern, str: "タタキうヴィ", rslt: true }, 
+				{ ptn: VocabAdjuster.kanjiHiraganaPattern, str: "aaa電話。", rslt: true }, 
+			];
+			
+			for (var x = 0; x < testsArray.length; x++) {
+				var reTemp = RegExp(testsArray[x].ptn);
+				if (reTemp.test(testsArray[x].str) != testsArray[x].rslt) {
+					this.caughtErrMsg = testsArray[x].ptn + " failed to be " + testsArray[x].rslt + " when matched against \"" + testsArray[x].str + "\"";
+					return false;
+				}
+			}
+			
+			return true;
+		}
+	), 
 	
 	new UnitTestItem("removeSimpleWords(matchingTextNodeInstances)", 
 		function() { 
@@ -102,16 +137,57 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 			var before_pref_string = FuriganaInjector.getPref("exclusion_kanji");
 			var difficultKanji = "譫";
 			if (before_pref_string.indexOf(difficultKanji) >= 0) {
-				throw("N/A. Test-use difficult level kanji found in user's list of 'simple' kanji.");
+				throw("Aborted: The test-use kanji \"" + difficultKanji + "\" is already present in user's list of 'exclusion' kanji.");
 			}
 			VocabAdjuster.flagSimpleKanjiListForReset();
 			FuriganaInjector.setPref("exclusion_kanji", before_pref_string + difficultKanji);
 			var afterList = VocabAdjuster.getSimpleKanjiList();
 			testResult = afterList.indexOf(difficultKanji) >= 0;
 			FuriganaInjector.setPref("exclusion_kanji", before_pref_string);
+			
 			return testResult;
 		}
-	) 
+	), 
+	
+	new UnitTestItem("addKanjiToExclusionList(kanjiChar)", 
+		function() { 
+			//To preserve the existing preferences after testing this routine gets and sets the FuriganaInjector object's preference value directly
+			var testResult = false;
+			var before_pref_string = FuriganaInjector.getPref("exclusion_kanji");
+			var difficultKanji = "譫";
+			if (before_pref_string.indexOf(difficultKanji) >= 0) {
+				throw("Aborted: The test-use kanji \"" + difficultKanji + "\" is already present in user's list of 'exclusion' kanji.");
+			}
+			VocabAdjuster.addKanjiToExclusionList(difficultKanji);
+			//VocabAdjuster.flagSimpleKanjiListForReset();
+			var afterList = FuriganaInjector.getPref("exclusion_kanji");
+			var foundPos = afterList.indexOf(difficultKanji);
+			testResult = foundPos >= 0 && afterList.indexOf(difficultKanji, foundPos + 1) < 0;	//i.e. found once but only once
+			FuriganaInjector.setPref("exclusion_kanji", before_pref_string);
+			VocabAdjuster.flagSimpleKanjiListForReset();
+			
+			return testResult;
+		}
+	), 
+	
+	new UnitTestItem("removeKanjiFromExclusionList(kanjiChar)", 
+		function() { 
+			//To preserve the existing preferences after testing this routine gets and sets the FuriganaInjector object's preference value directly
+			var testResult = false;
+			var before_pref_string = FuriganaInjector.getPref("exclusion_kanji");
+			var simpleKanji = "日";
+			if (before_pref_string.indexOf(simpleKanji) < 0) {
+				throw("Aborted: The test-use kanji \"" + simpleKanji + "\" needs to be in the user's list of 'exclusion' kanji to do this test.");
+			}
+			VocabAdjuster.removeKanjiFromExclusionList(simpleKanji);
+			var afterList = FuriganaInjector.getPref("exclusion_kanji");
+			testResult = afterList.indexOf(simpleKanji) < 0;
+			FuriganaInjector.setPref("exclusion_kanji", before_pref_string);
+			VocabAdjuster.flagSimpleKanjiListForReset();
+			
+			return testResult;
+		}
+	)
 	
 	]
 );

@@ -7,6 +7,8 @@ var VocabAdjuster = {
 	hiraganaPattern: "[\u3042\u3044\u3046\u3048\u304A-\u3093]",
 	hiraganaRevPattern: "[^\u3042\u3044\u3046\u3048\u304A-\u3093]",
 	kanjiHiraganaPattern: "[\u3005\u3042\u3044\u3046\u3048\u304A-\u3093\u3400-\u9FBF]",	//N.B. no attempt to made to avoid leading "々" char
+	
+	_simpleKanjiList: null, 
 
 	tooEasy: function(word) {
 		var charTemp;
@@ -18,18 +20,6 @@ var VocabAdjuster = {
 		}
 		return true;
 	}, 
-
-	removeSimpleWordsFromDictMatches: function(dictMatches) {
-		var ignore = this.getSimpleKanjiList();	//just to make sure this._simpleKanjiList is initialized for tooEasy()
-		replacementArray = [];
-		for (var y = 0; y < dictMatches.length; y++) {
-			mi = dictMatches[y];
-			if (!this.tooEasy(mi.word)) {
-				replacementArray.push(mi);
-			}
-		}
-		return replacementArray;
-	},
 
 	removeSimpleWords: function(matchingTextNodeInstances) {
 		var tni;
@@ -61,6 +51,7 @@ var VocabAdjuster = {
 		} else {
 			temp_pref_string += kanjiChar;
 			FuriganaInjector.setPref("exclusion_kanji", temp_pref_string);
+			this.flagSimpleKanjiListForReset();
 		}
 	},
 	
@@ -72,6 +63,7 @@ var VocabAdjuster = {
 		} else {
 			temp_pref_string = temp_pref_string.replace(kanjiChar, "");
 			FuriganaInjector.setPref("exclusion_kanji", temp_pref_string);
+			this.flagSimpleKanjiListForReset();
 		}
 	},
 	
@@ -80,8 +72,6 @@ var VocabAdjuster = {
 	isUnihanChar: function(testChar) {
 		return testChar >= "\u3400" && testChar <= "\u9FBF";
 	}, 
-	
-	_simpleKanjiList: null, 
 
 	getSimpleKanjiList: function() {
 		if (!this._simpleKanjiList) { 
