@@ -1,4 +1,5 @@
 #summary A list of existing libraries
+#labels Phase-Requirements,Deprecated
 
 A server version of MeCab :
 
