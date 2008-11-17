@@ -1,5 +1,5 @@
 #summary How to install MeCab on Windows
-#labels Phase-Deploy
+#labels Phase-Deploy,Deprecated
 
 *_N.B. This page is not required anymore_*
 
