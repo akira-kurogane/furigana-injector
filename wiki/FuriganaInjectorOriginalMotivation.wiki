@@ -1,5 +1,5 @@
 #summary The original motivation for developing Furigana Injector
-#labels Featured
+#labels Featured,Phase-Requirements
 
 == The kanji stumbling-block ==
 
