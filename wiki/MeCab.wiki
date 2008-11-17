@@ -1,4 +1,5 @@
 #summary MeCab. Japanese morphology-analyzing library.
+#labels Phase-Requirements,Deprecated
 
   [http://mecab.sourceforge.net/ Official site for MeCab] (Nihongo only).
 
