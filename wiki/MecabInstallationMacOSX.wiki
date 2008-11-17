@@ -1,5 +1,5 @@
 #summary How to install MeCab on Mac OS X
-#labels Phase-Deploy
+#labels Phase-Deploy,Deprecated
 
 *_N.B. This page is not required anymore_*
 
