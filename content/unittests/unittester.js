@@ -24,6 +24,7 @@ var FuriganaInjectorUnitTester = {
 	}, 
 	
 	printAllUnitTestModules: function(parentDiv) {
+alert("printAllUnitTestModules");
 		if (FuriganaInjectorUnitTester.utmCount() == 0) {
 			alert("No Unit test modules have been registed- maybe a syntax error in the Javascript resource?");
 			return;
@@ -60,6 +61,7 @@ var FuriganaInjectorUnitTester = {
 		
 		var working_div = content.document.getElementById("test_lists_div");
 		if (working_div) {
+alert("AAA");
 			FuriganaInjectorUnitTester.printAllUnitTestModules(working_div);
 			var ld_hdr = content.document.getElementById("loading_header");
 			ld_hdr.parentNode.removeChild(ld_hdr);
