@@ -5,13 +5,13 @@
  ******************************************************/
 var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 
-	new UnitTestItem("Basic var existence", 
+	new FIUnitTestItem("Basic var existence", 
 		function() { 
 			return VocabAdjuster && typeof VocabAdjuster == "object"; 
 		}
 	), 
 
-	new UnitTestItem("Regex tests", 
+	new FIUnitTestItem("Regex tests", 
 		function() { 
 			var testsArray = [
 				{ ptn: VocabAdjuster.kanjiPattern, str: "xxx", rslt: false }, 
@@ -44,9 +44,23 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 			
 			return true;
 		}
-	), 
+	),
 	
-	new UnitTestItem("removeSimpleWords(matchingTextNodeInstances)", 
+	new FIUnitTestItem("tooEasy(word)", 
+		function() { 
+			//To preserve the existing preferences after testing this routine gets and sets the FuriganaInjector object's preference value directly
+			var testResult = false;
+			var before_pref_string = FuriganaInjector.getPref("exclusion_kanji");
+			FuriganaInjector.setPref("exclusion_kanji", "日一過単簡");	//includes all kanji of "簡単過ぎる", but none of "晦渋"
+			testResult = VocabAdjuster.tooEasy("簡単過ぎる") &&  VocabAdjuster.tooEasy("かんじがない") && VocabAdjuster.tooEasy("ascii only") && 
+				!VocabAdjuster.tooEasy("晦渋") && !VocabAdjuster.tooEasy("カナ晦渋など");
+			FuriganaInjector.setPref("exclusion_kanji", before_pref_string);
+			
+			return testResult;
+		}
+	),
+	
+	new FIUnitTestItem("removeSimpleWords(matchingTextNodeInstances)", 
 		function() { 
 			var allSimpleKanji = VocabAdjuster.getSimpleKanjiList();
 			var simpleKanji1 = allSimpleKanji.charAt(0);
@@ -88,7 +102,7 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 		}
 	), 
 	
-	new UnitTestItem("isUnihanChar(testChar)", 
+	new FIUnitTestItem("isUnihanChar(testChar)", 
 		function() { 
 			return VocabAdjuster.isUnihanChar("一") /*\u4E00*/ && VocabAdjuster.isUnihanChar("件") /*\u4EF6*/ && //common ideographs
 				VocabAdjuster.isUnihanChar("\u9FBB") && VocabAdjuster.isUnihanChar("\u3400") &&	//less common ideographs
@@ -105,7 +119,7 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 		}
 	), 
 	
-	new UnitTestItem("getSimpleKanjiList()", 
+	new FIUnitTestItem("getSimpleKanjiList()", 
 		function() { 
 			var resultList = VocabAdjuster.getSimpleKanjiList();
 			if (typeof resultList != "string") {
@@ -130,7 +144,7 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 		}
 	), 
 	
-	new UnitTestItem("flagSimpleKanjiListForReset()", 
+	new FIUnitTestItem("flagSimpleKanjiListForReset()", 
 		function() { 
 			//To preserve the existing preferences after testing this routine gets and sets the FuriganaInjector object's preference value directly
 			var testResult = false;
@@ -140,7 +154,7 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 				throw("Aborted: The test-use kanji \"" + difficultKanji + "\" is already present in user's list of 'exclusion' kanji.");
 			}
 			VocabAdjuster.flagSimpleKanjiListForReset();
-			FuriganaInjector.setPref("exclusion_kanji", before_pref_string + difficultKanji);
+			FuriganaInjector.setPref("exclusion_kanji", (before_pref_string + difficultKanji));
 			var afterList = VocabAdjuster.getSimpleKanjiList();
 			testResult = afterList.indexOf(difficultKanji) >= 0;
 			FuriganaInjector.setPref("exclusion_kanji", before_pref_string);
@@ -149,7 +163,7 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 		}
 	), 
 	
-	new UnitTestItem("addKanjiToExclusionList(kanjiChar)", 
+	new FIUnitTestItem("addKanjiToExclusionList(kanjiChar)", 
 		function() { 
 			//To preserve the existing preferences after testing this routine gets and sets the FuriganaInjector object's preference value directly
 			var testResult = false;
@@ -159,18 +173,16 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 				throw("Aborted: The test-use kanji \"" + difficultKanji + "\" is already present in user's list of 'exclusion' kanji.");
 			}
 			VocabAdjuster.addKanjiToExclusionList(difficultKanji);
-			//VocabAdjuster.flagSimpleKanjiListForReset();
 			var afterList = FuriganaInjector.getPref("exclusion_kanji");
 			var foundPos = afterList.indexOf(difficultKanji);
 			testResult = foundPos >= 0 && afterList.indexOf(difficultKanji, foundPos + 1) < 0;	//i.e. found once but only once
 			FuriganaInjector.setPref("exclusion_kanji", before_pref_string);
-			VocabAdjuster.flagSimpleKanjiListForReset();
 			
 			return testResult;
 		}
 	), 
 	
-	new UnitTestItem("removeKanjiFromExclusionList(kanjiChar)", 
+	new FIUnitTestItem("removeKanjiFromExclusionList(kanjiChar)", 
 		function() { 
 			//To preserve the existing preferences after testing this routine gets and sets the FuriganaInjector object's preference value directly
 			var testResult = false;
@@ -183,7 +195,6 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 			var afterList = FuriganaInjector.getPref("exclusion_kanji");
 			testResult = afterList.indexOf(simpleKanji) < 0;
 			FuriganaInjector.setPref("exclusion_kanji", before_pref_string);
-			VocabAdjuster.flagSimpleKanjiListForReset();
 			
 			return testResult;
 		}

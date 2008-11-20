@@ -5,20 +5,20 @@
  ******************************************************/
 var utmodFIMecabParser = new UnitTestModule("FIMecabParser", [
 
-	new UnitTestItem("Basic var existence", 
+	new FIUnitTestItem("Basic var existence", 
 		function() { 
 			return FIMecabParser && typeof FIMecabParser == "object"; 
 		}
 	), 
 
-	new UnitTestItem("Current initialization status", 
+	new FIUnitTestItem("Current initialization status", 
 		function() { 
 			return FIMecabParser.initialized; 
 		}
 	), 
 
 //test that FIMecabParser.mecabrcFile file exists and dump it's output to the page.
-	new UnitTestItem("mecabrcFile exists", 
+	new FIUnitTestItem("mecabrcFile exists", 
 		function() { 
 			var bExistsAndReadable = FIMecabParser.mecabrcFile.exists() && FIMecabParser.mecabrcFile.isFile() && FIMecabParser.mecabrcFile.isReadable();
 			this.infoMessage = "Path = " + FIMecabParser.mecabrcFile.path + "\n\n";
@@ -46,14 +46,14 @@ var utmodFIMecabParser = new UnitTestModule("FIMecabParser", [
 
 	//Add more parse examples, maybe in a group?
 
-	new UnitTestItem("mecabComponent member exists and supports iSimpleMecab", 
+	new FIUnitTestItem("mecabComponent member exists and supports iSimpleMecab", 
 		function() { 
 			return FIMecabParser.mecabComponent && typeof FIMecabParser.mecabComponent == "object" && 
 				(FIMecabParser.mecabComponent instanceof Components.interfaces.iSimpleMecab);
 		}
 	),
 
-	new UnitTestItem("Version, dictionary and current error detail", 
+	new FIUnitTestItem("Version, dictionary and current error detail", 
 		function() { 
 			var results = "Version = " + FIMecabParser.mecabComponent.version + ";\nDictionary info = \"" + 
 					FIMecabParser.mecabComponent.dictionaryInfo + "\"\n"; 
@@ -64,7 +64,7 @@ var utmodFIMecabParser = new UnitTestModule("FIMecabParser", [
 		}
 	), 
 
-	new UnitTestItem("parse(\"東京から大阪まで\")", 
+	new FIUnitTestItem("parse(\"東京から大阪まで\")", 
 		function() { 
 			var surface = new String();
 			var feature = new String();

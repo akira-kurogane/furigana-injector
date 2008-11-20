@@ -14,6 +14,7 @@
 				<em:locale>ar</em:locale>
 				<em:name>Furigana Injector</em:name>
 				<em:description>ايجاد القراءات لكلمات الكانجي وادخالهم كفوريغانا.</em:description>
+				<em:creator>Akira Kurogane</em:creator>
 				<em:translator>أحمد بَزّي</em:translator>
 			</Description>
 		</em:localized>
@@ -22,6 +23,7 @@
 				<em:locale>de</em:locale>
 				<em:name>Furigana Injector</em:name>
 				<em:description>Sucht die Lesungen fur Kanji heraus und fügt sie als Furigana ein.</em:description>
+				<em:creator>Akira Kurogane</em:creator>
 				<em:translator>Daniel Haferkorn</em:translator>
 			</Description>
 		</em:localized>
@@ -30,6 +32,7 @@
 				<em:locale>fr</em:locale>
 				<em:name>Furigana Injector</em:name>
 				<em:description>Recherche les lectures des kanjis et affiche les furigana correspondants.</em:description>
+				<em:creator>Akira Kurogane</em:creator>
 				<em:translator>Philippe Vignau</em:translator>
 			</Description>
 		</em:localized>
@@ -38,6 +41,7 @@
 				<em:locale>it</em:locale>
 				<em:name>Furigana Injector</em:name>
 				<em:description>Guarda le letture per i kanji parole e li inserisce come furigana.</em:description>
+				<em:creator>Akira Kurogane</em:creator>
 				<em:translator>Erii</em:translator>
 			</Description>
 		</em:localized>
@@ -46,6 +50,7 @@
 				<em:locale>ko</em:locale>
 				<em:name>Furigana Injector</em:name>
 				<em:description>한자 단어의 읽는 법을 검색하여 후리가나로 표시합니다.</em:description>
+				<em:creator>쿠로가네 아키라 (黒鉄 章)</em:creator>
 				<em:translator>김 지혁</em:translator>
 			</Description>
 		</em:localized>
@@ -63,6 +68,7 @@
 				<em:locale>pl</em:locale>
 				<em:name>Nanoszenie furigany</em:name>
 				<em:description>>Wyszukuje czytania słów kanji i wstawia je jako furiganę.</em:description>
+				<em:creator>Akira Kurogane</em:creator>
 				<em:translator>Konrad</em:translator>
 			</Description>
 		</em:localized>
@@ -71,6 +77,7 @@
 				<em:locale>pt-BR</em:locale>
 				<em:name>Furigana Injector</em:name>
 				<em:description>Procura a leitura para palavras em kanji e insere furigana nelas.</em:description>
+				<em:creator>Akira Kurogane</em:creator>
 				<em:translator>André Gil</em:translator>
 			</Description>
 		</em:localized>

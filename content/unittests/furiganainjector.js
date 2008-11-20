@@ -5,38 +5,38 @@
  ******************************************************/
 var utmodFuriganaInjector = new UnitTestModule("FuriganaInjector", [
 
-	new UnitTestItem("Basic var existence", 
+	new FIUnitTestItem("Basic var existence", 
 		function() { 
 			return FuriganaInjector && typeof FuriganaInjector == "object"; 
 		}
 	), 
 
-	new UnitTestItem("Current initialization status", 
+	new FIUnitTestItem("Current initialization status", 
 		function() { 
 			return FuriganaInjector.initialized; 
 		}
 	), 
 
-	new UnitTestItem("FuriganaInjectorWebProgressListener existence", 
+	new FIUnitTestItem("FuriganaInjectorWebProgressListener existence", 
 		function() { 
 			return FuriganaInjectorWebProgressListener && typeof FuriganaInjectorWebProgressListener == "object"; 
 		}
 	), 
 
-	new UnitTestItem("FuriganaInjectorPrefsObserver existence", 
+	new FIUnitTestItem("FuriganaInjectorPrefsObserver existence", 
 		function() { 
 			return FuriganaInjectorPrefsObserver && typeof FuriganaInjectorPrefsObserver == "object"; 
 		}
 	), 
 		
-	new UnitTestItem("getPref(prefName)", 
+	new FIUnitTestItem("getPref(prefName)", 
 		function() { 
 			var bPrefGetVal = FuriganaInjector.getPref("auto_process_all_pages");
 			return typeof bPrefGetVal == "boolean";
 		}
 	), 
 		
-	new UnitTestItem("setPref(prefName, val)", 
+	new FIUnitTestItem("setPref(prefName, val)", 
 		function() { 
 			var origBoolVal = FuriganaInjector.getPref("auto_process_all_pages");
 			if (typeof origBoolVal != "boolean")
@@ -49,7 +49,7 @@ var utmodFuriganaInjector = new UnitTestModule("FuriganaInjector", [
 		}
 	),
 
-	new UnitTestItem("parseTextBlockForWordVsYomi(textBlock, ignoreVocabAdjuster)", //test in co-ord with VocabAdjuster
+	new FIUnitTestItem("parseTextBlockForWordVsYomi(textBlock, ignoreVocabAdjuster)", //test in co-ord with VocabAdjuster
 		function() { 
 			var before_pref_string = FuriganaInjector.getPref("exclusion_kanji");
 			FuriganaInjector.setPref("exclusion_kanji", "試込");
@@ -147,13 +147,13 @@ FuriganaInjectorUnitTester.addUTM(utmodFuriganaInjector);
 /*****************************************************************/
 var utmodFuriganaInjectorPrefsObserver = new UnitTestModule("FuriganaInjectorPrefsObserver", [
 
-	new UnitTestItem("Basic var existence", 
+	new FIUnitTestItem("Basic var existence", 
 		function() { 
 			return FuriganaInjectorPrefsObserver && typeof FuriganaInjectorPrefsObserver == "object"; 
 		}
 	), 
 
-	new UnitTestItem("_branch member exists and supports nsIPrefBranch2", 
+	new FIUnitTestItem("_branch member exists and supports nsIPrefBranch2", 
 		function() { 
 			return FuriganaInjectorPrefsObserver._branch && typeof FuriganaInjectorPrefsObserver._branch == "object" && 
 				(FuriganaInjectorPrefsObserver._branch instanceof Components.interfaces.nsIPrefBranch2);
@@ -172,7 +172,7 @@ FuriganaInjectorUnitTester.addUTM(utmodFuriganaInjectorPrefsObserver);
 /*****************************************************************/
 var utmodFITextBlock = new UnitTestModule("FITextBlock", [
 	
-	new UnitTestItem("new FITextBlock(doc, startnode, startoffset, endnode, endoffset)", //test that addTextNode() and a addTextNodeAtFront() have the correct effect- check using fib.concatText;
+	new FIUnitTestItem("new FITextBlock(doc, startnode, startoffset, endnode, endoffset)", //test that addTextNode() and a addTextNodeAtFront() have the correct effect- check using fib.concatText;
 		function() { 			
 			var dummyDiv = content.document.createElement("DIV");
 			var textNode0 = content.document.createTextNode("text node 0.");
@@ -199,7 +199,7 @@ var utmodFITextBlock = new UnitTestModule("FITextBlock", [
 		}
 	),
 	
-	new UnitTestItem("addTextNode() and addTextNodeAtFront()", //test that addTextNode() and a addTextNodeAtFront() have the correct effect- check using fib.concatText;
+	new FIUnitTestItem("addTextNode() and addTextNodeAtFront()", //test that addTextNode() and a addTextNodeAtFront() have the correct effect- check using fib.concatText;
 		function() { 			
 			var dummyDiv = content.document.createElement("DIV");
 			var textNode0 = content.document.createTextNode("text node 0.");
@@ -237,7 +237,7 @@ var utmodFITextBlock = new UnitTestModule("FITextBlock", [
 	),
 	
 	//TODO:
-	/*new UnitTestItem("expandToFullContext()", 	//test expandToFullContext does the right thing - expands back and forward, also stops on the right boundaries 
+	/*new FIUnitTestItem("expandToFullContext()", 	//test expandToFullContext does the right thing - expands back and forward, also stops on the right boundaries 
 		//  (sentence boundary, certain element types such as TABLE, P, etc.)
 		function() { 			
 			var dummyBody = content.document.createElement("body");
@@ -250,7 +250,7 @@ var utmodFITextBlock = new UnitTestModule("FITextBlock", [
 		}
 	),*/
 
-	new UnitTestItem("insertRubyElements()", 
+	new FIUnitTestItem("insertRubyElements()", 
 		function() { 
 			var dummyBody = content.document.createElement("body");
 			var dummyDiv = content.document.createElement("div");

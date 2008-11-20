@@ -11,6 +11,11 @@ var VocabAdjuster = {
 	_simpleKanjiList: null, 
 
 	tooEasy: function(word) {
+		var ignore = this.getSimpleKanjiList();	//just to make sure this._simpleKanjiList is initialized for tooEasy_NoInit()
+		return this.tooEasy_NoInit(word);
+	}, 
+
+	tooEasy_NoInit: function(word) {
 		var charTemp;
 		for (var charPos = 0; charPos < word.length; charPos++) {
 			charTemp = word.charAt(charPos);
@@ -19,19 +24,19 @@ var VocabAdjuster = {
 			}
 		}
 		return true;
-	}, 
+	},
 
 	removeSimpleWords: function(matchingTextNodeInstances) {
 		var tni;
 		var mi;
 		var replacementArray;
-		var ignore = this.getSimpleKanjiList();	//just to make sure this._simpleKanjiList is initialized for tooEasy()
+		var ignore = this.getSimpleKanjiList();	//just to make sure this._simpleKanjiList is initialized for tooEasy_NoInit()
 		for (var x = 0; x < matchingTextNodeInstances.length; x++) {
 			tni = matchingTextNodeInstances[x];
 			replacementArray = [];
 			for (var y = 0; y < tni.matchInstances.length; y++) {
 				mi = tni.matchInstances[y];
-				if (!this.tooEasy(mi.word)) {
+				if (!this.tooEasy_NoInit(mi.word)) {
 					replacementArray.push(mi);
 				}
 			}
@@ -41,7 +46,7 @@ var VocabAdjuster = {
 			}
 		}
 		return matchingTextNodeInstances;
-	}, 
+	},
 	
 	addKanjiToExclusionList: function(kanjiChar) {
 		var temp_pref_string = FuriganaInjector.getPref("exclusion_kanji");
