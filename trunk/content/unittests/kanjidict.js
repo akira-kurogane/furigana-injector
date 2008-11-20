@@ -1,10 +1,11 @@
 //ユニコード文字列
+
 /******************************************************
  *	Unit Tests 
  ******************************************************/
 var utmodKanjiDictionary = new UnitTestModule("KanjiDictionary", [
 
-	new UnitTestItem("gradeList()", 
+	new FIUnitTestItem("gradeList()", 
 		function() { 
 			var junk;
 			try {
@@ -32,14 +33,14 @@ var utmodKanjiDictionary = new UnitTestModule("KanjiDictionary", [
 		}
 	), 
 
-	new UnitTestItem("freqOfUseList()", 
+	new FIUnitTestItem("freqOfUseList()", 
 		function() { 
 			var fouList300_449 = KanjiDictionary.freqOfUseList(300, 449);
 			return typeof fouList300_449 == "object" && fouList300_449.length == 150; 
 		}
 	), 
 
-	new UnitTestItem("maxFOUValue()", 
+	new FIUnitTestItem("maxFOUValue()", 
 		function() { 
 			var matches = KanjiDictionary.maxFOUValue() == "2501"; 
 			if (!matches && KanjiDictionary.maxFOUValue() > "1900" && KanjiDictionary.maxFOUValue() < "4000") {
@@ -51,7 +52,7 @@ var utmodKanjiDictionary = new UnitTestModule("KanjiDictionary", [
 		}
 	), 
 
-	new UnitTestItem("internal _freqOfUseOrder[] check", 
+	new FIUnitTestItem("internal _freqOfUseOrder[] check", 
 		function() { 
 			var maxFOU = KanjiDictionary._freqOfUseOrder.length - 1;
 			for (var x = 1; x <= maxFOU; x++) {

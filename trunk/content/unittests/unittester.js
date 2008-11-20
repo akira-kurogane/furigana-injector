@@ -24,9 +24,8 @@ var FuriganaInjectorUnitTester = {
 	}, 
 	
 	printAllUnitTestModules: function(parentDiv) {
-alert("printAllUnitTestModules");
 		if (FuriganaInjectorUnitTester.utmCount() == 0) {
-			alert("No Unit test modules have been registed- maybe a syntax error in the Javascript resource?");
+			alert("No Unit test modules have been registered- maybe a syntax error in their javascript?");
 			return;
 		}
 		for (var x = 0; x < this.utmArray.length; x++) {
@@ -61,7 +60,6 @@ alert("printAllUnitTestModules");
 		
 		var working_div = content.document.getElementById("test_lists_div");
 		if (working_div) {
-alert("AAA");
 			FuriganaInjectorUnitTester.printAllUnitTestModules(working_div);
 			var ld_hdr = content.document.getElementById("loading_header");
 			ld_hdr.parentNode.removeChild(ld_hdr);
@@ -125,9 +123,9 @@ alert("AAA");
 
 
 /************************* 
- *	UnitTestItem class 
+ *	FIUnitTestItem class 
  **************************/
-function UnitTestItem(label, testFunc) {
+function FIUnitTestItem(label, testFunc) {
 	this.label = label;
 	if (testFunc) {
 		this.routine = testFunc;
@@ -138,10 +136,10 @@ function UnitTestItem(label, testFunc) {
 	this.infoMessage = null;
 }
 
-UnitTestItem.prototype.routine = function () {}
+FIUnitTestItem.prototype.routine = function () {}
 
 
-UnitTestItem.prototype.test = function () {
+FIUnitTestItem.prototype.test = function () {
 	this.success = false;
 	try {
 		this.success = this.routine();
@@ -161,10 +159,10 @@ function UnitTestModule(name, ti_array) {
 	this.testItemArray = [];
 	if (typeof ti_array == "object" && ti_array.length) {
 		for (var x = 0; x < ti_array.length; x++) {
-			if (ti_array[x] instanceof UnitTestItem) {
+			if (ti_array[x] instanceof FIUnitTestItem) {
 				this.testItemArray.push(ti_array[x]);
 			} else {
-				alert("Something other than a proper UnitTestItem object was passed to the UnitTestModule constructor");
+				alert("Something other than a proper FIUnitTestItem object was passed to the UnitTestModule constructor");
 			}
 		}
 	}

@@ -71,6 +71,16 @@ var KanjiDictionary = {
 		return rv;
 	},*/
 	
+	onSetKanjiByMaxFOUValRequest: function(evt) {
+		if (!evt.target.hasAttribute("kanjiVal") || evt.target.getAttribute("kanjiVal") < 0) {
+			alert("Programming error: The button that triggered the 'SetKanjiByMaxFOUVal' event didn't have a valid 'kanjiVal' attribute");
+			return;
+		}
+		var newMinFOUVal = evt.target.getAttribute("kanjiVal");
+		FuriganaInjector.setPref("exclusion_kanji", KanjiDictionary.freqOfUseList(1, newMinFOUVal).join(""));
+		alert(FuriganaInjector.strBundle.getFormattedString("alertExclusionKanjiSetToX", [ newMinFOUVal ]));
+	},
+	
 	char_list: {
 "一":	{ f:   2,	u:"4e00", g: 1,	o: ["イチ","イツ"], k: ["ひと-","ひと.つ"], t1:["かず","い","いっ","いる","かつ","かづ","てん","はじめ","ひ","ひとつ","まこと"] },
 "丁":	{ f:1312,	u:"4e01", g: 3,	o: ["チョウ","テイ","チン","トウ","チ"], k: ["ひのと"] },

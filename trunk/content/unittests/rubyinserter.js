@@ -1,16 +1,17 @@
+//ユニコード文字列
 
 /******************************************************
  *	Unit Tests 
  ******************************************************/
 var utmodRubyInserter = new UnitTestModule("RubyInserter", [
 
-	new UnitTestItem("Basic var existence", 
+	new FIUnitTestItem("Basic var existence", 
 		function() { 
 			return RubyInserter && typeof RubyInserter == "object"; 
 		}
 	), 
 		
-	new UnitTestItem("replaceTextNode(ownerDocument, origTextNode, matchingInstances)", 
+	new FIUnitTestItem("replaceTextNode(ownerDocument, origTextNode, matchingInstances)", 
 		function() { 
 			var dummyDiv = content.document.createElement("div");
 			var origTextNode = content.document.createTextNode("例日本語の文字列。取り込む。");
@@ -38,7 +39,7 @@ var utmodRubyInserter = new UnitTestModule("RubyInserter", [
 		}
 	), 
 
-	new UnitTestItem("RubyInserter.newRubyElement(ownerDocument, rb_val, rt_val)", 
+	new FIUnitTestItem("RubyInserter.newRubyElement(ownerDocument, rb_val, rt_val)", 
 		function() { 
 			var simpleDummyRuby = RubyInserter.newRubyElement(content.document, "RBTEXT", "RTTEXT");
 			if (!simpleDummyRuby || simpleDummyRuby.tagName != "RUBY" || !simpleDummyRuby.hasChildNodes()) 
@@ -54,7 +55,7 @@ var utmodRubyInserter = new UnitTestModule("RubyInserter", [
 		}
 	) , 
 
-	new UnitTestItem("revertRuby(rubyElem)", 
+	new FIUnitTestItem("revertRuby(rubyElem)", 
 		function() { 
 			var dummyDiv = content.document.createElement("div");
 			var headTextNode = content.document.createTextNode("RBTEXT in leading text node: ");

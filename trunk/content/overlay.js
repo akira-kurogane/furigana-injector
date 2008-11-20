@@ -38,7 +38,7 @@ document.getElementById("appcontent").addEventListener("DOMContentLoaded",
 	function() {
 		if (content.document.URL == setKanjiLevelURI) {
 			content.document.addEventListener("SetKanjiByMaxFOUValRequest", 
-				function(evt) { FuriganaInjector.onSetKanjiByMaxFOUValRequest(evt); }, false, true);
+				function(evt) { KanjiDictionary.onSetKanjiByMaxFOUValRequest(evt); }, false, true);
 			//N.B. By testing it seems the "SetKanjiByMaxFOUValRequest" event listener is destroyed when 
 			//  the document is closed, so there is no need for a matching removeEventListener();
 		}

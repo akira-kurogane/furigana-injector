@@ -53,7 +53,6 @@ var FuriganaInjector = {
 			return;
 		}
 
-		var ignore = VocabAdjuster.getSimpleKanjiList();	//just to make sure VocabAdjuster._simpleKanjiList is initialized for VocabAdjuster.tooEasy()
 		FuriganaInjector.setStatusIcon("default");
 		
 		this.initialized = true;
@@ -136,11 +135,12 @@ var FuriganaInjector = {
 					kanjiCount++;
 					if (exclusionKanji.indexOf(currKanji) >= 0) {
 						kanjiAdjustMenuItemLabel = FuriganaInjector.strBundle.getFormattedString("menuLabelShowFuriganaForX", [ currKanji ]);
-						kanjiAdjustMenuItemOnCmd = "VocabAdjuster.removeKanjiFromExclusionList('" + currKanji + "'); FuriganaInjector.processContextSection(false);";
-							
+						kanjiAdjustMenuItemOnCmd = "VocabAdjuster.removeKanjiFromExclusionList('" + currKanji + 
+							"'); FuriganaInjector.postRemoveKanjiFromExclusionList();";
 					} else {
 						kanjiAdjustMenuItemLabel = FuriganaInjector.strBundle.getFormattedString("menuLabelIgnoreFuriganaForX", [ currKanji ]);
-						kanjiAdjustMenuItemOnCmd = "VocabAdjuster.addKanjiToExclusionList('" + currKanji + "'); FuriganaInjector.processContextSection(false)";
+						kanjiAdjustMenuItemOnCmd = "VocabAdjuster.addKanjiToExclusionList('" + currKanji + 
+							"'); FuriganaInjector.postAddKanjiToExclusionList('" + currKanji + "')";
 					}
 					document.getElementById("contentAreaContextMenu").addMenuItem
 					var kanjiAdjustMenuItem = document.createElementNS("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul", "menuitem");
@@ -171,6 +171,22 @@ var FuriganaInjector = {
 	openOptionsWindow: function() {
 		window.openDialog("chrome://furiganainjector/content/options.xul", "", "centerscreen,chrome,resizable=yes,dependent=yes");
 	},
+	
+	postRemoveKanjiFromExclusionList: function() {	//i.e. after Show-furigana-for-X
+		if (FuriganaInjector.currentContentProcessed() === true) {	//i.e. page already _fully_ processed once.
+			this.processWholeDocument();	//Redo it all- should be quick because the existing rubies will be skipped.
+		} else {
+			this.processContextSection();	//Just do the one spot the user had selected.
+		}
+	},
+	
+	postAddKanjiToExclusionList: function(newKanji) {	//i.e. after Ignore-furigana-for-X
+		var rubyElems = content.document.getElementsByTagName("RUBY");
+		for (var x= 0; x < rubyElems.length; x++) {
+			if (VocabAdjuster.tooEasy(RubyInserter.rubyBaseText(rubyElems[x])))
+				RubyInserter.revertRuby(rubyElems[x]);
+		}
+	},
   	
   	/******************************************************************************
   	 *	Meat
@@ -190,7 +206,7 @@ var FuriganaInjector = {
 		FuriganaInjector.setStatusIcon(FuriganaInjector.currentContentProcessed() === true ? "processed" : "failed"); 
 	}, 
 	
-	processContextSection: function(useAllDictMatches) {
+	processContextSection: function() {
 		var selectionObject = content.getSelection();
 		var selText = selectionObject.toString();
 		var parentBlockElem = document.popupNode;
@@ -238,12 +254,13 @@ var FuriganaInjector = {
 	}, 
 	
 	processContextSectionCallback: function(processingResult) {
-		FuriganaInjector.setCurrentContentProcessed(processingResult ? "partially_processed" : false);
-		FuriganaInjector.setStatusIcon(processingResult ? "partially_processed" : "failed"); 		 
+		if (FuriganaInjector.currentContentProcessed() !== true) {	//i.e. page not already _fully_ processed once.
+			FuriganaInjector.setCurrentContentProcessed(processingResult ? "partially_processed" : false);
+			FuriganaInjector.setStatusIcon(processingResult ? "partially_processed" : "failed"); 	
+		}
 	}, 
 
 	lookupAndInjectFurigana: function(textNodesParentElement, callbackFunc) {
-		var ignore = VocabAdjuster.getSimpleKanjiList();	//Just to re-initialize VocabAdjuster._simpleKanjiList member variable
 		var textBlocks = this.getTextBlocks(textNodesParentElement, FuriganaInjector.getPref("process_link_text"));
 		//var tempCharCount = 0;
 		for (var x = 0; x < textBlocks.length; x++) {
@@ -262,8 +279,9 @@ var FuriganaInjector = {
 		var length = new Number();
 		var features = [];
 		var reKanji = new RegExp(VocabAdjuster.kanjiPattern);
+		var ignore = VocabAdjuster.getSimpleKanjiList();	//Just to re-initialize VocabAdjuster._simpleKanjiList member variable before using tooEasy_NoInit()
 		while (FIMecabParser.next(surface, feature, length)) {	
-			if (reKanji.test(surface.value) && (ignoreVocabAdjuster == true || !VocabAdjuster.tooEasy(surface.value))) {
+			if (reKanji.test(surface.value) && (ignoreVocabAdjuster == true || !VocabAdjuster.tooEasy_NoInit(surface.value))) {
 				features = feature.value.split(",");
 				if (features.length > 7) {
 					textBlock.wordsVsYomis.push( {word: surface.value, yomi: FuriganaInjector.converKatakanaToHiragana(features[7]) } );//convert to hiragana
@@ -419,8 +437,7 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 		//If Ruby XHTML Support extension is being used, call it's delayedReformRubyElement() method for all rubies.
 		if (window.RubyService && !RubyInserter.rubySupportedNatively()) {
 			try {
-				var rubyNodeList = content.document.getElementsByTagName("RUBY");
-				var rubyElemArray = [];
+				var rubyNodeList = content.document.getElementsByTagName("RUBY");	//N.B. the return val is a NodeList object, not a standard array.
 				var tempRubyElem;
 				for (var x = 0; x < rubyNodeList.length; x++) {
 					RubyService.delayedReformRubyElement(rubyNodeList[x]);
@@ -487,6 +504,7 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 				var newPrefValStr = Components.classes["@mozilla.org/supports-string;1"].createInstance(Components.interfaces.nsISupportsString);
 				newPrefValStr.data = newPrefVal;
 				this.prefs.setComplexValue(prefName, Components.interfaces.nsISupportsString, newPrefValStr);
+				VocabAdjuster.flagSimpleKanjiListForReset();
 			} else if (prefName == "last_version") {	//an ascii-type string
 				return this.prefs.setCharPref(prefName, newPrefVal);
 			//} else if (prefName == "known_string_preference") {
@@ -495,16 +513,6 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 				throw "FuriganaInjector does not know the type of the \"" + prefName + "\" preference";
 			}
 		}
-	}, 
-	
-	onSetKanjiByMaxFOUValRequest: function(evt) {
-		if (!evt.target.hasAttribute("kanjiVal") || evt.target.getAttribute("kanjiVal") < 0) {
-			alert("Programming error: The button that triggered the 'SetKanjiByMaxFOUVal' event didn't have a valid 'kanjiVal' attribute");
-			return;
-		}
-		var newMinFOUVal = evt.target.getAttribute("kanjiVal");
-		FuriganaInjector.setPref("exclusion_kanji", KanjiDictionary.freqOfUseList(1, newMinFOUVal).join(""));
-		alert(FuriganaInjector.strBundle.getFormattedString("alertExclusionKanjiSetToX", [ newMinFOUVal ]));
 	}
 
 };
@@ -564,7 +572,6 @@ var FuriganaInjectorPrefsObserver =	{
 		switch (aData) {
 		case "exclusion_kanji":
 			VocabAdjuster.flagSimpleKanjiListForReset();
-			var ignore = VocabAdjuster.getSimpleKanjiList();	//To re-initialize VocabAdjuster._simpleKanjiList
 			break;
 		}
 	}
