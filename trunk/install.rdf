@@ -2,7 +2,7 @@
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 	<Description about="urn:mozilla:install-manifest">
 		<em:id>furiganainjector@yayakoshi.net</em:id>
-		<em:version>0.9.3</em:version>
+		<em:version>1.0</em:version>
 		<em:name>Furigana Injector</em:name>
 		<em:description>Looks up the readings for kanji words and inserts them as furigana.</em:description>
 		<em:creator>Akira Kurogane</em:creator>
@@ -79,6 +79,23 @@
 				<em:description>Procura a leitura para palavras em kanji e insere furigana nelas.</em:description>
 				<em:creator>Akira Kurogane</em:creator>
 				<em:translator>André Gil</em:translator>
+			</Description>
+		</em:localized>
+		<em:localized>
+			<Description>
+				<em:locale>zh-CN</em:locale>
+				<em:name>振假名植入器</em:name>
+				<em:description>选择植入振假名的日文词汇</em:description>
+				<em:creator>黒鉄 章</em:creator>
+			</Description>
+		</em:localized>
+		<em:localized>
+			<Description>
+				<em:locale>zh-TW</em:locale>
+				<em:name>振假名植入器</em:name>
+				<em:description>選擇植入振假名的日文词匯</em:description>
+				<em:creator>黒鉄 章</em:creator>
+				<em:translator>CC Fan</em:translator>
 			</Description>
 		</em:localized>
 		<em:targetApplication>

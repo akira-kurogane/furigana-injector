@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+<head>
+<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf-8">
+		<meta http-equiv="Content-Language" content="en" />
+	<title>歡迎使用振假名閱讀輔助器</title>
+	<link rel="stylesheet" type="text/css" media="all" href="../../content/user_guides/user_guides.css" />
+</head>
+
+<META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf-8">
+<body>
+	<div id="central_content">
+		<p><span id="start_word">現在</span>您的火狐瀏覽器已具有振假名閱讀輔助器的功能，小號的平假名字母將處于複雜日本漢字的上方或旁邊。<strong>嘗試一下 </strong> - 點擊在狀態欄中的<img style="position: relative; top: 3px; border-style: solid; border-width: 1px; border-color: #808080;" src="chrome://furiganainjector/skin/status_icon/default.png"alt="振" />圖標。</p>
+		<q>1952年、醫學生だったチェ・ゲバラが友人と二人でオートバイにまたがり、アルゼンチンからペルーまでの南米大陸6,400キロを縦斷するというストーリーです。旅先で樣々な人に出會い、トラブルにも卷き込まれ失戀もしました。南米大陸の民族、貧困、差別などに向き合い懸命に生きている人々に深い同情と愛を深め、大人に成長していきます。この映畫の製作・総監督は、監督作品も多いハリウッドの名優ロバート・レッドフォードで、いわゆる革命や思想を描いた映畫にはしたくなかったそうです。</q>
+
+		<h2>我首先要做什麼？</h2>
+
+		<div id="XHTML_Ruby_Support_div">
+			<h3><a href="https://addons.mozilla.org/en-US/firefox/addon/1935" target="XHTML-Ruby-Support-add-on-page">安裝XHTML Ruby support extension 插件</a></h3>
+			<p>(鏈接通向mozilla.org網站Shimoda Hiroshi的插件)</p>
+			<table class="ruby_simulation"><tr>
+				<td width="160">使用紅寶石插件</td>
+				<td>
+					<td><table class="ruby_simulation"><tr><td class="forced_rt">とうきょう</td><td></td><td class="forced_rt">おおさか</td><td></td></tr>
+						<tr><td>東京</td><td>から</td><td>大阪</td><td>までの...</td></tr></table></td>
+				</td>
+			</tr></table>
+			<table><tr>
+				<td width="160">無紅寶石插件</td>
+				<td>東京（とうきょう）から大阪（おおさか）までの...</td>
+			</tr></table>
+		</div>
+
+		<div id="RubyService_KanjiSelector">
+			<h3><a href="simple_kanji_level_selector.html">選擇您的日文漢字閱讀水平</a></h3>
+			<p>選擇您不想使用振假名閱讀輔助器的日文漢字</p>
+		</div>
+
+		<div id="No_RubyService_KanjiSelector" style="display: none;">
+			<h3>選擇您的日文漢字程度</h3>
+			<p>用"選項"來控制不需要注入振假名閱讀的日文漢字。<strong>注</strong>如果您已經安裝了XHTML紅寶石插件您可以利用這個更簡單的<a href="simple_kanji_level_selector.html">日文漢字選擇網頁。</a></p>
+		</div>
+
+		<br/>
+		<p><span id="start_word">之後</span>使用該工具閱覽任何含有日文文字的網頁。<a href="http://www.mozilla.gr.jp/">www.mozilla.gr.jp</a>為您提供了一個很好的示例:
+			<ul>
+			<li>由簡單日文漢字組成的詞匯不會被處理。</li>
+			<li>帶有鏈接的詞匯不會被處理，除非您對優先選項進行更改。</li>
+			<li>圖像將被忽略。很抱歉，位於圖像中的文字不會被處理。</li>
+			</ul>
+		</p>
+
+		<br/>
+		<h3 class="fakelink" onclick="document.getElementById('options_explanation_div').style.display = 'block'; this.className = ''; this.innerHTML = '其他選擇'; this.onclick='';">其他選擇 ...</h3>
+		<div id="options_explanation_div" style="display: none;">
+			<ul>
+				<li>您可選擇頁面一旦下載完成即被振假名閱讀輔助器處理。</li>
+				<li>您可選擇將振假名應用于含有超鏈接的文本，如同在一般文本中的那樣。</li>
+			</ul>
+			<p>這些附加選擇可通過鼠標右擊<img  style="position: relative; top: 3px; border-style: solid; border-width: 1px; border-color: #808080;" src="chrome://furiganainjector/skin/status_icon/default.png"alt="振" />的圖標即可實現。</p>
+			<p style="padding-left: 20px;"><img src="sb_context_menu_sample.png" alt="context menu sample"/></p>
+		</div>
+
+		<div id="project_homepage">
+			<h3><a href="http://code.google.com/p/furigana-injector/">開發主頁</a></h3></div>
+
+		<img id="sb_icon_indicator_img" src="chrome://furiganainjector/content/user_guides/sb_icon_arrow.png" alt="æ¯"
+			style="visibility: hidden; position: fixed; bottom: 5px; right: 300px;" onmouseover="var evt = document.createEvent('Events'); evt.initEvent('HideAttentionArrow', true, false); this.dispatchEvent(evt);"/>
+
+	</div>
+</body>
+</html>
