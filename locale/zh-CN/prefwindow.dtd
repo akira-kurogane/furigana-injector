@@ -1,0 +1,8 @@
+﻿<!ENTITY prefwindow.title "振假名植入器优先选项">
+<!ENTITY pane1.title "振假名植入器优先选项">
+<!ENTITY auto_prcs_all_pages.label "自动处理每个页面">
+<!ENTITY auto_prcs_all_pages.accesskey "A">
+<!ENTITY exclusion_kanji.label "不包含在振假名处理范围内的日文汉字词汇">
+<!ENTITY exclusion_kanji.accesskey "E">
+<!ENTITY process_link_text.label "包含嵌入链接的文字">
+<!ENTITY process_link_text.accesskey "L">
