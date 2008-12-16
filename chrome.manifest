@@ -3,6 +3,7 @@ content	furiganainjector	content/
 locale	furiganainjector	ja	locale/ja/
 locale	furiganainjector	ar	locale/ar/
 locale	furiganainjector	en	locale/en/
+locale	furiganainjector	es-ES	locale/es-ES/
 locale	furiganainjector	de	locale/de/
 locale	furiganainjector	fr	locale/fr/
 locale	furiganainjector	it	locale/it/
