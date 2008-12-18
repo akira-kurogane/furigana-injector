@@ -39,7 +39,8 @@ CPPSRCS        = \
 DEFINES += -DHAVE_CONFIG_H
 DEFINES += -DDIC_VERSION=102
 DEFINES += -DMECAB_DEFAULT_RC=\"/etc/mecabrc\"
-#TODO: if configure can't be used, replace the HAVE_CONFIG_H define with that file's differences. (also delete the -I for the directory above.)
+#Todo: test the 'use-utf8-only'  directive below to see if successful in windows, linux and mac. Will hopefully remove the need to link to iconv.
+#DEFINES += -DMECAB_USE_UTF8_ONLY
 
 LOCAL_INCLUDES += -I$(srcdir)/..
 

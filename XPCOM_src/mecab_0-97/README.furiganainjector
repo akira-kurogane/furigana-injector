@@ -8,6 +8,9 @@ The contents of this mecab source directory are being excluded as they are exact
 -- "src/Makefile.in"
   Instead of the original MeCab makefiles, mozilla-build environment style makefiles must be used.
   
+-- "param.cpp"
+  The Param::open() method has a bug concerning arguments with spaces in them (crucially with filepaths). See the "param.cpp.README" for more detail.
+  
 So, to build the XPCOM_src subdirectory of Furigana Injector on a new platform it is necessary to:
   1. Obtain the current mecab code (assuming it is still backward compatible with version 0.97) and build it in it's own directory.
   2. Copy the contents of the mecab source to this directory, except for Makefile.in files.
