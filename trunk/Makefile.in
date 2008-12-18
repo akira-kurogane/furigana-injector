@@ -62,7 +62,11 @@ export::
 #Copy the top-level files (if they match a '*.*' filename pattern) and recursively copy all the directories listed.
 libs::
 	$(NSINSTALL) $(srcdir)/*.* $(FINAL_TARGET)/
-	cp -r -t $(FINAL_TARGET)/ $(srcdir)/content/ $(srcdir)/defaults/ $(srcdir)/locale/ $(srcdir)/public/ $(srcdir)/skin/
+	cp -r $(srcdir)/content $(FINAL_TARGET)/
+	cp -r $(srcdir)/defaults $(FINAL_TARGET)/
+	cp -r $(srcdir)/locale $(FINAL_TARGET)/
+	cp -r $(srcdir)/public $(FINAL_TARGET)/
+	cp -r $(srcdir)/skin $(FINAL_TARGET)/
 
 #Recursively copy XPCOM_src/SimpleMecab, but only select files in XPCOM_src/mecab_0-97
 libs::
