@@ -76,6 +76,7 @@ libs::
 	$(NSINSTALL) -D $(FINAL_TARGET)/XPCOM_src/mecab_0-97/src
 	$(NSINSTALL) $(srcdir)/XPCOM_src/mecab_0-97/README.furiganainjector $(FINAL_TARGET)/XPCOM_src/mecab_0-97/
 	$(NSINSTALL) $(srcdir)/XPCOM_src/mecab_0-97/Makefile.in $(FINAL_TARGET)/XPCOM_src/mecab_0-97/
+	$(NSINSTALL) $(srcdir)/XPCOM_src/mecab_0-97/param.cpp.README $(FINAL_TARGET)/XPCOM_src/mecab_0-97/
 	$(NSINSTALL) $(srcdir)/XPCOM_src/mecab_0-97/src/Makefile.in $(FINAL_TARGET)/XPCOM_src/mecab_0-97/src/
 
 #Mecab resource directory: copy only the contents of mecab/etc and the README in /mecab/dic/ipadic. The binary dictionary files and the dicrc file need to place manually.
