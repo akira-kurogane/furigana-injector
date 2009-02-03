@@ -12,7 +12,7 @@ NS_GENERIC_FACTORY_CONSTRUCTOR(SimpleMecab)
 static NS_METHOD nsSimpleMecabRegistrationProc(nsIComponentManager *aCompMgr,
 	nsIFile *aPath, const char *registryLocation, const char *componentType, const nsModuleComponentInfo *info) {
 
-	/*nsresult rv;
+	nsresult rv;
 
 	nsCOMPtr<nsIServiceManager> servmgr = do_QueryInterface((nsISupports*)aCompMgr, &rv);
 
@@ -28,14 +28,13 @@ static NS_METHOD nsSimpleMecabRegistrationProc(nsIComponentManager *aCompMgr,
 	rv = catmgr->AddCategoryEntry("xpcom-startup", "SimpleMecab", SIMPLEMECAB_CONTRACTID, PR_TRUE, PR_TRUE, &previous);
 	if (previous)
 		nsMemory::Free(previous);
-	return rv;*/
-	return NS_OK;
+	return rv;
 }
 
 static NS_METHOD nsSimpleMecabUnregistrationProc(nsIComponentManager *aCompMgr, nsIFile *aPath,
 	const char *registryLocation, const nsModuleComponentInfo *info) {
 
-	/*nsresult rv;
+	nsresult rv;
 	nsCOMPtr<nsIServiceManager> servmgr = do_QueryInterface((nsISupports*)aCompMgr, &rv);
 
 	if (NS_FAILED(rv))
@@ -48,8 +47,7 @@ static NS_METHOD nsSimpleMecabUnregistrationProc(nsIComponentManager *aCompMgr, 
 		return rv;
 
 	rv = catmgr->DeleteCategoryEntry("xpcom-startup", "SimpleMecab", PR_TRUE);
-	return rv;*/
-	return NS_OK;
+	return rv;
 }
 
 static const nsModuleComponentInfo components[] = {
