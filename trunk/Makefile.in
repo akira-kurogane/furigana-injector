@@ -54,7 +54,7 @@ XPI_PKGNAME		= furiganainjector
 #This "export" step is processed before compilation, or packaging into an *.xpi.
 export::
 	if [ ! -f $(srcdir)/XPCOM_src/mecab_0-97/config.h ]; then echo Error: mecab config.h file is missing- needs to be placed there manually; exit 1; fi
-	if [ ! \( -f $(FINAL_TARGET)/mecab/dic/ipadic/sys.dic -a -f $(FINAL_TARGET)/mecab/dic/ipadic/unk.dic -a -f $(FINAL_TARGET)/mecab/dic/ipadic/char.bin -a -f $(FINAL_TARGET)/mecab/dic/ipadic/matrix.bin -a -f $(FINAL_TARGET)/mecab/dic/ipadic/dicrc \) ]; then $(NSINSTALL) -D $(FINAL_TARGET)/mecab/dic/ipadic; echo Error: all mecab dictionary resource files need to be copied to $(FINAL_TARGET)/mecab/dic/ipadic/; exit 1; fi
+	if [ ! \( -f $(FINAL_TARGET)/mecab_resources/dic/ipadic/sys.dic -a -f $(FINAL_TARGET)/mecab_resources/dic/ipadic/unk.dic -a -f $(FINAL_TARGET)/mecab_resources/dic/ipadic/char.bin -a -f $(FINAL_TARGET)/mecab_resources/dic/ipadic/matrix.bin -a -f $(FINAL_TARGET)/mecab_resources/dic/ipadic/dicrc \) ]; then $(NSINSTALL) -D $(FINAL_TARGET)/mecab_resources/dic/ipadic; echo Error: all mecab dictionary resource files need to be copied to $(FINAL_TARGET)/mecab_resources/dic/ipadic/; exit 1; fi
 
 
 #The "libs" target is being used as it occurs at a suitable stage inbetween compilation and packaging/zipping of the *.xpi file. A 'pre-package' target would be more ideal.
@@ -79,10 +79,14 @@ libs::
 	$(NSINSTALL) $(srcdir)/XPCOM_src/mecab_0-97/param.cpp.README $(FINAL_TARGET)/XPCOM_src/mecab_0-97/
 	$(NSINSTALL) $(srcdir)/XPCOM_src/mecab_0-97/src/Makefile.in $(FINAL_TARGET)/XPCOM_src/mecab_0-97/src/
 
-#Mecab resource directory: copy only the contents of mecab/etc and the README in /mecab/dic/ipadic. The binary dictionary files and the dicrc file need to place manually.
+#Mecab resource directory: copy only the contents of mecab/etc, the license files, and the README in /mecab_resources/dic/ipadic. The binary dictionary files and the dicrc file need to place manually.
 libs::
-	$(NSINSTALL) $(srcdir)/mecab/dic/ipadic/README $(FINAL_TARGET)/mecab/dic/ipadic
-	$(NSINSTALL) $(srcdir)/mecab/etc/* $(FINAL_TARGET)/mecab/etc
+	$(NSINSTALL) $(srcdir)/mecab_resources/dic/ipadic/README $(FINAL_TARGET)/mecab_resources/dic/ipadic
+	$(NSINSTALL) $(srcdir)/mecab_resources/etc/* $(FINAL_TARGET)/mecab_resources/etc
+	$(NSINSTALL) $(srcdir)/mecab_resources/BSD $(FINAL_TARGET)/mecab_resources
+	$(NSINSTALL) $(srcdir)/mecab_resources/COPYING $(FINAL_TARGET)/mecab_resources
+	$(NSINSTALL) $(srcdir)/mecab_resources/GPL $(FINAL_TARGET)/mecab_resources
+	$(NSINSTALL) $(srcdir)/mecab_resources/LGPL $(FINAL_TARGET)/mecab_resources
 
 #DIST_FILES = install.rdf	#This DIST_FILES list is being disabled because the copy commands in the "export::" section above are achieving the same effect
 	
