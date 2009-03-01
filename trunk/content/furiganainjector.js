@@ -275,20 +275,13 @@ var FuriganaInjector = {
 	parseTextBlockForWordVsYomi: function (textBlock, ignoreVocabAdjuster) {
 		FIMecabParser.parse(textBlock.concatText);
 		var surface = new String();
-		var feature = new String();
+		var yomiStr = new String();
 		var length = new Number();
-		var features = [];
 		var reKanji = new RegExp(VocabAdjuster.kanjiPattern);
 		var ignore = VocabAdjuster.getSimpleKanjiList();	//Just to re-initialize VocabAdjuster._simpleKanjiList member variable before using tooEasy_NoInit()
-		while (FIMecabParser.next(surface, feature, length)) {	
+		while (FIMecabParser.next(surface, yomiStr, length)) {	
 			if (reKanji.test(surface.value) && (ignoreVocabAdjuster == true || !VocabAdjuster.tooEasy_NoInit(surface.value))) {
-				features = feature.value.split(",");
-				if (features.length > 7) {
-					textBlock.wordsVsYomis.push( {word: surface.value, yomi: FuriganaInjector.converKatakanaToHiragana(features[7]) } );//convert to hiragana
-				} //else {	//No reading was found for the surface value, probably because it was a  rare/difficult word not in the mecab dic. 
-					//Usually these are given the result "<surface_value>: 名詞,一般,*,*,*,*,*"
-					//Devnote: should I try to place readings by seeing if a likely match can be found in kanjidict? E.g. "蜀" has only one kunyomi (いもむし)
-				//}
+				textBlock.wordsVsYomis.push( {word: surface.value, yomi: FuriganaInjector.converKatakanaToHiragana(yomiStr.value) } );	//convert to hiragana
 			}
 		}
 	},
