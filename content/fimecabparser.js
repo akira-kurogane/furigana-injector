@@ -67,7 +67,7 @@ var FIMecabParser = {
 
 		var extDir = em.getInstallLocation(EXT_ID).getItemFile(EXT_ID, "");
 		this.mecabrcFile = extDir;
-		this.mecabrcFile.append("mecab");	//add ./mecab/etc/mecabrc to the path.
+		this.mecabrcFile.append("mecab_resources");	//add ./mecab_resources/etc/mecabrc to the path.
 		this.mecabrcFile.append("etc");
 		this.mecabrcFile.append("mecabrc");
 		//Devnote: I would prefer to set all arguments in the createTagger() method but Mecab requires that a rcfile can be found
