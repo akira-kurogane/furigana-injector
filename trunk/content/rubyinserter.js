@@ -13,6 +13,11 @@ var RubyInserter = {
 		for (var i = 0; i < matchingInstances.length; i++) {
 		
 			mi = matchingInstances[i];
+		
+			//Skipping any words that are not pure hiragana and kanji compounds, e.g. "ラテン語"
+			if (!mi.word.match(/^[\u3005\u3042\u3044\u3046\u3048\u304A-\u3093\u3400-\u9FBF]+$/))
+				continue;
+
 			for (var x = 0; x < dummyParent.childNodes.length; x++) {
 				currTextNode = dummyParent.childNodes[x];
 				if (currTextNode.nodeType != Node.TEXT_NODE) 
@@ -28,7 +33,7 @@ var RubyInserter = {
 			currTextNode.deleteData(word_offset, mi.word.length);
 			followingTextNode = currTextNode.splitText(word_offset);
 			
-			var regexResult = mi.word.match(/[\u3400-\u9FBF][\u3005\u3400-\u9FBF]*$/);
+			var regexResult = mi.word.match(/^[\u3400-\u9FBF][\u3005\u3400-\u9FBF]*$/);
 			if (regexResult) {
 				dummyParent.insertBefore(RubyInserter.newRubyElement(ownerDocument, mi.word, mi.yomi), followingTextNode);
 				continue;	//next mi
@@ -37,11 +42,12 @@ var RubyInserter = {
 			//TODO: Remove or disable this check once development is stable.
 			var yomiCheckRegex = new RegExp("^" + mi.word.replace(/([\u3400-\u9FBF][\u3005\u3400-\u9FBF]*)/g, ".+") + "$");
 			if (!mi.yomi.match(yomiCheckRegex)) {
+				dummyParent.insertBefore(ownerDocument.createTextNode(mi.word), followingTextNode);	//re-insert the original word string
 				FIMecabParser.consoleService.logStringMessage("The yomi \"" + mi.yomi + "\" doesn't seem to be compatible with the word \"" + mi.word + "\"");
 				continue;	//next mi
 			}
 
-			var kanjiSubStrs = mi.word.match(/([\u3400-\u9FBF][\u3005\u3400-\u9FBF]*)/g)
+			var kanjiSubStrs = mi.word.match(/([\u3400-\u9FBF][\u3005\u3400-\u9FBF]*)/g);
 			if (kanjiSubStrs) {
 				var rb_vals = [];
 				var rt_vals = [];
