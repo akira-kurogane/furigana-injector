@@ -6,19 +6,21 @@
 When Furigana Injector is installed/upgraded to a version 0.9 ~ 1.3,
 firefox crashes whilst trying to start. The error message will be as below:
 
-<pre>Microsoft Visual C++ Runtime Library Runtime Error!
+<pre>
+Microsoft Visual C++ Runtime Library Runtime Error!
 Program:c\Program Files\Mozilla Firefox\firefox.exe
 This application has requested the Runtime to terminate it in an unusual way.
 Please contact the application's support team for more information.</pre>
 
 Clicking OK/Debug leads to a further message:
 
-<pre>firefox.exe-Application Error
+<pre>
+firefox.exe-Application Error
 The exception unknown software exception (0x40000015) occurred in the application at location 0x10033b1f.
 Click on OK to terminate the program
 Click on CANCEL to debug the program</pre>
 
-N.B.: messages such "XPCOM Component could not be loaded" are not related to this issue.
+N.B.: messages such "The '!SimpleMecab' XPCOM component could not be loaded." are not related to this issue.
 
 == Immediate Fix ==
 
@@ -31,8 +33,8 @@ This will start up without using any add-ons. Then you can go to Tools -> Add-on
 
 == Install the 'No-Mecab' version ==
 
-[http://furigana-injector.googlecode.com/files/furiganainjectornomecab.0-8-4.winnt.xpi
-Furigana Injector (No Mecab) 0.8.4]
+After uninstalling the ordinary Furigana Injector, download and install [http://furigana-injector.googlecode.com/files/furiganainjectornomecab.0-8-4.winnt.xpi
+Furigana Injector (No Mecab) 0.8.4]. To install an `*`.xpi file that has been saved to your computer, simply drag it's icon onto the Firefox window.
 
 This add-on has been renamed so it will not be automatically replaced by Mozilla add-ons. The accuracy of readings in this version is not as good as the new versions; furthermore the interface is a little older.
 
@@ -44,4 +46,4 @@ The way to confirm this is to install the ordinary "mecab-win32" package for Mec
 
 The Mecab installation will fail whilst doing the final step of building the dictionaries (either Shift-JIS or UTF-8).
 
-If Mecab does not fail, i.e. can be used to parse japanese text from the commandline, but there was the runtime error as described above
+If Mecab does not fail, i.e. can be used to parse japanese text from the commandline, but there was still the runtime error as described above please contact *akira* at *yayakoshi* dot *net*.
