@@ -1,0 +1,22 @@
+#summary The Mecab-using versions (0.9.2+) crash on some Windows PCs
+#labels Phase-Support
+
+= Error symptons =
+
+After installing a 0.9.2 or higher version of Furigana Injector, Firefox crashes as soon as it starts.
+
+The error will be a runtime error such as: ...
+
+
+= Immediate Fix =
+
+Start Firefox in safe mode, and uninstall Furigana Injector ("Tools" menu -> "Add-ons" dialog).
+
+
+= Further Debugging =
+
+Install the ordinary Mecab package.
+
+= Stick with the old version =
+
+A relabeled old version, "Furigana Injector (No Mecab)" is available. Install this instead of the regular Furigana Injector.
