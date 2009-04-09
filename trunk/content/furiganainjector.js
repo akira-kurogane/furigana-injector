@@ -55,6 +55,9 @@ var FuriganaInjector = {
 
 		FuriganaInjector.setStatusIcon("default");
 		
+		FIThreadManager.threadManager = Components.classes["@mozilla.org/thread-manager;1"]
+									.getService(Components.interfaces.nsIThreadManager);
+		
 		this.initialized = true;
 		
 		try {
@@ -113,6 +116,7 @@ var FuriganaInjector = {
 	},
 
 	onShowContextMenu: function(e) {
+//Todo: disable the action if (e.target.id != "contentAreaContextMenu") so that context submenus don't cause issue #17
 		//N.B. the "disabled" attribute doesn't seem to be effective. I use hidden instead.
 		var pageProcessed = FuriganaInjector.currentContentProcessed() === true;
 		document.getElementById("process-whole-page-context-menuitem").hidden = pageProcessed;
@@ -248,6 +252,7 @@ var FuriganaInjector = {
 			selectionTextBlock.expandToFullContext();
 			selectionObject.collapseToStart();
 			this.parseTextBlockForWordVsYomi(selectionTextBlock, true);	//This should pay no attention to VocabAdjuster's kanji list.
+			//this.parseTextBlockForWordVsYomi_Background(selectionTextBlock, true);	//This should pay no attention to VocabAdjuster's kanji list.
 			selectionTextBlock.insertRubyElements();
 			this.processContextSectionCallback(true);
 		}
@@ -262,15 +267,30 @@ var FuriganaInjector = {
 
 	lookupAndInjectFurigana: function(textNodesParentElement, callbackFunc) {
 		var textBlocks = this.getTextBlocks(textNodesParentElement, FuriganaInjector.getPref("process_link_text"));
-		//var tempCharCount = 0;
+		var obj = this;
 		for (var x = 0; x < textBlocks.length; x++) {
-			this.parseTextBlockForWordVsYomi(textBlocks[x], null);
-			//tempCharCount += textBlocks[x].concatText.length;
-			textBlocks[x].insertRubyElements();
+			FuriganaInjector.parseTextBlockForWordVsYomi(textBlocks[x], null);	//new
+			try {
+				FIThreadManager.executeSoonParam(function(tBlock){
+					try {
+						tBlock.insertRubyElements();
+						FIThreadManager.threadManager.mainThread.processNextEvent(0);
+					} catch(e) {
+						alert(e);
+					}
+				}, textBlocks[x]);
+			} catch(e) {
+				alert(e);
+			}
 		}
 		
-		callbackFunc(true);
+		//callbackFunc(true);  TODO restore this. Maybe add another background event?
 	},
+	
+	/*parseTextBlockForWordVsYomi_Background: function (textBlock, ignoreVocabAdjuster) {
+		var obj=this;
+		FIThreadManager.executeBackNumSync(0, function() {obj.parseTextBlockForWordVsYomi(textBlock, ignoreVocabAdjuster);});
+	},*/
 	
 	parseTextBlockForWordVsYomi: function (textBlock, ignoreVocabAdjuster) {
 		FIMecabParser.parse(textBlock.concatText);
@@ -352,7 +372,7 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 		if (!currNode)
 			return textBlocks;
 		
-		while (currNode && safetyCtr < 2000) {	//Devnote: it seems it's quite easy for a HTML document to have thousands of nodes, so this safetyCtr constraint can easily truncate processing mid-page.
+		while (currNode) {
 			if (currNode.nodeType == Node.TEXT_NODE && currNode.data.match(/^[\s\t\r\n]*$/)) {	//whitespace-only text node
 				//no action. Just progress to the next node.
 			} else if (currNode.nodeType == Node.ELEMENT_NODE) {
@@ -738,3 +758,286 @@ FITextBlock.prototype.expandToFullContext = function() {
 	}
 
 }
+
+
+/******************************************************************************
+ *	Thread Manager, for asynchronous <ruby> insertion
+ ******************************************************************************/
+var FIThreadManager = {
+	threadManager: null,
+	backThreadArray: [], 
+	
+	/* executeBack: function(aFunc)
+	{
+		if(FIThreadManager.threadManager)
+		{
+			var background = FIThreadManager.threadManager.newThread(0);
+			var backgroundThread = function(func) {
+				this.func = func;
+			};
+			backgroundThread.prototype = {
+			  run: function() {
+				try {
+					this.func();
+					//this.win.setTimeout(this.func, 1);
+				} catch(err) {
+					Components.utils.reportError(err);
+				}
+			  },
+			  QueryInterface: function(iid) {
+				if (iid.equals(Components.interfaces.nsIRunnable) ||
+					iid.equals(Components.interfaces.nsISupports)) {
+						return this;
+				}
+				throw Components.results.NS_ERROR_NO_INTERFACE;
+			  }
+			};
+			background.dispatch(new backgroundThread(aFunc),
+				background.DISPATCH_NORMAL);
+		}
+		else
+		{
+			aFunc();
+		}
+	},
+	
+	executeBackNum: function(num, aFunc)
+	{
+		if(FIThreadManager.threadManager)
+		{
+			
+			var background = FIThreadManager.backThreadArray[num];
+			if(!background)
+			{
+				FIThreadManager.backThreadArray[num] = background = FIThreadManager.threadManager.newThread(0);
+			}
+			var backgroundThread = function(func) {
+				this.func = func;
+			};
+			backgroundThread.prototype = {
+			  run: function() {
+				try {
+					this.func();
+					//this.win.setTimeout(this.func, 1);
+				} catch(err) {
+					Components.utils.reportError(err);
+				}
+			  },
+			  QueryInterface: function(iid) {
+				if (iid.equals(Components.interfaces.nsIRunnable) ||
+					iid.equals(Components.interfaces.nsISupports)) {
+						return this;
+				}
+				throw Components.results.NS_ERROR_NO_INTERFACE;
+			  }
+			};
+			background.dispatch(new backgroundThread(aFunc),
+				background.DISPATCH_NORMAL);
+		}
+		else
+		{
+			aFunc();
+		}
+	},*/
+	
+	/*executeBackNumSync: function(num, aFunc)
+	{
+		if(FIThreadManager.threadManager)
+		{
+			
+			var background = FIThreadManager.backThreadArray[num];
+			if(!background)
+			{
+				FIThreadManager.backThreadArray[num] = background = FIThreadManager.threadManager.newThread(0);
+			}
+			var backgroundThread = function(func) {
+				this.func = func;
+			};
+			
+			backgroundThread.prototype = {
+			  run: function() {
+				try {
+					this.func();
+					//this.win.setTimeout(this.func, 1);
+				} catch(err) {
+					Components.utils.reportError(err);
+				}
+			  },
+			  QueryInterface: function(iid) {
+				if (iid.equals(Components.interfaces.nsIRunnable) ||
+					iid.equals(Components.interfaces.nsISupports)) {
+						return this;
+				}
+				throw Components.results.NS_ERROR_NO_INTERFACE;
+			  }
+			};
+			background.dispatch(new backgroundThread(aFunc),
+				background.DISPATCH_SYNC);
+		}
+		else
+		{
+			aFunc();
+		}
+	},*/
+	
+	/*executeBackNumParam: function(num, aFunc, param)
+	{
+		if(FIThreadManager.threadManager)
+		{
+			var background = FIThreadManager.backThreadArray[num];
+			if(!background)
+			{
+				FIThreadManager.backThreadArray[num] = background = FIThreadManager.threadManager.newThread(0);
+			}
+			var backgroundThread = function(func, p) {
+				this.func = func;
+				this.param = p;
+			};
+			backgroundThread.prototype = {
+			  run: function() {
+				try {
+					this.func(this.param);
+					//this.win.setTimeout(this.func, 1);
+				} catch(err) {
+					Components.utils.reportError(err);
+				}
+			  },
+			  QueryInterface: function(iid) {
+				if (iid.equals(Components.interfaces.nsIRunnable) ||
+					iid.equals(Components.interfaces.nsISupports)) {
+						return this;
+				}
+				throw Components.results.NS_ERROR_NO_INTERFACE;
+			  }
+			};
+			background.dispatch(new backgroundThread(aFunc, param),
+				background.DISPATCH_NORMAL);
+		}
+		else
+		{
+			aFunc(param);
+		}
+	},*/
+	
+	/*executeSoon: function(aFunc)
+	{
+	//	if(FIThreadManager.threadManager && FIThreadManager.threadManager.currentThread != FIThreadManager.threadManager.mainThread)
+		if(FIThreadManager.threadManager)// && FIThreadManager.threadManager.currentThread != FIThreadManager.threadManager.mainThread)
+		{
+			var mainThread = function(func) {
+				this.func = func;
+			};
+			mainThread.prototype = {
+			  run: function() {
+				try {
+					this.func();
+					//window.setTimeout(aFunc, 1);
+				} catch(err) {
+					Components.utils.reportError(err);
+				}
+			  },
+			  QueryInterface: function(iid) {
+				if (iid.equals(Components.interfaces.nsIRunnable) ||
+					iid.equals(Components.interfaces.nsISupports)) {
+						return this;
+				}
+				throw Components.results.NS_ERROR_NO_INTERFACE;
+			  }
+			};
+			FIThreadManager.threadManager.mainThread.dispatch(new mainThread(aFunc),
+				Ci.nsIThread.DISPATCH_NORMAL);
+		}
+		else
+		{
+			aFunc();
+			//win.setTimeout(aFunc, 1);
+		}
+	},*/
+	
+	executeSoonParam: function(aFunc, param)
+	{
+	//	if(FIThreadManager.threadManager && FIThreadManager.threadManager.currentThread != FIThreadManager.threadManager.mainThread)
+		if(FIThreadManager.threadManager)// && FIThreadManager.threadManager.currentThread != FIThreadManager.threadManager.mainThread)
+		{
+			var mainThread = function(func, p) {
+				this.func = func;
+				this.param = p;
+			};
+			mainThread.prototype = {
+			  run: function() {
+				try {
+					//FIThreadManager.threadManager.mainThread.processNextEvent(1);
+					//while(FIThreadManager.threadManager.mainThread.processNextEvent(0)){};
+					this.func(this.param);
+					//window.setTimeout(function(){aFunc(param);}, 1);
+					//FIThreadManager.threadManager.mainThread.processNextEvent(1);
+					//while(FIThreadManager.threadManager.mainThread.processNextEvent(0)){};
+				} catch(err) {
+					//alert(err);
+					Components.utils.reportError(err);
+				}
+			  },
+			  QueryInterface: function(iid) {
+				if (iid.equals(Components.interfaces.nsIRunnable) ||
+					iid.equals(Components.interfaces.nsISupports)) {
+						return this;
+				}
+				throw Components.results.NS_ERROR_NO_INTERFACE;
+			  }
+			};
+			FIThreadManager.threadManager.mainThread.dispatch(new mainThread(aFunc, param),
+				Ci.nsIThread.DISPATCH_NORMAL);	//What is "Ci"?? Components.interfaces?
+		}
+		else
+		{
+			aFunc(param);
+			//win.setTimeout(aFunc, 1);
+		}
+	},
+	
+	/*executeSoonParam2: function(aFunc, param1, param2)
+	{
+	//	if(FIThreadManager.threadManager && FIThreadManager.threadManager.currentThread != FIThreadManager.threadManager.mainThread)
+		if(FIThreadManager.threadManager)// && FIThreadManager.threadManager.currentThread != FIThreadManager.threadManager.mainThread)
+		{
+			var mainThread = function(func, p1, p2) {
+				this.func = func;
+				this.param1 = p1;
+				this.param2 = p2;
+			};
+			mainThread.prototype = {
+			  run: function() {
+				try {
+					//FIThreadManager.threadManager.mainThread.processNextEvent(1);
+					//while(FIThreadManager.threadManager.mainThread.processNextEvent(0)){};
+					this.func(this.param1, this.param2);
+					//window.setTimeout(function(){aFunc(param1, param2);}, 1);
+					//FIThreadManager.threadManager.mainThread.processNextEvent(1);
+					//while(FIThreadManager.threadManager.mainThread.processNextEvent(0)){};
+				} catch(err) {
+					Components.utils.reportError(err);
+				}
+			  },
+			  QueryInterface: function(iid) {
+				if (iid.equals(Components.interfaces.nsIRunnable) ||
+					iid.equals(Components.interfaces.nsISupports)) {
+						return this;
+				}
+				throw Components.results.NS_ERROR_NO_INTERFACE;
+			  }
+			};
+			FIThreadManager.threadManager.mainThread.dispatch(new mainThread(aFunc, param1, param2),
+				Ci.nsIThread.DISPATCH_NORMAL);
+		}
+		else
+		{
+			aFunc(param1, param2);
+			//win.setTimeout(aFunc, 1);
+		}
+	},*/
+	
+	mainThreadAlert: function(str)
+	{
+		FIThreadManager.executeSoonParam(alert, str);
+	}
+};
