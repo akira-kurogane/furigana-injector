@@ -22,6 +22,8 @@ Click on CANCEL to debug the program</pre>
 
 N.B.: messages such "The '!SimpleMecab' XPCOM component could not be loaded." are not related to this issue.
 
+This issue was originally described as issues #13 and #19: http://code.google.com/p/furigana-injector/issues/detail?id=19
+
 == Immediate Fix ==
 
 The way to disable the installed Furigana Injector is start Firefox in safe mode,
@@ -33,8 +35,7 @@ This will start up without using any add-ons. Then you can go to Tools -> Add-on
 
 == Install the 'No-Mecab' version ==
 
-After uninstalling the ordinary Furigana Injector, download and install [http://furigana-injector.googlecode.com/files/furiganainjectornomecab.0-8-4.winnt.xpi
-Furigana Injector (No Mecab) 0.8.4]. To install an `*`.xpi file that has been saved to your computer, simply drag it's icon onto the Firefox window.
+After uninstalling the ordinary Furigana Injector, download and install <a href="http://furigana-injector.googlecode.com/files/furiganainjectornomecab.0-8-4.winnt.xpi">Furigana Injector (No Mecab) 0.8.4</a>. To install an `*`.xpi file that has been saved to your computer, simply drag it's icon onto the Firefox window.
 
 This add-on has been renamed so it will not be automatically replaced by Mozilla add-ons. The accuracy of readings in this version is not as good as the new versions; furthermore the interface is a little older.
 
@@ -42,8 +43,8 @@ This add-on has been renamed so it will not be automatically replaced by Mozilla
 
 So far it seems that the cause is that Mecab code cannot run on some PCs (maybe 1%), whether it be by itself or compiled/linked within the Furigana Injector libraries. 
 
-The way to confirm this is to install the ordinary "mecab-win32" package for Mecab, preferably version 0.97 available at http://sourceforge.net/project/showfiles.php?group_id=177856&package_id=205277&release_id=573517 .
+The way to confirm this is to install the ordinary "mecab-win32" package for Mecab, preferably version 0.97 available at <a href="http://sourceforge.net/project/showfiles.php?group_id=177856&package_id=205277&release_id=573517">http://sourceforge.net/project/showfiles.php?group_id=177856&package_id=205277&release_id=573517</a> .
 
-The Mecab installation will fail whilst doing the final step of building the dictionaries (either Shift-JIS or UTF-8).
+If the error is present the Mecab installation will fail whilst doing the final step of building the dictionaries (either Shift-JIS or UTF-8).
 
 If Mecab does not fail, i.e. can be used to parse japanese text from the commandline, but there was still the runtime error as described above please contact *akira* at *yayakoshi* dot *net*.
