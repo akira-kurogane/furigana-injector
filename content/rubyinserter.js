@@ -2,14 +2,14 @@
 
 var RubyInserter = {
 
-	replaceTextNode: function(ownerDocument, origTextNode, matchingInstances) {
-		var targetParent = origTextNode.parentNode;
+	replacementNodesForTextSpan: function(ownerDocument, origText, matchingInstances) {
 		var dummyParent = ownerDocument.createElement("div");
+		dummyParent.appendChild(ownerDocument.createTextNode(origText));
 		var mi;
 		var currTextNode;
 		var word_offset;
 		var followingTextNode
-		dummyParent.appendChild(origTextNode.cloneNode(false));
+		
 		for (var i = 0; i < matchingInstances.length; i++) {
 		
 			mi = matchingInstances[i];
@@ -104,11 +104,8 @@ FIMecabParser.consoleService.logStringMessage("Programming Error- unmatched patt
 				tempNode = tempNode.nextSibling;
 			}
 		}
-		while (dummyParent.hasChildNodes()) {
-			targetParent.insertBefore(dummyParent.firstChild, origTextNode);
-		}
-		targetParent.removeChild(origTextNode);
-		dummyParent = null;
+		
+		return dummyParent;
 	}, 
 	
 	newRubyElement: function(ownerDocument, rb_vals, rt_vals) {
@@ -122,7 +119,7 @@ FIMecabParser.consoleService.logStringMessage("Programming Error- unmatched patt
 					rt_vals[x] = "";
 			}
 			new_ruby.innerHTML = "<rbc><rb>" + rb_vals.join("</rb><rb>") + "</rb></rbc>" +
-				"<rtc><rt>" + rt_vals.join("</rt><rt>") + "</rt></rtc>";
+				"<rp>(</rp><rtc><rt>" + rt_vals.join("</rt><rt>") + "</rt></rtc><rp>)</rp>";
 		} else {
 			new_ruby.innerHTML = "<rb>" + rb_vals + "</rb><rp>(</rp><rt>" + rt_vals + "</rt><rp>)</rp>";
 		}

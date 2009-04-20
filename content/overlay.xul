@@ -7,6 +7,7 @@
 	<script src="furiganainjector.js"/>
 	<script src="kanjidict.js"/>
 	<script src="rubyinserter.js"/>
+	<script src="threadmanager.js"/>
 	<script src="vocabadjuster.js"/>
 	<!-- It would be more ideal if the javascipt below could be loaded dynamically. It's only used in dev testing-->
 	<script src="unittests/unittester.js"/>

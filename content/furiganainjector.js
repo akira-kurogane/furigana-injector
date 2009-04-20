@@ -6,6 +6,7 @@ var FuriganaInjector = {
 	prefs: null,
 	kanjiAdjustMenuItems: [], 
 	strBundle: null,
+mecabParseFinishTime: null,	//debug
 	
 	/******************************************************************************
 	 *	Event handlers
@@ -116,7 +117,8 @@ var FuriganaInjector = {
 	},
 
 	onShowContextMenu: function(e) {
-//Todo: disable the action if (e.target.id != "contentAreaContextMenu") so that context submenus don't cause issue #17
+ 		if (e.target.id != "contentAreaContextMenu")	//Context menu sub-menu events will bubble to here too. Ignore them.
+ 			return;
 		//N.B. the "disabled" attribute doesn't seem to be effective. I use hidden instead.
 		var pageProcessed = FuriganaInjector.currentContentProcessed() === true;
 		document.getElementById("process-whole-page-context-menuitem").hidden = pageProcessed;
@@ -159,6 +161,8 @@ var FuriganaInjector = {
 	},
 
 	onHideContextMenu: function(e) {
+ 		if (e.target.id != "contentAreaContextMenu")	//Context menu sub-menu events will bubble to here too. Ignore them.
+ 			return;
 		var menuItemToDelete;
 		while (FuriganaInjector.kanjiAdjustMenuItems.length > 0) {
 			menuItemToDelete = FuriganaInjector.kanjiAdjustMenuItems.pop();
@@ -253,7 +257,7 @@ var FuriganaInjector = {
 			selectionObject.collapseToStart();
 			this.parseTextBlockForWordVsYomi(selectionTextBlock, true);	//This should pay no attention to VocabAdjuster's kanji list.
 			//this.parseTextBlockForWordVsYomi_Background(selectionTextBlock, true);	//This should pay no attention to VocabAdjuster's kanji list.
-			selectionTextBlock.insertRubyElements();
+			selectionTextBlock.prepRubyElemsForInsert();	//TODO: this is going background in lookupAndInjectFurigana; this will break this context action; it will need repairs
 			this.processContextSectionCallback(true);
 		}
 	}, 
@@ -264,27 +268,18 @@ var FuriganaInjector = {
 			FuriganaInjector.setStatusIcon(processingResult ? "partially_processed" : "failed"); 	
 		}
 	}, 
-
+	
 	lookupAndInjectFurigana: function(textNodesParentElement, callbackFunc) {
+//var startTime = new Date();
 		var textBlocks = this.getTextBlocks(textNodesParentElement, FuriganaInjector.getPref("process_link_text"));
-		var obj = this;
-		for (var x = 0; x < textBlocks.length; x++) {
-			FuriganaInjector.parseTextBlockForWordVsYomi(textBlocks[x], null);	//new
-			try {
-				FIThreadManager.executeSoonParam(function(tBlock){
-					try {
-						tBlock.insertRubyElements();
-						FIThreadManager.threadManager.mainThread.processNextEvent(0);
-					} catch(e) {
-						alert(e);
-					}
-				}, textBlocks[x]);
-			} catch(e) {
-				alert(e);
-			}
-		}
-		
-		//callbackFunc(true);  TODO restore this. Maybe add another background event?
+		FIThreadManager.PushingByBackgroundThread(textBlocks);
+//FuriganaInjector.mecabParseFinishTime = new Date();	
+//dump("Mecab parsing + ruby prep  took " + (FuriganaInjector.mecabParseFinishTime - startTime) + " milliseconds\n");
+		FIThreadManager.PopByMainThread();
+//var rubyInsertFinishTime = new Date();
+//dump("Ruby insert took " + (rubyInsertFinishTime - FuriganaInjector.mecabParseFinishTime) + " milliseconds\n");
+
+		callbackFunc(true);	//TODO
 	},
 	
 	/*parseTextBlockForWordVsYomi_Background: function (textBlock, ignoreVocabAdjuster) {
@@ -609,6 +604,7 @@ function FITextBlock(ownerDoc, selStartNode, selStartOffset, selEndNode, selEndO
 	this.skipRubyInserts = [ ];
 	this.concatText = "";
 	this.wordsVsYomis = [ ];
+	this.replacementNodesBuffer = [ ];
 	
 	//Devnote: there is potential for this to be shortened by using NodeIterator which will become available in FF3.1
 	if (this.selStartNode) {
@@ -652,7 +648,7 @@ FITextBlock.prototype.addTextNodeAtFront = function(txtnd, skipRuby) {
 	this.concatText = txtnd.data + this.concatText;
 }
 
-FITextBlock.prototype.insertRubyElements = function() {
+FITextBlock.prototype.prepRubyElemsForInsert = function() {
 	if (this.wordsVsYomis.length > 0) {
 		var separatedWordsVsYomis = [];
 		var currWvY = this.wordsVsYomis.shift(); //N.B. this will eventually clear the wordsVsYomis member array
@@ -674,6 +670,7 @@ FITextBlock.prototype.insertRubyElements = function() {
 				}
 			}
 		}
+var replaceNodesCount = 0;	//debug
 		for (var x = 0; x < this.textNodes.length; x++) {
 			if (!this.skipRubyInserts[x] && separatedWordsVsYomis[x]) {
 				var strTemp = this.textNodes[x].data;
@@ -692,16 +689,55 @@ FITextBlock.prototype.insertRubyElements = function() {
 				} else {
 					tempWordVsYomis = separatedWordsVsYomis[x];
 				}
-				RubyInserter.replaceTextNode(this.ownerDocument, this.textNodes[x], tempWordVsYomis);
+				this.replacementNodesBuffer[x] = RubyInserter.replacementNodesForTextSpan(this.ownerDocument, this.textNodes[x].data, tempWordVsYomis);
+++replaceNodesCount;	//debug
+				/* Optimization. TODO: Apply once multithread performance testing has finished.
+				if (dummyParent.childNodes.length == 1 && dummyParent.childNodes[0].nodeType == Node.TEXT_NODE &&
+					dummyParent.childNodes[0].data == this.textNodes[x].data) {	//no ruby elements inserted, nothing was changed
+					this.replacementNodesBuffer[x] = null;
+					continue;
+				}*/
 			}
 		}
 	}
-	//This FITextBlock is now invalid- delete everything.
-	this.textNodes = null;
+
+	//This FITextBlock is now awaiting attachReplacementNodes()- cleanup unnecessary objects
 	this.skipRubyInserts = null;
 	this.concatText = null;
 	this.wordsVsYomis = null;
+	
+	if (this.replacementNodesBuffer.length) {
+//dump("Prepared " + replaceNodesCount + " replacementNodes in a text block of " + this.textNodes.length + " text nodes\n");	//debug
+		return true;
+	} else {
+//dump("Prepared no replacementNodes for a text block of " + this.textNodes.length + " text nodes\n");	//debug
+		this.textNodes = null;
+		return false;
+	}
 },
+
+FITextBlock.prototype.attachReplacementNodes = function() {
+dump("attachReplacementNodes for " + this.textNodes.length + " text nodes\n");
+	for (var x = 0; x < this.textNodes.length; x++) {
+// Jiseop : for concurrency
+if(FIThreadManager.threadManager.mainThread.hasPendingEvents())
+	FIThreadManager.threadManager.mainThread.processNextEvent(false);
+		if (this.replacementNodesBuffer[x]) {
+				while (this.replacementNodesBuffer[x].hasChildNodes()) {
+// Jiseop : for concurrency
+if(FIThreadManager.threadManager.mainThread.hasPendingEvents())
+	FIThreadManager.threadManager.mainThread.processNextEvent(false);
+					this.textNodes[x].parentNode.insertBefore(this.replacementNodesBuffer[x].firstChild, this.textNodes[x]);
+				}
+				// this.textNodes[x].parentNode.insertBefore(this.replacementNodesBuffer[x], this.textNodes[x]);
+				this.textNodes[x].nodeValue="";
+				//this.textNodes[x].parentNode.removeChild(this.textNodes[x]);
+				this.replacementNodesBuffer[x] = null;	//cleanup
+		}
+//dump("  (no replaclement node for text node " + x + ")\n");
+	}
+	this.textNodes = null;	//cleanup
+}
 
 FITextBlock.prototype.expandToFullContext = function() {
 	if (!this.textNodes)
@@ -758,286 +794,3 @@ FITextBlock.prototype.expandToFullContext = function() {
 	}
 
 }
-
-
-/******************************************************************************
- *	Thread Manager, for asynchronous <ruby> insertion
- ******************************************************************************/
-var FIThreadManager = {
-	threadManager: null,
-	backThreadArray: [], 
-	
-	/* executeBack: function(aFunc)
-	{
-		if(FIThreadManager.threadManager)
-		{
-			var background = FIThreadManager.threadManager.newThread(0);
-			var backgroundThread = function(func) {
-				this.func = func;
-			};
-			backgroundThread.prototype = {
-			  run: function() {
-				try {
-					this.func();
-					//this.win.setTimeout(this.func, 1);
-				} catch(err) {
-					Components.utils.reportError(err);
-				}
-			  },
-			  QueryInterface: function(iid) {
-				if (iid.equals(Components.interfaces.nsIRunnable) ||
-					iid.equals(Components.interfaces.nsISupports)) {
-						return this;
-				}
-				throw Components.results.NS_ERROR_NO_INTERFACE;
-			  }
-			};
-			background.dispatch(new backgroundThread(aFunc),
-				background.DISPATCH_NORMAL);
-		}
-		else
-		{
-			aFunc();
-		}
-	},
-	
-	executeBackNum: function(num, aFunc)
-	{
-		if(FIThreadManager.threadManager)
-		{
-			
-			var background = FIThreadManager.backThreadArray[num];
-			if(!background)
-			{
-				FIThreadManager.backThreadArray[num] = background = FIThreadManager.threadManager.newThread(0);
-			}
-			var backgroundThread = function(func) {
-				this.func = func;
-			};
-			backgroundThread.prototype = {
-			  run: function() {
-				try {
-					this.func();
-					//this.win.setTimeout(this.func, 1);
-				} catch(err) {
-					Components.utils.reportError(err);
-				}
-			  },
-			  QueryInterface: function(iid) {
-				if (iid.equals(Components.interfaces.nsIRunnable) ||
-					iid.equals(Components.interfaces.nsISupports)) {
-						return this;
-				}
-				throw Components.results.NS_ERROR_NO_INTERFACE;
-			  }
-			};
-			background.dispatch(new backgroundThread(aFunc),
-				background.DISPATCH_NORMAL);
-		}
-		else
-		{
-			aFunc();
-		}
-	},*/
-	
-	/*executeBackNumSync: function(num, aFunc)
-	{
-		if(FIThreadManager.threadManager)
-		{
-			
-			var background = FIThreadManager.backThreadArray[num];
-			if(!background)
-			{
-				FIThreadManager.backThreadArray[num] = background = FIThreadManager.threadManager.newThread(0);
-			}
-			var backgroundThread = function(func) {
-				this.func = func;
-			};
-			
-			backgroundThread.prototype = {
-			  run: function() {
-				try {
-					this.func();
-					//this.win.setTimeout(this.func, 1);
-				} catch(err) {
-					Components.utils.reportError(err);
-				}
-			  },
-			  QueryInterface: function(iid) {
-				if (iid.equals(Components.interfaces.nsIRunnable) ||
-					iid.equals(Components.interfaces.nsISupports)) {
-						return this;
-				}
-				throw Components.results.NS_ERROR_NO_INTERFACE;
-			  }
-			};
-			background.dispatch(new backgroundThread(aFunc),
-				background.DISPATCH_SYNC);
-		}
-		else
-		{
-			aFunc();
-		}
-	},*/
-	
-	/*executeBackNumParam: function(num, aFunc, param)
-	{
-		if(FIThreadManager.threadManager)
-		{
-			var background = FIThreadManager.backThreadArray[num];
-			if(!background)
-			{
-				FIThreadManager.backThreadArray[num] = background = FIThreadManager.threadManager.newThread(0);
-			}
-			var backgroundThread = function(func, p) {
-				this.func = func;
-				this.param = p;
-			};
-			backgroundThread.prototype = {
-			  run: function() {
-				try {
-					this.func(this.param);
-					//this.win.setTimeout(this.func, 1);
-				} catch(err) {
-					Components.utils.reportError(err);
-				}
-			  },
-			  QueryInterface: function(iid) {
-				if (iid.equals(Components.interfaces.nsIRunnable) ||
-					iid.equals(Components.interfaces.nsISupports)) {
-						return this;
-				}
-				throw Components.results.NS_ERROR_NO_INTERFACE;
-			  }
-			};
-			background.dispatch(new backgroundThread(aFunc, param),
-				background.DISPATCH_NORMAL);
-		}
-		else
-		{
-			aFunc(param);
-		}
-	},*/
-	
-	/*executeSoon: function(aFunc)
-	{
-	//	if(FIThreadManager.threadManager && FIThreadManager.threadManager.currentThread != FIThreadManager.threadManager.mainThread)
-		if(FIThreadManager.threadManager)// && FIThreadManager.threadManager.currentThread != FIThreadManager.threadManager.mainThread)
-		{
-			var mainThread = function(func) {
-				this.func = func;
-			};
-			mainThread.prototype = {
-			  run: function() {
-				try {
-					this.func();
-					//window.setTimeout(aFunc, 1);
-				} catch(err) {
-					Components.utils.reportError(err);
-				}
-			  },
-			  QueryInterface: function(iid) {
-				if (iid.equals(Components.interfaces.nsIRunnable) ||
-					iid.equals(Components.interfaces.nsISupports)) {
-						return this;
-				}
-				throw Components.results.NS_ERROR_NO_INTERFACE;
-			  }
-			};
-			FIThreadManager.threadManager.mainThread.dispatch(new mainThread(aFunc),
-				Ci.nsIThread.DISPATCH_NORMAL);
-		}
-		else
-		{
-			aFunc();
-			//win.setTimeout(aFunc, 1);
-		}
-	},*/
-	
-	executeSoonParam: function(aFunc, param)
-	{
-	//	if(FIThreadManager.threadManager && FIThreadManager.threadManager.currentThread != FIThreadManager.threadManager.mainThread)
-		if(FIThreadManager.threadManager)// && FIThreadManager.threadManager.currentThread != FIThreadManager.threadManager.mainThread)
-		{
-			var mainThread = function(func, p) {
-				this.func = func;
-				this.param = p;
-			};
-			mainThread.prototype = {
-			  run: function() {
-				try {
-					//FIThreadManager.threadManager.mainThread.processNextEvent(1);
-					//while(FIThreadManager.threadManager.mainThread.processNextEvent(0)){};
-					this.func(this.param);
-					//window.setTimeout(function(){aFunc(param);}, 1);
-					//FIThreadManager.threadManager.mainThread.processNextEvent(1);
-					//while(FIThreadManager.threadManager.mainThread.processNextEvent(0)){};
-				} catch(err) {
-					//alert(err);
-					Components.utils.reportError(err);
-				}
-			  },
-			  QueryInterface: function(iid) {
-				if (iid.equals(Components.interfaces.nsIRunnable) ||
-					iid.equals(Components.interfaces.nsISupports)) {
-						return this;
-				}
-				throw Components.results.NS_ERROR_NO_INTERFACE;
-			  }
-			};
-			FIThreadManager.threadManager.mainThread.dispatch(new mainThread(aFunc, param),
-				Ci.nsIThread.DISPATCH_NORMAL);	//What is "Ci"?? Components.interfaces?
-		}
-		else
-		{
-			aFunc(param);
-			//win.setTimeout(aFunc, 1);
-		}
-	},
-	
-	/*executeSoonParam2: function(aFunc, param1, param2)
-	{
-	//	if(FIThreadManager.threadManager && FIThreadManager.threadManager.currentThread != FIThreadManager.threadManager.mainThread)
-		if(FIThreadManager.threadManager)// && FIThreadManager.threadManager.currentThread != FIThreadManager.threadManager.mainThread)
-		{
-			var mainThread = function(func, p1, p2) {
-				this.func = func;
-				this.param1 = p1;
-				this.param2 = p2;
-			};
-			mainThread.prototype = {
-			  run: function() {
-				try {
-					//FIThreadManager.threadManager.mainThread.processNextEvent(1);
-					//while(FIThreadManager.threadManager.mainThread.processNextEvent(0)){};
-					this.func(this.param1, this.param2);
-					//window.setTimeout(function(){aFunc(param1, param2);}, 1);
-					//FIThreadManager.threadManager.mainThread.processNextEvent(1);
-					//while(FIThreadManager.threadManager.mainThread.processNextEvent(0)){};
-				} catch(err) {
-					Components.utils.reportError(err);
-				}
-			  },
-			  QueryInterface: function(iid) {
-				if (iid.equals(Components.interfaces.nsIRunnable) ||
-					iid.equals(Components.interfaces.nsISupports)) {
-						return this;
-				}
-				throw Components.results.NS_ERROR_NO_INTERFACE;
-			  }
-			};
-			FIThreadManager.threadManager.mainThread.dispatch(new mainThread(aFunc, param1, param2),
-				Ci.nsIThread.DISPATCH_NORMAL);
-		}
-		else
-		{
-			aFunc(param1, param2);
-			//win.setTimeout(aFunc, 1);
-		}
-	},*/
-	
-	mainThreadAlert: function(str)
-	{
-		FIThreadManager.executeSoonParam(alert, str);
-	}
-};
