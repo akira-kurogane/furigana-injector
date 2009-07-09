@@ -35,7 +35,7 @@ This will start up without using any add-ons. Then you can go to Tools -> Add-on
 
 == Install the 'No-Mecab' version ==
 
-After uninstalling the ordinary Furigana Injector, download and install <a href="http://furigana-injector.googlecode.com/files/furiganainjectornomecab.0-8-4.winnt.xpi">Furigana Injector (No Mecab) 0.8.4</a>. To install an `*`.xpi file that has been saved to your computer, simply drag it's icon onto the Firefox window.
+After uninstalling the ordinary Furigana Injector, download and install <a href="http://furigana-injector.googlecode.com/files/furiganainjectornomecab.0-8-5.winnt.xpi">Furigana Injector (No Mecab) 0.8.5</a>. To install an `*`.xpi file that has been saved to your computer, simply drag it's icon onto the Firefox window.
 
 This add-on has been renamed so it will not be automatically replaced by Mozilla add-ons. The accuracy of readings in this version is not as good as the new versions; furthermore the interface is a little older.
 
