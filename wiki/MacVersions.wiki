@@ -1,3 +1,5 @@
-#summary Mac versions
+#summary Intel and PPC versions
+
+==Mac compatibility==
 
   The new version (1.3) was built on the Darwin 9.5 kernel, on intel chips. Thanks to !NeSuKun and Kirt for the loan of their Macs. For *PowerPC* Mac users, please note that you need the [http://furigana-injector.googlecode.com/files/furiganainjector.1-3.macosx.ppc.xpi PPC version] instead of the main one. (Thanks to David G. and Ronald M. for their help debugging the incompatible dictionary file issue.)
