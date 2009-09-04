@@ -1,13 +1,3 @@
-#summary Plans for the next versions
-
-==A new direction?==
-
-  The current version of Furigana Injector is one *fat little add-on*- approximately 15Mb. The code is fine; the dictionary files are the problem. I had hoped future developments might make it possible to shrink dictionary size, but it seems that progression in the natural language parsing community is for the opposite direction. [http://www.kokken.go.jp/lrc/index.php?UniDic%2F%B6%E1%C2%E5%CA%B8%B8%ECUniDic UniDic], the apparent successor to IPADIC, is well over 100Mb in size when unzipped.
-
-  For this reason a server-based text-parsing service may be the next generation. I have concerns about user privacy, but if users are aware that their webpage's text is being processed remotely when they press that furigana button then I think their common-sense will be enough.
-
-  Running redundant servers to handle text-analysis will incur financial cost; user donation would be required. 
-
 == Out of (the current) scope ==
 
   Never say never, but at this time there are some things Furigana Injector will not provide:
@@ -21,3 +11,11 @@
   * *Mouseover functions.* Many users of this extension also use the strongly mouseover-based [https://addons.mozilla.org/en-US/firefox/addon/2471 rikaichan]. There would be clashes in the DOM event chain if Furigana Injector tried doing it also. Furthermore the user interface that pops up would become cluttered- at least while these two extensions are not coordinated.
 
   * *Server-based service* Furigana Injector parses all text which would make any server that receives that traffic a potential goldmine for identify theft and the like. Even though transmissions can be protected and data discarded as soon as a request completes, a hijacker of the server or it's DNS record would have no limitations.
+
+==A new direction?==
+
+  The current version of Furigana Injector is one *fat little add-on*- approximately 15Mb. The code is fine; the dictionary files are the problem. I had hoped future developments might make it possible to shrink dictionary size, but it seems that progression in the natural language parsing community is for the opposite direction. [http://www.kokken.go.jp/lrc/index.php?UniDic%2F%B6%E1%C2%E5%CA%B8%B8%ECUniDic UniDic], the apparent successor to IPADIC, is well over 100Mb in size when unzipped.
+
+  For this reason a server-based text-parsing service may be the next generation. I have concerns about user privacy, but if users are aware that their webpage's text is being processed remotely when they press that furigana button then I think their common-sense will be enough.
+
+  Running redundant servers to handle text-analysis will incur financial cost; user donation would be required. 
