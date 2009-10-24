@@ -107,6 +107,10 @@ NS_IMETHODIMP SimpleMecab::Parse(const nsAString & text, PRBool *_retval NS_OUTP
 		return NS_ERROR_NULL_POINTER;
 
     NS_UTF16ToCString (text, dictCharEncoding, lastParsedText);
+	//Alternate converter: (Javascript syntax shown)
+	//converter = nsIScriptableUnicodeConverter
+	//converter.charset = "SJIS"
+	//lastParsedText = converter.convertFromUnicode(text)
 	currNode = mecab_sparse_tonode(tagger, lastParsedText.get());
     *_retval = PR_TRUE;
     return NS_OK;

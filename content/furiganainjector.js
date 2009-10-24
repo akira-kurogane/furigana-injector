@@ -6,7 +6,7 @@ var FuriganaInjector = {
 	prefs: null,
 	kanjiAdjustMenuItems: [], 
 	strBundle: null,
-mecabParseFinishTime: null,	//debug
+	threadManager : Components.classes["@mozilla.org/thread-manager;1"].getService(Components.interfaces.nsIThreadManager),
 	
 	/******************************************************************************
 	 *	Event handlers
@@ -55,9 +55,6 @@ mecabParseFinishTime: null,	//debug
 		}
 
 		FuriganaInjector.setStatusIcon("default");
-		
-		FIThreadManager.threadManager = Components.classes["@mozilla.org/thread-manager;1"]
-									.getService(Components.interfaces.nsIThreadManager);
 		
 		this.initialized = true;
 		
@@ -256,8 +253,7 @@ mecabParseFinishTime: null,	//debug
 			selectionTextBlock.expandToFullContext();
 			selectionObject.collapseToStart();
 			this.parseTextBlockForWordVsYomi(selectionTextBlock, true);	//This should pay no attention to VocabAdjuster's kanji list.
-			//this.parseTextBlockForWordVsYomi_Background(selectionTextBlock, true);	//This should pay no attention to VocabAdjuster's kanji list.
-			selectionTextBlock.prepRubyElemsForInsert();	//TODO: this is going background in lookupAndInjectFurigana; this will break this context action; it will need repairs
+			selectionTextBlock.insertRubyElements();
 			this.processContextSectionCallback(true);
 		}
 	}, 
@@ -268,24 +264,27 @@ mecabParseFinishTime: null,	//debug
 			FuriganaInjector.setStatusIcon(processingResult ? "partially_processed" : "failed"); 	
 		}
 	}, 
-	
-	lookupAndInjectFurigana: function(textNodesParentElement, callbackFunc) {
-//var startTime = new Date();
-		var textBlocks = this.getTextBlocks(textNodesParentElement, FuriganaInjector.getPref("process_link_text"));
-		FIThreadManager.PushingByBackgroundThread(textBlocks);
-//FuriganaInjector.mecabParseFinishTime = new Date();	
-//dump("Mecab parsing + ruby prep  took " + (FuriganaInjector.mecabParseFinishTime - startTime) + " milliseconds\n");
-		FIThreadManager.PopByMainThread();
-//var rubyInsertFinishTime = new Date();
-//dump("Ruby insert took " + (rubyInsertFinishTime - FuriganaInjector.mecabParseFinishTime) + " milliseconds\n");
 
-		callbackFunc(true);	//TODO
+	lookupAndInjectFurigana: function(textNodesParentElement, callbackFunc) {
+var startTime = new Date();
+dump(startTime.toString() + "\n");
+		var textBlocks = this.getTextBlocks(textNodesParentElement, FuriganaInjector.getPref("process_link_text"));
+		//var tempCharCount = 0;
+		for (var x = 0; x < textBlocks.length; x++) {
+			this.parseTextBlockForWordVsYomi(textBlocks[x], null);
+			//tempCharCount += textBlocks[x].concatText.length;
+			textBlocks[x].insertRubyElements();
+if (x % 10 == 0) {
+	// Jiseop : for concurrency
+	if(FuriganaInjector.threadManager.mainThread.hasPendingEvents())
+		FuriganaInjector.threadManager.mainThread.processNextEvent(false);
+}
+		}
+		
+var finishTime = new Date();	
+dump("Finish took " + (finishTime - startTime) + " milliseconds\n");
+		callbackFunc(true);
 	},
-	
-	/*parseTextBlockForWordVsYomi_Background: function (textBlock, ignoreVocabAdjuster) {
-		var obj=this;
-		FIThreadManager.executeBackNumSync(0, function() {obj.parseTextBlockForWordVsYomi(textBlock, ignoreVocabAdjuster);});
-	},*/
 	
 	parseTextBlockForWordVsYomi: function (textBlock, ignoreVocabAdjuster) {
 		FIMecabParser.parse(textBlock.concatText);
@@ -367,7 +366,7 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 		if (!currNode)
 			return textBlocks;
 		
-		while (currNode) {
+		while (currNode /*&& safetyCtr < 2000*/) {	//Devnote: it seems it's quite easy for a HTML document to have thousands of nodes, so this safetyCtr constraint can easily truncate processing mid-page.
 			if (currNode.nodeType == Node.TEXT_NODE && currNode.data.match(/^[\s\t\r\n]*$/)) {	//whitespace-only text node
 				//no action. Just progress to the next node.
 			} else if (currNode.nodeType == Node.ELEMENT_NODE) {
@@ -604,7 +603,6 @@ function FITextBlock(ownerDoc, selStartNode, selStartOffset, selEndNode, selEndO
 	this.skipRubyInserts = [ ];
 	this.concatText = "";
 	this.wordsVsYomis = [ ];
-	this.replacementNodesBuffer = [ ];
 	
 	//Devnote: there is potential for this to be shortened by using NodeIterator which will become available in FF3.1
 	if (this.selStartNode) {
@@ -648,7 +646,7 @@ FITextBlock.prototype.addTextNodeAtFront = function(txtnd, skipRuby) {
 	this.concatText = txtnd.data + this.concatText;
 }
 
-FITextBlock.prototype.prepRubyElemsForInsert = function() {
+FITextBlock.prototype.insertRubyElements = function() {
 	if (this.wordsVsYomis.length > 0) {
 		var separatedWordsVsYomis = [];
 		var currWvY = this.wordsVsYomis.shift(); //N.B. this will eventually clear the wordsVsYomis member array
@@ -670,7 +668,6 @@ FITextBlock.prototype.prepRubyElemsForInsert = function() {
 				}
 			}
 		}
-var replaceNodesCount = 0;	//debug
 		for (var x = 0; x < this.textNodes.length; x++) {
 			if (!this.skipRubyInserts[x] && separatedWordsVsYomis[x]) {
 				var strTemp = this.textNodes[x].data;
@@ -689,55 +686,19 @@ var replaceNodesCount = 0;	//debug
 				} else {
 					tempWordVsYomis = separatedWordsVsYomis[x];
 				}
-				this.replacementNodesBuffer[x] = RubyInserter.replacementNodesForTextSpan(this.ownerDocument, this.textNodes[x].data, tempWordVsYomis);
-++replaceNodesCount;	//debug
-				/* Optimization. TODO: Apply once multithread performance testing has finished.
-				if (dummyParent.childNodes.length == 1 && dummyParent.childNodes[0].nodeType == Node.TEXT_NODE &&
-					dummyParent.childNodes[0].data == this.textNodes[x].data) {	//no ruby elements inserted, nothing was changed
-					this.replacementNodesBuffer[x] = null;
-					continue;
-				}*/
+//// Jiseop : for concurrency
+//if(FuriganaInjector.threadManager.mainThread.hasPendingEvents())
+//	FuriganaInjector.threadManager.mainThread.processNextEvent(false);
+				RubyInserter.replaceTextNode(this.ownerDocument, this.textNodes[x], tempWordVsYomis);
 			}
 		}
 	}
-
-	//This FITextBlock is now awaiting attachReplacementNodes()- cleanup unnecessary objects
+	//This FITextBlock is now invalid- delete everything.
+	this.textNodes = null;
 	this.skipRubyInserts = null;
 	this.concatText = null;
 	this.wordsVsYomis = null;
-	
-	if (this.replacementNodesBuffer.length) {
-//dump("Prepared " + replaceNodesCount + " replacementNodes in a text block of " + this.textNodes.length + " text nodes\n");	//debug
-		return true;
-	} else {
-//dump("Prepared no replacementNodes for a text block of " + this.textNodes.length + " text nodes\n");	//debug
-		this.textNodes = null;
-		return false;
-	}
 },
-
-FITextBlock.prototype.attachReplacementNodes = function() {
-dump("attachReplacementNodes for " + this.textNodes.length + " text nodes\n");
-	for (var x = 0; x < this.textNodes.length; x++) {
-// Jiseop : for concurrency
-if(FIThreadManager.threadManager.mainThread.hasPendingEvents())
-	FIThreadManager.threadManager.mainThread.processNextEvent(false);
-		if (this.replacementNodesBuffer[x]) {
-				while (this.replacementNodesBuffer[x].hasChildNodes()) {
-// Jiseop : for concurrency
-if(FIThreadManager.threadManager.mainThread.hasPendingEvents())
-	FIThreadManager.threadManager.mainThread.processNextEvent(false);
-					this.textNodes[x].parentNode.insertBefore(this.replacementNodesBuffer[x].firstChild, this.textNodes[x]);
-				}
-				// this.textNodes[x].parentNode.insertBefore(this.replacementNodesBuffer[x], this.textNodes[x]);
-				this.textNodes[x].nodeValue="";
-				//this.textNodes[x].parentNode.removeChild(this.textNodes[x]);
-				this.replacementNodesBuffer[x] = null;	//cleanup
-		}
-//dump("  (no replaclement node for text node " + x + ")\n");
-	}
-	this.textNodes = null;	//cleanup
-}
 
 FITextBlock.prototype.expandToFullContext = function() {
 	if (!this.textNodes)
