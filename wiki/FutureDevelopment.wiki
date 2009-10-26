@@ -1,5 +1,5 @@
 #labels Phase-Design
-==A new direction- server-based Furigana Injector==
+==A new direction— server-based Furigana Injector==
 
   The current version of Furigana Injector is one *fat little add-on*- approximately 15Mb (50Mb+ when unzipped). The code is fine; the dictionary files are the problem. I had hoped future developments might make it possible to shrink dictionary size, but it seems that progression in the natural language parsing community is for the opposite direction. [http://www.kokken.go.jp/lrc/index.php?UniDic%2F%B6%E1%C2%E5%CA%B8%B8%ECUniDic UniDic], the apparent successor to IPADIC, is well over 100Mb in size when unzipped.
 
