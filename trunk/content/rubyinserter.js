@@ -2,6 +2,19 @@
 
 var RubyInserter = {
 
+	/*replaceTextNode: function(ownerDocument, origTextNode, matchingInstances) {
+		var dummyParent = this.replacementNodesForTextSpan(ownerDocument, origTextNode, matchingInstances);	
+		/* Optimization. TODO: Apply once multithread performance testing has finished.
+		if (dummyParent.childNodes.length == 1 && dummyParent.childNodes[0].nodeType == Node.TEXT_NODE &&
+			dummyParent.childNodes[0].data == origTextNode.data)	//no ruby elements inserted, nothing was changed
+			return;* /
+		while (dummyParent.hasChildNodes()) {
+			origTextNode.parentNode.insertBefore(dummyParent.firstChild, origTextNode);
+		}
+		origTextNode.parentNode.removeChild(origTextNode);
+		dummyParent = null;
+	},*/
+	
 	replacementNodesForTextSpan: function(ownerDocument, origText, matchingInstances) {
 		var dummyParent = ownerDocument.createElement("div");
 		dummyParent.appendChild(ownerDocument.createTextNode(origText));
