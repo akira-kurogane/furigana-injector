@@ -2,11 +2,10 @@
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 	<Description about="urn:mozilla:install-manifest">
 		<em:id>furiganainjector@yayakoshi.net</em:id>
-		<em:version>1.3</em:version>
+		<em:version>2.0</em:version>
 		<em:name>Furigana Injector</em:name>
 		<em:description>Looks up the readings for kanji words and inserts them as furigana.</em:description>
 		<em:creator>Akira Kurogane</em:creator>
-		<em:contributor>Jiseop Moon</em:contributor>
 		<em:homepageURL>http://code.google.com/p/furigana-injector/</em:homepageURL>
 		<em:optionsURL>chrome://furiganainjector/content/options.xul</em:optionsURL>
 		<em:iconURL>chrome://furiganainjector/content/furigana_logo_32_32.png</em:iconURL>
@@ -16,7 +15,6 @@
 				<em:name>Furigana Injector</em:name>
 				<em:description>ايجاد القراءات لكلمات الكانجي وادخالهم كفوريغانا.</em:description>
 				<em:creator>Akira Kurogane</em:creator>
-				<em:contributor>Jiseop Moon</em:contributor>
 				<em:translator>أحمد بَزّي</em:translator>
 			</Description>
 		</em:localized>
@@ -26,7 +24,6 @@
 				<em:name>Furigana Injector</em:name>
 				<em:description>Sucht die Lesungen fur Kanji heraus und fügt sie als Furigana ein.</em:description>
 				<em:creator>Akira Kurogane</em:creator>
-				<em:contributor>Jiseop Moon</em:contributor>
 				<em:translator>Daniel Haferkorn</em:translator>
 			</Description>
 		</em:localized>
@@ -54,7 +51,6 @@
 				<em:name>Furigana Injector</em:name>
 				<em:description>Guarda le letture per i kanji parole e li inserisce come furigana.</em:description>
 				<em:creator>Akira Kurogane</em:creator>
-				<em:contributor>Jiseop Moon</em:contributor>
 				<em:translator>Erii</em:translator>
 			</Description>
 		</em:localized>
@@ -64,7 +60,6 @@
 				<em:name>Furigana Injector</em:name>
 				<em:description>한자 단어의 읽는 법을 검색하여 후리가나로 표시합니다.</em:description>
 				<em:creator>쿠로가네 아키라 (黒鉄 章)</em:creator>
-				<em:contributor>문지섭</em:contributor>
 				<em:translator>김 지혁</em:translator>
 			</Description>
 		</em:localized>
@@ -74,7 +69,6 @@
 				<em:name>ふりがなインジェクター</em:name>
 				<em:description>ふりがなを振る</em:description>
 				<em:creator>黒鉄 章</em:creator>
-				<em:contributor>Jiseop Moon</em:contributor>
 				<em:translator>かよ</em:translator>
 			</Description>		
 		</em:localized>
@@ -84,7 +78,6 @@
 				<em:name>Nanoszenie furigany</em:name>
 				<em:description>>Wyszukuje czytania słów kanji i wstawia je jako furiganę.</em:description>
 				<em:creator>Akira Kurogane</em:creator>
-				<em:contributor>Jiseop Moon</em:contributor>
 				<em:translator>Konrad</em:translator>
 			</Description>
 		</em:localized>
@@ -94,7 +87,6 @@
 				<em:name>Furigana Injector</em:name>
 				<em:description>Procura a leitura para palavras em kanji e insere furigana nelas.</em:description>
 				<em:creator>Akira Kurogane</em:creator>
-				<em:contributor>Jiseop Moon</em:contributor>
 				<em:translator>André Gil</em:translator>
 			</Description>
 		</em:localized>
@@ -104,7 +96,6 @@
 				<em:name>振假名植入器</em:name>
 				<em:description>选择植入振假名的日文词汇</em:description>
 				<em:creator>黒鉄 章</em:creator>
-				<em:contributor>Jiseop Moon</em:contributor>
 			</Description>
 		</em:localized>
 		<em:localized>
@@ -113,7 +104,6 @@
 				<em:name>振假名植入器</em:name>
 				<em:description>選擇植入振假名的日文词匯</em:description>
 				<em:creator>黒鉄 章</em:creator>
-				<em:contributor>Jiseop Moon</em:contributor>
 				<em:translator>CC Fan</em:translator>
 			</Description>
 		</em:localized>
@@ -121,7 +111,7 @@
 			<!-- Firefox -->
 			<Description>
 				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-				 <em:minVersion>3.0</em:minVersion>
+				 <em:minVersion>3.5</em:minVersion>
 				 <em:maxVersion>3.6a1pre</em:maxVersion>
 				</Description>
 		</em:targetApplication>
