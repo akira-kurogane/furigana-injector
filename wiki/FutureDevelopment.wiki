@@ -7,12 +7,13 @@
 
   The server has already been programmed and tested. So far it is only used in development because, well, I don't have the cash to run it on redundant servers with dedicated CPU.
 
+==Firefox version==
+
+  A new version of the Firefox extension has been developed, but will not be released until a dedicated server is ready. If you are one of the users of Windows who cannot use the 1.3 version, perhaps you would like to test the development version. If so please contact Akira.
 
 ==Chrome version==
 
-  A version for the 'dev channel' version of Chrome 4 has already been developed.
-
-  When 1) ruby tag support is added to Webkit and 2) Chrome 4 is released in a 'public' version then Furigana Injector for Chrome can be released too.
+  A version for the beta and dev 'channel' versions of Chrome 4 has already been developed. If you would like to test it please contact Akira.
 
 ==IE version?==
 
