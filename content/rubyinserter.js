@@ -1,5 +1,6 @@
 //ユニコード文字列
 
+//Devnote: RubyInserter is presently only used for removing Ruby instead. Rename as "RubyManip"?
 var RubyInserter = {
 
 	/*replaceTextNode: function(ownerDocument, origTextNode, matchingInstances) {
@@ -13,7 +14,7 @@ var RubyInserter = {
 		}
 		origTextNode.parentNode.removeChild(origTextNode);
 		dummyParent = null;
-	},*/
+	},
 	
 	replacementNodesForTextSpan: function(ownerDocument, origText, matchingInstances) {
 		var dummyParent = ownerDocument.createElement("div");
@@ -137,7 +138,7 @@ FIMecabParser.consoleService.logStringMessage("Programming Error- unmatched patt
 			new_ruby.innerHTML = "<rb>" + rb_vals + "</rb><rp>(</rp><rt>" + rt_vals + "</rt><rp>)</rp>";
 		}
 		return new_ruby;
-	}, 
+	}, */
 	
 	revertRuby: function (rubyElem) {
 		var parentElement = rubyElem.parentNode;

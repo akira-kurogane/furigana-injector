@@ -22,9 +22,9 @@ var InstallationWelcomeFX = {
 			
 			//N.B. accepting the HTML Ruby extension as well as the XHTML Ruby support extension, even though the page content 
 			//  only mentions the latter.
-			if (window.RubyService || window.HtmlRuby) {	//A global variable instantiated by the XHTML Ruby support extension/HTML Ruby extension
-				var XHTML_Ruby_Support_div = content.document.getElementById("XHTML_Ruby_Support_div");
-				XHTML_Ruby_Support_div.style.display = "none";
+			if (window.RubyService || window.HTMLRuby) {	//A global variable instantiated by the XHTML Ruby support extension/HTML Ruby extension
+				var HTML_Ruby_addon_div = content.document.getElementById("HTML_Ruby_addon_div");
+				HTML_Ruby_addon_div.style.display = "none";
 			} else {
 				try {
 					var RubyService_KanjiSelector_div = content.document.getElementById("RubyService_KanjiSelector");

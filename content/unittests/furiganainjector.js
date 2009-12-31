@@ -31,21 +31,21 @@ var utmodFuriganaInjector = new UnitTestModule("FuriganaInjector", [
 		
 	new FIUnitTestItem("getPref(prefName)", 
 		function() { 
-			var bPrefGetVal = FuriganaInjector.getPref("auto_process_all_pages");
+			var bPrefGetVal = FuriganaInjector.getPref("process_link_text");
 			return typeof bPrefGetVal == "boolean";
 		}
 	), 
 		
 	new FIUnitTestItem("setPref(prefName, val)", 
 		function() { 
-			var origBoolVal = FuriganaInjector.getPref("auto_process_all_pages");
+			var origBoolVal = FuriganaInjector.getPref("process_link_text");
 			if (typeof origBoolVal != "boolean")
-				throw("Preliminary step 'getPref(\"auto_process_all_pages\")' failed to retrieve a boolean value");
-			FuriganaInjector.setPref("auto_process_all_pages", !origBoolVal);	//reverse the pref value
-			if (FuriganaInjector.getPref("auto_process_all_pages") == origBoolVal) 
+				throw("Preliminary step 'getPref(\"process_link_text\")' failed to retrieve a boolean value");
+			FuriganaInjector.setPref("process_link_text", !origBoolVal);	//reverse the pref value
+			if (FuriganaInjector.getPref("process_link_text") == origBoolVal) 
 				return false;
-			FuriganaInjector.setPref("auto_process_all_pages", origBoolVal);	//restore the pref value
-			return FuriganaInjector.getPref("auto_process_all_pages") == origBoolVal;
+			FuriganaInjector.setPref("process_link_text", origBoolVal);	//restore the pref value
+			return FuriganaInjector.getPref("process_link_text") == origBoolVal;
 		}
 	),
 
