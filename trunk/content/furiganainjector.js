@@ -4,6 +4,7 @@ var FuriganaInjector = {
 
 	initialized: false, 
 	prefs: null,
+	userKanjiRegex: null,
 	kanjiAdjustMenuItems: [], 
 	strBundle: null,
 	kanjiTextNodes: {},
@@ -49,6 +50,8 @@ var FuriganaInjector = {
 
 		FuriganaInjector.setStatusIcon("default");
 		
+		userKanjiRegex = new RegExp("[" + VocabAdjuster.getSimpleKanjiList() + "]");
+		
 		this.initialized = true;
 		
 		try {
@@ -72,10 +75,7 @@ var FuriganaInjector = {
 	},
 	
 	onPageLoad: function() {
-		if(content.document.contentType == "text/html") {
-			if (FuriganaInjector.getPref("auto_process_all_pages") && FuriganaInjector.currentContentProcessed() !== true) 
-				FuriganaInjector.processWholeDocument();
-		}
+		//Todo delete this now that there is no 'auto_process_all_pages' preference?
 	},
 	
 	onWindowProgressStateStop: function(aProgress, aRequest, aStatus) {
@@ -161,7 +161,6 @@ var FuriganaInjector = {
 	}, 
 	
 	initStatusbarPopup: function() {
-		document.getElementById("fi-process-all-pages-menuitem").setAttribute("checked", FuriganaInjector.getPref("auto_process_all_pages"));
 		document.getElementById("fi-process-link-text-menuitem").setAttribute("checked", FuriganaInjector.getPref("process_link_text"));
 		return true;
 	},
@@ -190,7 +189,8 @@ var FuriganaInjector = {
   	 *	Meat
 	 ******************************************************************************/
 	queueAllTextNodesOfElement: function(elem) {
-		var xPathPattern = '//*[not(ancestor::select) and not(ancestor-or-self::script)]/text()[normalize-space(.) != ""]';
+		var includeLinkText = FuriganaInjector.getPref("process_link_text");
+		var xPathPattern = '//*[not(ancestor-or-self::head) and not(ancestor::select) and not(ancestor-or-self::script)and not(ancestor-or-self::ruby)' + (includeLinkText ? ' and not(ancestor-or-self::a)' : '') + ']/text()[normalize-space(.) != ""]';
 
 		try {
 			var iterator = content.document.evaluate(xPathPattern, elem, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
@@ -271,7 +271,7 @@ var FuriganaInjector = {
 		xhr.onerror = function(error) {
 			console.log("XHR error: " + JSON.stringify(error));
 		}
-		xhr.open("POST", "http://ns1.yayakoshi.net/furiganainjector", true);
+		xhr.open("POST", "http://fi.yayakoshi.net/furiganainjector", true);
 		xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		//xhr.setRequestHeader("Content-Length", postData.length);
 		xhr.send(postData);
@@ -282,19 +282,55 @@ var FuriganaInjector = {
 			if (this.status == 200) {
 				var returnData = JSON.parse(this.responseText);
 				for (key in returnData){
-					if (kanjiTextNodes[key]) {
-						var tempDocFrag = content.document.createDocumentFragment();
-						var dummyParent = content.document.createElement("DIV");
-						dummyParent.innerHTML = returnData[key];
-						while(dummyParent.firstChild)
-							tempDocFrag.appendChild(dummyParent.firstChild);
-						kanjiTextNodes[key].parentNode.replaceChild(tempDocFrag, kanjiTextNodes[key]);
-					}
+					returnData[key] = FuriganaInjector.stripRubyForSimpleKanji(returnData[key]);
+if (kanjiTextNodes[key]) {
+					var tempDocFrag = content.document.createDocumentFragment();
+					var dummyParent = content.document.createElement("DIV");
+					dummyParent.innerHTML = returnData[key];
+					while(dummyParent.firstChild)
+						tempDocFrag.appendChild(dummyParent.firstChild);
+					kanjiTextNodes[key].parentNode.replaceChild(tempDocFrag, kanjiTextNodes[key]);
+} else { alert("development error: key \"" + key + "\" had an empty value in the returnData"); }
 				}
 			} else {
 				alert("Error: the status of the reply from mod_furiganainjector was " + this.status + " instead of 200(OK)");
 			}
 		}
+	},
+	
+	stripRubyForSimpleKanji: function(origStr) {
+		var newStr = "";
+		var offset = 0;
+		var currRubyBeginOffset = origStr.indexOf("<ruby>", 0);	//Todo: make case-insestive
+		if (currRubyBeginOffset < 0)
+			return origStr;
+var safetCtr = 0;
+		while (currRubyBeginOffset >= 0 && safetCtr < 100) {
+			rubySubstr = origStr.substring(currRubyBeginOffset, origStr.indexOf("</ruby>", currRubyBeginOffset) + 7);
+			if (FuriganaInjector.hasOnlySimpleKanji(rubySubstr)) {
+				newStr += origStr.substring(offset, currRubyBeginOffset);
+				newStr += rubySubstr.replace(
+					/<ruby>(?:<rb>)?([^<]*)(?:<\/rb>)?(\s*)(?:<r[pt]>[^<]*<\/r[pt]>)*(\s*)<\/ruby>/, 
+					"$1$2$3", "i");
+				offset = currRubyBeginOffset + rubySubstr.length;
+			}
+			currRubyBeginOffset = origStr.indexOf("<ruby>", currRubyBeginOffset + 1);
+safetCtr++;
+		}
+if (safetCtr > 90) console.log("safetCtr = " + safetCtr);
+		newStr += origStr.substring(offset);
+		return newStr;
+	},
+
+	hasOnlySimpleKanji: function(rubySubstr) {
+		var foundKanji = rubySubstr.match(/[\u3400-\u9FBF]/g);
+		if (foundKanji) {
+			for (var x = 0; x < foundKanji.length; x++) {
+				if (!userKanjiRegex.exec(foundKanji[x]))
+					return false;
+			}
+		}
+		return true;
 	},
 	
 	//Devnote: there is potential for this to be significantly shortened by using NodeIterator which will become available in FF3.1
@@ -446,6 +482,7 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 				newPrefValStr.data = newPrefVal;
 				this.prefs.setComplexValue(prefName, Components.interfaces.nsISupportsString, newPrefValStr);
 				VocabAdjuster.flagSimpleKanjiListForReset();
+				userKanjiRegex = new RegExp("[" + VocabAdjuster.getSimpleKanjiList() + "]");
 			} else if (prefName == "last_version") {	//an ascii-type string
 				return this.prefs.setCharPref(prefName, newPrefVal);
 			//} else if (prefName == "known_string_preference") {
@@ -454,6 +491,16 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 				throw "FuriganaInjector does not know the type of the \"" + prefName + "\" preference";
 			}
 		}
+	},
+	
+	onSetKanjiByMaxFOUValRequest: function(evt) {
+		if (!evt.target.hasAttribute("selectedFOUKanjiSubset")) {
+			alert("Programming error: The button that triggered the 'SetKanjiByMaxFOUVal' event had an empty/false 'selectedFOUKanjiSubset' attribute");
+			return;
+		}
+		var newUserKanjList = evt.target.getAttribute("selectedFOUKanjiSubset");
+		FuriganaInjector.setPref("exclusion_kanji", newUserKanjList);
+		alert(FuriganaInjector.strBundle.getFormattedString("alertExclusionKanjiSetToX", [ newUserKanjList.length ]));
 	}
 
 };
