@@ -138,12 +138,11 @@ var FuriganaInjector = {
 						kanjiAdjustMenuItemOnCmd = "VocabAdjuster.addKanjiToExclusionList('" + currKanji + 
 							"'); FuriganaInjector.postAddKanjiToExclusionList('" + currKanji + "')";
 					}
-					document.getElementById("contentAreaContextMenu").addMenuItem
+					document.getElementById("furigana-injector-submenu").addMenuItem
 					var kanjiAdjustMenuItem = document.createElementNS("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul", "menuitem");
 					kanjiAdjustMenuItem.setAttribute("label", kanjiAdjustMenuItemLabel);
 					kanjiAdjustMenuItem.setAttribute("oncommand", kanjiAdjustMenuItemOnCmd);
-					document.getElementById("contentAreaContextMenu").insertBefore(kanjiAdjustMenuItem, 
-						document.getElementById("process-context-section-context-menuitem"));
+					document.getElementById("furigana-injector-submenu").appendChild(kanjiAdjustMenuItem);
 					FuriganaInjector.kanjiAdjustMenuItems.push(kanjiAdjustMenuItem);
 				}
 			}
@@ -156,7 +155,7 @@ var FuriganaInjector = {
 		var menuItemToDelete;
 		while (FuriganaInjector.kanjiAdjustMenuItems.length > 0) {
 			menuItemToDelete = FuriganaInjector.kanjiAdjustMenuItems.pop();
-			document.getElementById("contentAreaContextMenu").removeChild(menuItemToDelete);
+			document.getElementById("furigana-injector-submenu").removeChild(menuItemToDelete);
 		}
 	}, 
 	
@@ -190,17 +189,15 @@ var FuriganaInjector = {
 	 ******************************************************************************/
 	queueAllTextNodesOfElement: function(elem) {
 		var includeLinkText = FuriganaInjector.getPref("process_link_text");
-		var xPathPattern = '//*[not(ancestor-or-self::head) and not(ancestor::select) and not(ancestor-or-self::script)and not(ancestor-or-self::ruby)' + (includeLinkText ? ' and not(ancestor-or-self::a)' : '') + ']/text()[normalize-space(.) != ""]';
+		var xPathPattern = 'descendant-or-self::*[not(ancestor-or-self::head) and not(ancestor::select) and not(ancestor-or-self::script)and not(ancestor-or-self::ruby)' + (includeLinkText ? ' and not(ancestor-or-self::a)' : '') + ']/text()[normalize-space(.) != ""]';
 
 		try {
 			var iterator = content.document.evaluate(xPathPattern, elem, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
 			var nodeCtr = 100;
 			var thisNode ;
 			while (thisNode = iterator.iterateNext()) {
-				if (thisNode.textContent.match(/[\u3400-\u9FBF]/)) {
-					kanjiTextNodes[nodeCtr] = thisNode;
-					nodeCtr++;
-				}
+				if (thisNode.textContent.match(/[\u3400-\u9FBF]/))
+					kanjiTextNodes[nodeCtr++] = thisNode;
 			}
 		} catch (e) {
 			alert( 'Error during XPath document iteration: ' + e );
@@ -215,7 +212,7 @@ var FuriganaInjector = {
 		//for (var x = 0; x < framesList.length; x++) {
 		//	this.queueAllTextNodesOfElement(framesList[x].document.body)
 		//}
-		FuriganaInjector.startFuriganizeAJAX();
+		FuriganaInjector.startFuriganizeAJAX(FuriganaInjector.processWholeDocumentCallback, false);
 	}, 
 	
 	processWholeDocumentCallback: function(processingResult) {
@@ -235,7 +232,7 @@ var FuriganaInjector = {
 		if (selText.length == 0) {
 			if (parentBlockElem.tagName == "BODY") {
 				FuriganaInjector.queueAllTextNodesOfElement(parentBlockElem);
-				FuriganaInjector.startFuriganizeAJAX();
+				FuriganaInjector.startFuriganizeAJAX(FuriganaInjector.processWholeDocumentCallback, false);
 			} else {
 				//Blink the context block that has been selected
 				setTimeout(function() { parentBlockElem.style.visibility = "hidden"}, 400 );
@@ -244,13 +241,59 @@ var FuriganaInjector = {
 				setTimeout(function() { parentBlockElem.style.visibility = "visible"}, 800 );
 				setTimeout(function() { 
 					FuriganaInjector.queueAllTextNodesOfElement(parentBlockElem);
-					FuriganaInjector.startFuriganizeAJAX();
+					FuriganaInjector.startFuriganizeAJAX(FuriganaInjector.processContextSectionCallback, false);
 				}, 810);
 			}
 			
 		} else {
-			//Iterate all the text nodes in the selection range, add them to kanjiTextNodes
-			//FuriganaInjector.startFuriganizeAJAX();
+			//Check if the selection is selected back-to-front and reverse it if so.
+			if (selectionObject.anchorNode.compareDocumentPosition(selectionObject.focusNode) == Node.DOCUMENT_POSITION_PRECEDING || 
+				(selectionObject.anchorNode == selectionObject.focusNode && selectionObject.anchorOffset > selectionObject.focusOffset)) {
+				var oldAnchorNode = selectionObject.anchorNode;
+				var oldAnchorOffset = selectionObject.anchorOffset;
+				selectionObject.collapseToStart();
+				selectionObject.extend(oldAnchorNode, oldAnchorOffset);
+			}
+			
+			//Split start and end text nodes as necessary so any preceding or following text 
+			//  in the same element can be excluded as separate nodes.
+			var origAnchorOffset = selectionObject.anchorOffset;
+			var origFocusOffset = selectionObject.focusOffset;
+			var singleTextNode = selectionObject.anchorNode == selectionObject.focusNode;
+			var startTextNode = selectionObject.anchorNode;
+			var endTextNode = selectionObject.focusNode;
+			if (origAnchorOffset != 0) {
+				startTextNode = selectionObject.anchorNode.splitText(origAnchorOffset);
+				if (singleTextNode)
+					endTextNode = startTextNode;
+			}
+			if (singleTextNode) {
+				endTextNode.splitText(origFocusOffset - origAnchorOffset);
+			} else if (origAnchorOffset != endTextNode.length) {
+				endTextNode.splitText(origFocusOffset);
+			}
+
+			var nodeCtr = 100;
+			if (singleTextNode) {
+				kanjiTextNodes[nodeCtr++] = startTextNode;
+			} else {
+				kanjiTextNodes[nodeCtr++] = startTextNode;
+				try {
+					var xPathPattern = "following::*/text()";
+					var iterator = content.document.evaluate(xPathPattern, startTextNode, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
+					var thisNode ;
+					while (thisNode = iterator.iterateNext()) {
+						if (endTextNode.compareDocumentPosition(thisNode) != Node.DOCUMENT_POSITION_PRECEDING)
+							break;
+						if (thisNode.textContent.match(/[\u3400-\u9FBF]/)) 
+							kanjiTextNodes[nodeCtr++] = thisNode;
+					}
+				} catch (e) {
+					alert( 'Error during XPath document iteration: ' + e );
+				}
+				kanjiTextNodes[nodeCtr++] = endTextNode;
+			}
+			FuriganaInjector.startFuriganizeAJAX(FuriganaInjector.processContextSectionCallback, true);
 		}
 	}, 
 	
@@ -261,12 +304,18 @@ var FuriganaInjector = {
 		}
 	}, 
 
-	startFuriganizeAJAX: function() {
+	startFuriganizeAJAX: function(completionCallback, keepAllRubies) {
+		if (isEmpty(kanjiTextNodes)) {
+			alert("DEBUG: no difficult-kanji text nodes found");
+			return;
+		}
 		var postData = "";
 		for (key in kanjiTextNodes)
 			postData += "&" + key + "=" + encodeURIComponent(kanjiTextNodes[key].data);
 		postData = postData.substr(1);
 		var xhr = new XMLHttpRequest();
+		xhr.completionCallback = completionCallback;
+		xhr.keepAllRubies = keepAllRubies ? true : false;
 		xhr.onreadystatechange = this.furiganizeAJAXStateChangeHandler; // Implemented elsewhere.
 		xhr.onerror = function(error) {
 			console.log("XHR error: " + JSON.stringify(error));
@@ -282,7 +331,8 @@ var FuriganaInjector = {
 			if (this.status == 200) {
 				var returnData = JSON.parse(this.responseText);
 				for (key in returnData){
-					returnData[key] = FuriganaInjector.stripRubyForSimpleKanji(returnData[key]);
+					if (!this.keepAllRubies)
+						returnData[key] = FuriganaInjector.stripRubyForSimpleKanji(returnData[key]);
 if (kanjiTextNodes[key]) {
 					var tempDocFrag = content.document.createDocumentFragment();
 					var dummyParent = content.document.createElement("DIV");
@@ -292,8 +342,11 @@ if (kanjiTextNodes[key]) {
 					kanjiTextNodes[key].parentNode.replaceChild(tempDocFrag, kanjiTextNodes[key]);
 } else { alert("development error: key \"" + key + "\" had an empty value in the returnData"); }
 				}
+				//processWholeDocumentCallback() or processContextSectionCallback()
+				this.completionCallback(true); 
 			} else {
 				alert("Error: the status of the reply from mod_furiganainjector was " + this.status + " instead of 200(OK)");
+				this.completionCallback(false);
 			}
 		}
 	},
@@ -563,5 +616,14 @@ var FuriganaInjectorPrefsObserver =	{
 			break;
 		}
 	}
+}
+
+/********* Simple object check utility ****************/
+function isEmpty(obj) {
+	for(var prop in obj) {
+		if(obj.hasOwnProperty(prop))
+			return false;
+	}
+	return true;
 }
 

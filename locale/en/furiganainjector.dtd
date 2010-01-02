@@ -1,6 +1,8 @@
-<!ENTITY InjectContextFurigana.label "Inject Furigana">
-<!ENTITY InjectContextFurigana.accesskey "F">
-<!ENTITY InjectFuriganaWholePage.label "Inject Furigana (Whole Page)">
+<!ENTITY FuriganaSubmenu.label "Furigana ...">
+<!ENTITY FuriganaSubmenu.accesskey "F">
+<!ENTITY InjectContextFurigana.label "Inject">
+<!ENTITY InjectContextFurigana.accesskey "I">
+<!ENTITY InjectFuriganaWholePage.label "Inject Whole Page">
 <!ENTITY InjectFuriganaWholePage.accesskey "W">
 <!ENTITY RemoveFuriganaWholePage.label "Remove Furigana">
 <!ENTITY RemoveFuriganaWholePage.accesskey "R">
