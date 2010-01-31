@@ -189,7 +189,7 @@ var FuriganaInjector = {
 	 ******************************************************************************/
 	queueAllTextNodesOfElement: function(elem) {
 		var includeLinkText = FuriganaInjector.getPref("process_link_text");
-		var xPathPattern = 'descendant-or-self::*[not(ancestor-or-self::head) and not(ancestor::select) and not(ancestor-or-self::script)and not(ancestor-or-self::ruby)' + (includeLinkText ? ' and not(ancestor-or-self::a)' : '') + ']/text()[normalize-space(.) != ""]';
+		var xPathPattern = 'descendant-or-self::*[not(ancestor-or-self::head) and not(ancestor::select) and not(ancestor-or-self::script)and not(ancestor-or-self::ruby)' + (includeLinkText ? '' : ' and not(ancestor-or-self::a)') + ']/text()[normalize-space(.) != ""]';
 
 		try {
 			var iterator = content.document.evaluate(xPathPattern, elem, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
