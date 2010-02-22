@@ -47,12 +47,14 @@
 			<li>图像将被忽略。很抱歉，位于图像中的文字不会被处理。</li>
 			</ul>
 		</p>
+		
+		<h3>Privacy notice</h3>
+		<p>Please note that from version 2.0 the text is processed on a remote server. Simply do not use Furigana Injector on pages or paragraphs or sentences that have personal information.</p>
 
 		<br/>
 		<h3 class="fakelink" onclick="document.getElementById('options_explanation_div').style.display = 'block'; this.className = ''; this.innerHTML = '其他选择'; this.onclick='';">其他选择 ...</h3>
 		<div id="options_explanation_div" style="display: none;">
 			<ul>
-				<li>您可选择页面一旦下载完成即被振假名阅读辅助器处理。</li>
 				<li>您可选择将振假名应用于含有超链接的文本，如同在一般文本中的那样。</li>
 			</ul>
 			<p>这些附加选择可通过鼠标右击<img  style="position: relative; top: 3px; border-style: solid; border-width: 1px; border-color: #808080;" src="chrome://furiganainjector/skin/status_icon/default.png"alt="振" />的图标即可实现。</p>
@@ -61,6 +63,18 @@
 
 		<div id="project_homepage">
 			<h3><a href="http://code.google.com/p/furigana-injector/">开发主页</a></h3>
+		</div>
+
+		<div id="donation_request">
+			<h3><a href="http://code.google.com/p/furigana-injector/">Like it?</a></h3>
+				<form style="display: inline;" action="https://www.paypal.com/cgi-bin/webscr" method="post">
+				<p>Paypal donations appreciated ...
+				<input type="hidden" name="cmd" value="_s-xclick">
+				<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----MIIHVwYJKoZIhvcNAQcEoIIHSDCCB0QCAQExggEwMIIBLAIBADCBlDCBjjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtQYXlQYWwgSW5jLjETMBEGA1UECxQKbGl2ZV9jZXJ0czERMA8GA1UEAxQIbGl2ZV9hcGkxHDAaBgkqhkiG9w0BCQEWDXJlQHBheXBhbC5jb20CAQAwDQYJKoZIhvcNAQEBBQAEgYCXR5FWoh901YcgGWzeRhhOtfAnR8N9PxBA+OiDixGRowubuBMBcKQILmtghOEerd/ZT4w8OPA6UIJT1HM2bGeTD72hX6tUb0ZWJs7PJxQK8MlD+Dopk/8xL5hCRYe2U8CV2PwmgJXUoSmD74n8ZZaWf/fPKAV2BC2ry7JiyfmmQTELMAkGBSsOAwIaBQAwgdQGCSqGSIb3DQEHATAUBggqhkiG9w0DBwQIlBabiqxUNF2AgbC+ewzeB/kjKDwe9hJTUFApB1zA7Cwjc1UtIk1Izxy0EmnaUUF/WuoL33anpJeGksHSaJvvdADCkM713NCnf8sY1twm70nnv1cB4W+DWymq8hZbckg/1xHJr+PvcUalwQ5wtLVH91Oq1VRV5E0NpMdpldcQUGu3fJ89pwQikWeCY0tkMYhIPfvPEv7e35RhP+L4mZnd0JkOfJ3EDJxI0Ig2SB6p8mMj6gsJujDjdnPnGKCCA4cwggODMIIC7KADAgECAgEAMA0GCSqGSIb3DQEBBQUAMIGOMQswCQYDVQQGEwJVUzELMAkGA1UECBMCQ0ExFjAUBgNVBAcTDU1vdW50YWluIFZpZXcxFDASBgNVBAoTC1BheVBhbCBJbmMuMRMwEQYDVQQLFApsaXZlX2NlcnRzMREwDwYDVQQDFAhsaXZlX2FwaTEcMBoGCSqGSIb3DQEJARYNcmVAcGF5cGFsLmNvbTAeFw0wNDAyMTMxMDEzMTVaFw0zNTAyMTMxMDEzMTVaMIGOMQswCQYDVQQGEwJVUzELMAkGA1UECBMCQ0ExFjAUBgNVBAcTDU1vdW50YWluIFZpZXcxFDASBgNVBAoTC1BheVBhbCBJbmMuMRMwEQYDVQQLFApsaXZlX2NlcnRzMREwDwYDVQQDFAhsaXZlX2FwaTEcMBoGCSqGSIb3DQEJARYNcmVAcGF5cGFsLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAwUdO3fxEzEtcnI7ZKZL412XvZPugoni7i7D7prCe0AtaHTc97CYgm7NsAtJyxNLixmhLV8pyIEaiHXWAh8fPKW+R017+EmXrr9EaquPmsVvTywAAE1PMNOKqo2kl4Gxiz9zZqIajOm1fZGWcGS0f5JQ2kBqNbvbg2/Za+GJ/qwUCAwEAAaOB7jCB6zAdBgNVHQ4EFgQUlp98u8ZvF71ZP1LXChvsENZklGswgbsGA1UdIwSBszCBsIAUlp98u8ZvF71ZP1LXChvsENZklGuhgZSkgZEwgY4xCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEUMBIGA1UEChMLUGF5UGFsIEluYy4xEzARBgNVBAsUCmxpdmVfY2VydHMxETAPBgNVBAMUCGxpdmVfYXBpMRwwGgYJKoZIhvcNAQkBFg1yZUBwYXlwYWwuY29tggEAMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADgYEAgV86VpqAWuXvX6Oro4qJ1tYVIT5DgWpE692Ag422H7yRIr/9j/iKG4Thia/Oflx4TdL+IFJBAyPK9v6zZNZtBgPBynXb048hsP16l2vi0k5Q2JKiPDsEfBhGI+HnxLXEaUWAcVfCsQFvd2A1sxRr67ip5y2wwBelUecP3AjJ+YcxggGaMIIBlgIBATCBlDCBjjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtQYXlQYWwgSW5jLjETMBEGA1UECxQKbGl2ZV9jZXJ0czERMA8GA1UEAxQIbGl2ZV9hcGkxHDAaBgkqhkiG9w0BCQEWDXJlQHBheXBhbC5jb20CAQAwCQYFKw4DAhoFAKBdMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTA5MDQyODEwMDY1NlowIwYJKoZIhvcNAQkEMRYEFA7//+9pI4pihmEHFMQie9Ei77cMMA0GCSqGSIb3DQEBAQUABIGAWvxU+r0xYhn1lMSkxMcLz7BhDMCDyhseOme8i9kwKG3Eazxos8uO7icJV+CBFL7RgnjX2F1WSr5gYUSZZgxqVoCZqM4wt+BLCu3bxAuY1O+htr7qNX8X0l5o8J09eRPTWFl+/kjEtSu9OfDKQhjQfl/x0g/tehVkEPNt7SnZbNE=-----END PKCS7-----">
+				<input type="image" src="https://www.paypal.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+				<img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1">
+				</form>
+			</p>
 		</div>
 
 		<img id="sb_icon_indicator_img" src="chrome://furiganainjector/content/user_guides/sb_icon_arrow.png" alt="振"

@@ -1,7 +1,5 @@
-<!ENTITY prefwindow.title "تفضيلات حاقن الفوريغانا">
+﻿<!ENTITY prefwindow.title "تفضيلات حاقن الفوريغانا">
 <!ENTITY pane1.title "تفضيلات حاقن الفوريغانا">
-<!ENTITY auto_prcs_all_pages.label "عالج كل صفحة بشكل أوتوماتيكي">
-<!ENTITY auto_prcs_all_pages.accesskey "A">
 <!ENTITY exclusion_kanji.label "الكانجي المستبعدة التي سيتم استثناؤها من حاقن الفوريغانا">
 <!ENTITY exclusion_kanji.accesskey "E">
 <!ENTITY process_link_text.label "تضمين النص داخل الوصلات">
