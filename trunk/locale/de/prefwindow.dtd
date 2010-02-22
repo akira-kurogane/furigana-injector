@@ -1,7 +1,5 @@
 ﻿<!ENTITY prefwindow.title "Furigana Injector Einstellungen">
 <!ENTITY pane1.title "Furigana Injector Einstellungen">
-<!ENTITY auto_prcs_all_pages.label "jede Seite automatisch verarbeiten">
-<!ENTITY auto_prcs_all_pages.accesskey "a">
 <!ENTITY exclusion_kanji.label "Vom Furigana-Einsatz auszuschliesende Kanji">
 <!ENTITY exclusion_kanji.accesskey "E">
 <!ENTITY process_link_text.label "Text in Links einbeziehen">
