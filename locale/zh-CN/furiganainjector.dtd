@@ -1,6 +1,8 @@
-﻿<!ENTITY InjectContextFurigana.label "植入振假名">
+﻿<!ENTITY FuriganaSubmenu.label "振假名...">
+<!ENTITY FuriganaSubmenu.accesskey "F">
+<!ENTITY InjectContextFurigana.label "植入">
 <!ENTITY InjectContextFurigana.accesskey "F">
-<!ENTITY InjectFuriganaWholePage.label "植入振假名 (整页)">
+<!ENTITY InjectFuriganaWholePage.label "植入 (整页)">
 <!ENTITY InjectFuriganaWholePage.accesskey "W">
 <!ENTITY RemoveFuriganaWholePage.label "移除振假名">
 <!ENTITY RemoveFuriganaWholePage.accesskey "R">
