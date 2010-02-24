@@ -1,7 +1,9 @@
-﻿<!ENTITY InjectContextFurigana.label "Nanieś furiganę">
-<!ENTITY InjectContextFurigana.accesskey "f">
-<!ENTITY InjectFuriganaWholePage.label "Nanieś furiganę (cała strona)">
-<!ENTITY InjectFuriganaWholePage.accesskey "s">
+﻿<!ENTITY FuriganaSubmenu.label "Furiganę ...">
+<!ENTITY FuriganaSubmenu.accesskey "F">
+<!ENTITY InjectContextFurigana.label "Nanieś">
+<!ENTITY InjectContextFurigana.accesskey "N">
+<!ENTITY InjectFuriganaWholePage.label "Nanieś (cała strona)">
+<!ENTITY InjectFuriganaWholePage.accesskey "S">
 <!ENTITY RemoveFuriganaWholePage.label "Usuń furiganę">
 <!ENTITY RemoveFuriganaWholePage.accesskey "U">
 
