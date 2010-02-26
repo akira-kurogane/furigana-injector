@@ -76,7 +76,7 @@
 			<Description>
 				<em:locale>pl</em:locale>
 				<em:name>Nanoszenie furigany</em:name>
-				<em:description>>Wyszukuje czytania słów kanji i wstawia je jako furiganę.</em:description>
+				<em:description>Wyszukuje czytania słów zapisanych kanji i wstawia je jako furiganę.</em:description>
 				<em:creator>Akira Kurogane</em:creator>
 				<em:translator>Konrad</em:translator>
 			</Description>
