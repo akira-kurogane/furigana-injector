@@ -30,20 +30,20 @@
 
 	<popup id="contentAreaContextMenu"><!-- "contentAreaContextMenu" is a merge point -->
 		<menu id="furigana-injector-menu-lbl" label="&FuriganaSubmenu.label;"
-			accesskey="&FuriganaSubmenu.accesskey;" insertafter="context-stop">
+			accesskey="&FuriganaSubmenu.accesskey;" insertafter="context-stop" class="menu-iconic">
 			<menupopup id="furigana-injector-submenu">
 				<menuitem id="process-context-section-context-menuitem" 
 					label="&InjectContextFurigana.label;" accesskey="&InjectContextFurigana.accesskey;" 
-					command="process-context-section-command" />
+					command="process-context-section-command" class="menuitem-iconic"/>
 				<menuitem id="process-whole-page-context-menuitem" 
 					label="&InjectFuriganaWholePage.label;" accesskey="&InjectFuriganaWholePage.accesskey;" 
-					command="process-whole-page-command" />
+					command="process-whole-page-command" class="menuitem-iconic" />
 				<menuitem id="remove-page-furigana-context-menuitem" 
 					label="&RemoveFuriganaWholePage.label;" accesskey="&RemoveFuriganaWholePage.accesskey;" 
-					command="remove-page-furigana-command" hidden="true" />
+					command="remove-page-furigana-command" class="menuitem-iconic" hidden="true" />
 				<menuitem id="open-tests-window-menuitem" 
 					label="Furigana Injector Tests"  
-					command="open-tests-window-command" hidden="true" />
+					command="open-tests-window-command" class="menuitem-iconic" hidden="true" />
 			</menupopup>
 		</menu>
 	</popup>

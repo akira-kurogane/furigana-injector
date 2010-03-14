@@ -47,6 +47,15 @@
 		</em:localized>
 		<em:localized>
 			<Description>
+				<em:locale>id</em:locale>
+				<em:name>Furigana Injector</em:name>
+				<em:description>Melakukan pencarian untuk pembacaan kata-kata kanji dan menambahkannya sebagai furigana.</em:description>
+				<em:creator>Akira Kurogane</em:creator>
+				<em:translator>Romi Hardiyanto</em:translator>
+			</Description>
+		</em:localized>
+		<em:localized>
+			<Description>
 				<em:locale>it</em:locale>
 				<em:name>Furigana Injector</em:name>
 				<em:description>Guarda le letture per i kanji parole e li inserisce come furigana.</em:description>
