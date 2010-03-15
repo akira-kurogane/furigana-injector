@@ -1,3 +1,7 @@
+menu#furigana-injector-menu-lbl {
+	list-style-image: url("chrome://furiganainjector/skin/status_icon/default.png");
+}
+
 statusbarpanel#furiganainjector-statusbarpanel {
 	list-style-image: url("chrome://furiganainjector/skin/status_icon/default.png");
 }
