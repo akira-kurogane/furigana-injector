@@ -12,20 +12,20 @@ window.addEventListener("unload", function(e) { FuriganaInjector.onUnload(e); },
 /******************************************************************************
  *	Conditionally attach listener for browser's load event if the preferences indicate that this is 
  *	  the first time the extension has been used.
+ *	v2.0: Also display when a user is upgrading to v2.0.
  ******************************************************************************/
 var tempFirstRunPrefs = Components.classes["@mozilla.org/preferences-service;1"].
 	getService(Components.interfaces.nsIPrefService).getBranch("extensions.furiganainjector.");
-if (!tempFirstRunPrefs.prefHasUserValue("firstrun") || tempFirstRunPrefs.getBoolPref("firstrun") == true) {	//N.B. don't add a default preference called "firstrun"
+var tempLastVersion = tempFirstRunPrefs.prefHasUserValue("last_version") ? tempFirstRunPrefs.getCharPref("last_version") : null;
+//N.B. don't add a default preference called "firstrun"
+//N.B. a parallel conditional block in install_welcome.js's onInstallationWelcomeLoad() function 
+//  will detect the version change from < 2.0 to 2.0+.
+if (!tempFirstRunPrefs.prefHasUserValue("firstrun") || tempFirstRunPrefs.getBoolPref("firstrun") == true || 
+	(tempLastVersion && fiCompareVersions(tempLastVersion, "2.0") < 0)) {	
 	window.addEventListener("load", InstallationWelcomeFX.addTabWithLoadListener, false);
 }
-
-/******************************************************************************
- *	For the upgrade from 0.8.x to 0.9.x, make sure the new "last_version" preference exists.
- ******************************************************************************/
-if (!tempFirstRunPrefs.prefHasUserValue("last_version")) {
-	tempFirstRunPrefs.setCharPref("last_version", "");	//The FuriganaInjector object will set the exact value.
-}
 tempFirstRunPrefs = undefined;
+tempLastVersion = undefined;
 
 /******************************************************************************
  *	Attach listener for "SetKanjiByMaxFOUValRequest" events if the page loaded is the 'Simple 
@@ -48,7 +48,7 @@ document.getElementById("appcontent").addEventListener("DOMContentLoaded",
 /*
 /******************************************************************************
  *	fiCompareVersions()- a mozilla-specific version number comparing function.
- ****************************************************************************** /
+ ******************************************************************************/
 function fiCompareVersions(a,b) {
 	var x = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
 		.getService(Components.interfaces.nsIVersionComparator)
@@ -57,4 +57,3 @@ function fiCompareVersions(a,b) {
 	return x;
 }
 //dump("1.0pre vs 1.0 = " + fiCompareVersions("1.0pre", "1.0"));
-*/
