@@ -6,8 +6,9 @@
 	<title>Benvenuti a Furigana Injector</title>
 	<link rel="stylesheet" type="text/css" media="all" href="../../content/user_guides/user_guides.css" />
 </head>
-<body>
+<body class="fi_help_page">
 	<div id="central_content">
+	
 		<p><span id="start_word">Adesso</span> il tuo browser Firefox ha la funzione di inserimento del Furigana, le piccole scritte in lettere hiragana sopra o accanto ai kanji difficili. <strong>Provalo!</strong> Clicca il <img style="position: relative; top: 3px; border-style: solid; border-width: 1px; border-color: #808080;" src="chrome://furiganainjector/skin/status_icon/default.png"alt="振" /> nella barra di stato.</p>
 		<q>1952年、医学生だったチェ・ゲバラが友人と二人でオートバイにまたがり、アルゼンチンからペルーまでの南米大陸6,400キロを縦断するというストーリーです。旅先で様々な人に出会い、トラブルにも巻き込まれ失恋もしました。南米大陸の民族、貧困、差別などに向き合い懸命に生きている人々に深い同情と愛を深め、大人に成長していきます。この映画の製作・総監督は、監督作品も多いハリウッドの名優ロバート・レッドフォードで、いわゆる革命や思想を描いた映画にはしたくなかったそうです。</q>
 
@@ -48,8 +49,10 @@
 			</ul>
 		</p>
 		
+		<div id="privacy_warning">
 		<h3>Informativa sulla privacy</h3>
 		<p>Si prega di notare che dalla versione 2.0 il testo è elaborato in un server remoto. Semplicemente non usare il Furigana Injector su pagine, paragrafi o frasi che contengono informazioni personali.</p>
+		</div>
 
 		<br/>
 		<h3 class="fakelink" onclick="document.getElementById('options_explanation_div').style.display = 'block'; this.className = ''; this.innerHTML = 'Altre opzioni'; this.onclick='';">Altre opzioni ...</h3>
@@ -66,7 +69,7 @@
 		</div>
 
 		<div id="donation_request">
-			<h3><a href="http://code.google.com/p/furigana-injector/">Like it?</a></h3>
+			<h3><a href="http://code.google.com/p/furigana-injector/">Come esso?</a></h3>
 				<form style="display: inline;" action="https://www.paypal.com/cgi-bin/webscr" method="post">
 				<p>Sono apprezzate Donazioni PayPal ...
 				<input type="hidden" name="cmd" value="_s-xclick">
@@ -80,6 +83,11 @@
 		<img id="sb_icon_indicator_img" src="chrome://furiganainjector/content/user_guides/sb_icon_arrow.png" alt="振"
 			style="visibility: hidden; position: fixed; bottom: 5px; right: 300px;" onmouseover="var evt = document.createEvent('Events'); evt.initEvent('HideAttentionArrow', true, false); this.dispatchEvent(evt);"/>
 
+	</div>
+
+	<div id="full_page_shade" style="display: none;"></div>
+	<div id="modal_message_area" style="display: none;">
+		<button onclick='document.getElementById("full_page_shade").style.display = "none"; document.getElementById("modal_message_area").style.display = "none";'>OK</button>
 	</div>
 </body>
 </html>

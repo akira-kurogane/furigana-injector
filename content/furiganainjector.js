@@ -4,6 +4,7 @@ var FuriganaInjector = {
 
 	initialized: false, 
 	prefs: null,
+	versionUpdatingFrom: null,
 	userKanjiRegex: null,
 	kanjiAdjustMenuItems: [], 
 	strBundle: null,
@@ -39,6 +40,8 @@ var FuriganaInjector = {
 		try{
 			var tempEM = Components.classes["@mozilla.org/extensions/manager;1"].getService(Components.interfaces.nsIExtensionManager);
 			var tempFIAddon = tempEM.getItemForID("furiganainjector@yayakoshi.net");
+			if (this.getPref("last_version") != tempFIAddon.version)
+				this.versionUpdatingFrom = this.getPref("last_version");
 			this.setPref("last_version", tempFIAddon.version);
 		} catch (err) {
 			dump("There was an error retrieving the add-on's version. Debug and fix.\n" + err.toString());
@@ -508,7 +511,7 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 		} else if (prefType == this.prefs.PREF_INT) {
 			return this.prefs.getIntPref(prefName);
 		} else {	//N.B. Mozilla evaluates 'complex' types as nsIPrefBranch.PREF_STRING
-			if (prefName == "exclusion_kanji") {
+			if (prefName == "exclusion_kanji" || prefName == "last_version" ) {
 				return this.prefs.getComplexValue(prefName, Components.interfaces.nsISupportsString).data;
 			//} else if (prefName == "known_string_preference") {
 			//	return this.prefs.getCharPref(prefName);
