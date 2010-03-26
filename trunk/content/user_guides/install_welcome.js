@@ -5,6 +5,7 @@ var InstallationWelcomeFX = {
 	firstRunURI: "chrome://furiganainjector/locale/user_guides/installation_welcome.html",
 	
 	animationTimeouts: [],
+	privacyWarningDisplayed: false,	/*Only used for the < 2.0 to 2.0+ upgrade*/
 	
 	addTabWithLoadListener: function() {
 		document.getElementById("appcontent").addEventListener("DOMContentLoaded", InstallationWelcomeFX.onInstallationWelcomeLoad, true);
@@ -23,42 +24,45 @@ var InstallationWelcomeFX = {
 		
 		
 		//Special check for the v2.0 upgrade - upgrading users will be forced to view the new privacy warning.
-		try {
-		var highlightPrivacyWarning = FuriganaInjector.versionUpdatingFrom && fiCompareVersions(FuriganaInjector.versionUpdatingFrom, "2.0") < 0;
+		var highlightPrivacyWarning = !this.privacyWarningDisplayed && FuriganaInjector.versionUpdatingFrom && 
+			fiCompareVersions(FuriganaInjector.versionUpdatingFrom, "2.0") < 0;
+		this.privacyWarningDisplayed = highlightPrivacyWarning;	//Avoid displaying this message twice
 		
 		if (highlightPrivacyWarning) {
-			var privacyWarningDivCopy = content.document.getElementById("privacy_warning").cloneNode(true);
-			var shadeDiv = content.document.getElementById("full_page_shade");
-			var modalMsgDiv = content.document.getElementById("modal_message_area");
-			
-			var msgHeadline = content.document.createElement("H1");
-			msgHeadline.innerHTML = content.document.title + " <em>v2.0</em>";
-			modalMsgDiv.insertBefore(privacyWarningDivCopy, modalMsgDiv.firstChild);
-			modalMsgDiv.insertBefore(msgHeadline, modalMsgDiv.firstChild);
-			
-			shadeDiv.style.display = "block";
-			modalMsgDiv.style.display = "block";
-		}
-		} catch (err) {}
-		
-		//N.B. accepting the HTML Ruby extension as well as the XHTML Ruby support extension, 
-		//  even though the page content only mentions the latter.
-		if (window.RubyService || window.HtmlRuby || window.HTMLRuby) {	//A global variable instantiated by the XHTML Ruby support extension/HTML Ruby extension
-			var XHTML_Ruby_Support_div = content.document.getElementById("XHTML_Ruby_Support_div");
-			XHTML_Ruby_Support_div.style.display = "none";
-		} else {
 			try {
-				var RubyService_KanjiSelector_div = content.document.getElementById("RubyService_KanjiSelector");
-				var No_RubyService_KanjiSelector_div = content.document.getElementById("No_RubyService_KanjiSelector");
-				RubyService_KanjiSelector_div.style.display = "none";
-				No_RubyService_KanjiSelector_div.style.display = "block";
-			} catch (err) {
-				dump("Dev error- RubyService_KanjiSelector or No_RubyService_KanjiSelector could not be discoved in the installation_welcome " +
-					"page, or their styles could not be set");
-			}
-		}
+				content.document.getElementById("starting_steps_header").style.display = "none";
+				content.document.getElementById("XHTML_Ruby_Support_div").style.display = "none";
+				content.document.getElementById("RubyService_KanjiSelector").style.display = "none";
+				content.document.getElementById("No_RubyService_KanjiSelector").style.display = "none";
+				var privacyWarningDivCopy = content.document.getElementById("privacy_warning").cloneNode(true);
+				var shadeDiv = content.document.getElementById("full_page_shade");
+				var modalMsgDiv = content.document.getElementById("modal_message_area");
+				var msgHeadline = content.document.createElement("H1");
+				msgHeadline.innerHTML = content.document.title + " <em>v2.0</em>";
+				modalMsgDiv.insertBefore(privacyWarningDivCopy, modalMsgDiv.firstChild);
+				modalMsgDiv.insertBefore(msgHeadline, modalMsgDiv.firstChild);
+				shadeDiv.style.display = "block";
+				modalMsgDiv.style.display = "block";
+			} catch (err) {}
+		} else {
 		
-		if (!highlightPrivacyWarning) {
+			//N.B. accepting the HTML Ruby extension as well as the XHTML Ruby support extension, 
+			//  even though the page content only mentions the latter.
+			if (window.RubyService || window.HtmlRuby || window.HTMLRuby) {	//A global variable instantiated by the XHTML Ruby support extension/HTML Ruby extension
+				var XHTML_Ruby_Support_div = content.document.getElementById("XHTML_Ruby_Support_div");
+				XHTML_Ruby_Support_div.style.display = "none";
+			} else {
+				try {
+					var RubyService_KanjiSelector_div = content.document.getElementById("RubyService_KanjiSelector");
+					var No_RubyService_KanjiSelector_div = content.document.getElementById("No_RubyService_KanjiSelector");
+					RubyService_KanjiSelector_div.style.display = "none";
+					No_RubyService_KanjiSelector_div.style.display = "block";
+				} catch (err) {
+					dump("Dev error- RubyService_KanjiSelector or No_RubyService_KanjiSelector could not be discoved in the installation_welcome " +
+						"page, or their styles could not be set");
+				}
+			}
+		
 			var sbPanel = document.getElementById("furiganainjector-statusbarpanel");
 			var attentionArrowImg = content.document.getElementById("sb_icon_indicator_img");
 			var attentionArrowTipInset = 10;	//hardcoded for simplicity.
