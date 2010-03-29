@@ -4,6 +4,7 @@
 <overlay id="furiganainjector-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
 	<script src="furiganainjector.js"/>
+	<script src="server_selector_obj.js"/>
 	<script src="rubyinserter.js"/>
 	<script src="vocabadjuster.js"/>
 	<!-- It would be more ideal if the javascipt below could be loaded dynamically. It's only used in dev testing-->
@@ -30,7 +31,8 @@
 
 	<popup id="contentAreaContextMenu"><!-- "contentAreaContextMenu" is a merge point -->
 		<menu id="furigana-injector-menu-lbl" label="&FuriganaSubmenu.label;"
-			accesskey="&FuriganaSubmenu.accesskey;" insertafter="context-stop" class="menu-iconic">
+			accesskey="&FuriganaSubmenu.accesskey;" insertafter="context-stop" class="menu-iconic"
+			disabled="true">
 			<menupopup id="furigana-injector-submenu">
 				<menuitem id="process-context-section-context-menuitem" 
 					label="&InjectContextFurigana.label;" accesskey="&InjectContextFurigana.accesskey;" 
