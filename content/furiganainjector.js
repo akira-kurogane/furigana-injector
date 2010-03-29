@@ -3,6 +3,7 @@
 var FuriganaInjector = {
 
 	initialized: false, 
+	serverUrl: null,
 	prefs: null,
 	versionUpdatingFrom: null,
 	userKanjiRegex: null,
@@ -26,12 +27,6 @@ var FuriganaInjector = {
 			alert ("Major error- the 'fi_strings' file could not be loaded. The Furigana Injector extension will not work without it.");
 			return;
 		}
-		
-		//Devnote: element "appcontent" is defined by Firefox. Use "messagepane" for Thunderbird
-		document.getElementById("appcontent").addEventListener("DOMContentLoaded", this.onPageLoad, true);
-		
-		getBrowser().addProgressListener(FuriganaInjectorWebProgressListener, Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
-		getBrowser().tabContainer.addEventListener("TabSelect", this.onTabSelectionChange, false);
 
 		this.prefs = Components.classes["@mozilla.org/preferences-service;1"].
 			getService(Components.interfaces.nsIPrefService).getBranch("extensions.furiganainjector.");
@@ -46,17 +41,14 @@ var FuriganaInjector = {
 		} catch (err) {
 			dump("There was an error retrieving the add-on's version. Debug and fix.\n" + err.toString());
 		}
-	
-		//Devnote: just setting the onpopupshowing attribute in overlay.xul didn't seem to work. Besides, the event object will probably be needed later for context actions
-		document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", this.onShowContextMenu, false);
-		document.getElementById("contentAreaContextMenu").addEventListener("popuphidden", this.onHideContextMenu, false);
-
-		FuriganaInjector.setStatusIcon("default");
 		
 		userKanjiRegex = new RegExp("[" + VocabAdjuster.getSimpleKanjiList() + "]");
 		
-		this.initialized = true;
-		
+		//serverSelector defined in server_selector_obj.js. Selects a working serverUrl asynchronously.
+		serverSelector.startTestLoop(
+			[ "http://fi.yayakoshi.net/furiganainjector", "http://fi2.yayakoshi.net/furiganainjector" ], 
+			this.onServerConfirm, this.onNoServerFound );
+
 		try {
 			document.getElementById("open-tests-window-menuitem").hidden = !this.getPref("enable_tests");
 		} catch (err) {
@@ -64,22 +56,44 @@ var FuriganaInjector = {
 		}
 	},
 	
+	onServerConfirm: function(svrUrl) {
+	
+		FuriganaInjector.serverUrl = svrUrl;
+		document.getElementById("furigana-injector-menu-lbl").disabled = false;
+		
+		//Disabling pageLoad ... not required a.t.m.
+		//document.getElementById("appcontent").addEventListener("DOMContentLoaded", this.onPageLoad, true);
+		
+		getBrowser().addProgressListener(FuriganaInjectorWebProgressListener, Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+		getBrowser().tabContainer.addEventListener("TabSelect", this.onTabSelectionChange, false);
+		
+		//Devnote: just setting the onpopupshowing attribute in overlay.xul didn't seem to work. Besides, the event object will probably be needed later for context actions
+		document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", this.onShowContextMenu, false);
+		document.getElementById("contentAreaContextMenu").addEventListener("popuphidden", this.onHideContextMenu, false);
+		
+		FuriganaInjector.initialized = true;
+	},
+	
+	onNoServerFound: function() {
+		document.getElementById("furiganainjector-statusbarpanel").tooltipText = FuriganaInjector.strBundle.getString("tooltipTextNoFuriganaServerFound");
+	},
+	
 	onUnload: function() {
 		//try {
 		FuriganaInjectorPrefsObserver.unregister();
-		getBrowser().removeProgressListener(FuriganaInjectorWebProgressListener);
-		getBrowser().tabContainer.removeEventListener("TabSelect", this.onTabSelectionChange, false);
-		document.getElementById("appcontent").removeEventListener("DOMContentLoaded", this.onPageLoad, true);
-		document.getElementById("contentAreaContextMenu").removeEventListener("popupshowing", this.onShowContextMenu, false);
-		document.getElementById("contentAreaContextMenu").removeEventListener("popuphidden", this.onHideContextMenu, false);
+		if (this.initialized) {
+			getBrowser().removeProgressListener(FuriganaInjectorWebProgressListener);
+			getBrowser().tabContainer.removeEventListener("TabSelect", this.onTabSelectionChange, false);
+			//document.getElementById("appcontent").removeEventListener("DOMContentLoaded", this.onPageLoad, true);
+			document.getElementById("contentAreaContextMenu").removeEventListener("popupshowing", this.onShowContextMenu, false);
+			document.getElementById("contentAreaContextMenu").removeEventListener("popuphidden", this.onHideContextMenu, false);
+		}
 		//} catch (err) {
 		//	dump("Error during FuriganaInjector.onUnload(): " + err.toString() + "\n");
 		//}
 	},
 	
-	onPageLoad: function() {
-		//Todo delete this now that there is no 'auto_process_all_pages' preference?
-	},
+	//onPageLoad: function() {}, //disabled
 	
 	onWindowProgressStateStop: function(aProgress, aRequest, aStatus) {
 		FuriganaInjector.setCurrentStatusIconAndCmdModes();
@@ -323,7 +337,7 @@ var FuriganaInjector = {
 		xhr.onerror = function(error) {
 			console.log("XHR error: " + JSON.stringify(error));
 		}
-		xhr.open("POST", "http://fi.yayakoshi.net/furiganainjector", true);
+		xhr.open("POST", FuriganaInjector.serverUrl, true);
 		xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		//xhr.setRequestHeader("Content-Length", postData.length);
 		xhr.send(postData);
