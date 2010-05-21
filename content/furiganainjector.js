@@ -62,14 +62,14 @@ var FuriganaInjector = {
 		document.getElementById("furigana-injector-menu-lbl").disabled = false;
 		
 		//Disabling pageLoad ... not required a.t.m.
-		//document.getElementById("appcontent").addEventListener("DOMContentLoaded", this.onPageLoad, true);
+		//document.getElementById("appcontent").addEventListener("DOMContentLoaded", FuriganaInjector.onPageLoad, true);
 		
 		getBrowser().addProgressListener(FuriganaInjectorWebProgressListener, Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
-		getBrowser().tabContainer.addEventListener("TabSelect", this.onTabSelectionChange, false);
+		getBrowser().tabContainer.addEventListener("TabSelect", FuriganaInjector.onTabSelectionChange, false);
 		
 		//Devnote: just setting the onpopupshowing attribute in overlay.xul didn't seem to work. Besides, the event object will probably be needed later for context actions
-		document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", this.onShowContextMenu, false);
-		document.getElementById("contentAreaContextMenu").addEventListener("popuphidden", this.onHideContextMenu, false);
+		document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", FuriganaInjector.onShowContextMenu, false);
+		document.getElementById("contentAreaContextMenu").addEventListener("popuphidden", FuriganaInjector.onHideContextMenu, false);
 		
 		FuriganaInjector.initialized = true;
 	},
@@ -211,7 +211,7 @@ var FuriganaInjector = {
 		try {
 			var iterator = content.document.evaluate(xPathPattern, elem, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
 			var nodeCtr = 100;
-			var thisNode ;
+			var thisNode;
 			while (thisNode = iterator.iterateNext()) {
 				if (thisNode.textContent.match(/[\u3400-\u9FBF]/))
 					kanjiTextNodes[nodeCtr++] = thisNode;
@@ -222,6 +222,7 @@ var FuriganaInjector = {
 	}, 
 	
 	processWholeDocument: function() {
+		content.document.body.setAttribute("furigana-injection", "processing");
 		kanjiTextNodes = {};
 		FuriganaInjector.queueAllTextNodesOfElement(content.document.body);
 		//Todo: Add matching nodes found in frames as well?

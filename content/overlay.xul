@@ -24,7 +24,7 @@
 	<commandset id="mainCommandSet"><!-- "mainCommandSet" is a merge point -->
 		<command id="process-context-section-command" oncommand="FuriganaInjector.processContextSection(true);" />
 		<command id="process-whole-page-command" oncommand="FuriganaInjector.processWholeDocument();" />
-		<command id="toggle-whole-page-command" oncommand="if (FuriganaInjector.currentContentProcessed()) { FuriganaInjector.revertAllRubys(); } else { FuriganaInjector.processWholeDocument(); }" />
+		<command id="toggle-whole-page-command" oncommand="var pState = FuriganaInjector.currentContentProcessed(); if (pState == 'processing') {/*do nothing*/} else if (pState) { FuriganaInjector.revertAllRubys(); } else { FuriganaInjector.processWholeDocument(); }" />
 		<command id="remove-page-furigana-command" oncommand="FuriganaInjector.revertAllRubys();" />
 		<command id="open-tests-window-command" oncommand="FuriganaInjectorUnitTester.openTestTab();" />
 	</commandset>
