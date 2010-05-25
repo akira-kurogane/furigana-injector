@@ -1,23 +1,13 @@
+#summary Out-of-date. (To delete)
 #labels Phase-Design
+
 ==A new direction— server-based Furigana Injector==
 
   The current version of Furigana Injector is one *fat little add-on*- approximately 15Mb (50Mb+ when unzipped). The code is fine; the dictionary files are the problem. I had hoped future developments might make it possible to shrink dictionary size, but it seems that progression in the natural language parsing community is for the opposite direction. [http://www.kokken.go.jp/lrc/index.php?UniDic%2F%B6%E1%C2%E5%CA%B8%B8%ECUniDic UniDic], the apparent successor to IPADIC, is well over 100Mb in size when unzipped.
 
   For this reason a server-based text-parsing service seems to be the right path forward. I have concerns about user privacy, but if users are aware that their webpage's text is being processed remotely when they press that furigana button then I think their common-sense will be enough.
 
-  The server has already been programmed and tested. So far it is only used in development because, well, I don't have the cash to run it on redundant servers with dedicated CPU.
-
-==Firefox version==
-
-  A new version of the Firefox extension has been developed, but will not be released until a dedicated server is ready. If you are one of the users of Windows who cannot use the 1.3 version, perhaps you would like to test the development version. If so please contact Akira.
-
-==Chrome version==
-
-  A version for the beta and dev 'channel' versions of Chrome 4 has already been developed. If you would like to test it please contact Akira.
-
-==IE version?==
-
-  Possibly a bookmarklet version of Furigana Injector could be developed. However it would probably not be practical to enable any user configuration. Accordingly there wouldn't be a way for the user to set their kanji level.
+  The server was developed, and is used by the Chrome version (0.5~) and the 2.0+ versions for Firefox.
 
 == Functionality that is out of (the current) scope ==
 
@@ -27,6 +17,6 @@
 
   This doesn't mean _you_ can't change the ruby layout! The ruby support add-ons have their own options. Open Tools -> Add-ons, and then select the Options button on the "XHTML Ruby Support" or "HTML Ruby" add-on.
 
-  * *Bilingual lookup.* E.g. display the english translations. This is separate to the purely japanese morphology that Furigana Injector provides. Instead the commendable [https://addons.mozilla.org/en-US/firefox/addon/2471 rikaichan] Firefox extension provides this functionality.
+  * ~~*Bilingual lookup.* E.g. display the english translations. This is separate to the purely japanese morphology that Furigana Injector provides. Instead the commendable [https://addons.mozilla.org/en-US/firefox/addon/2471 rikaichan] Firefox extension provides this functionality.~~ WWWJDIC lookups over ruby elements is now an option, in version 0.8 for Chrome.
 
   * *Mouseover functions.* Many users of the Firefox version of Furigana Injector also use the strongly mouseover-based [https://addons.mozilla.org/en-US/firefox/addon/2471 rikaichan]. There would be clashes in the DOM event chain if Furigana Injector tried doing it also. Furthermore the user interface that pops up would become cluttered- at least while these two extensions are not coordinated.
