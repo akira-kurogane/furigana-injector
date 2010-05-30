@@ -63,9 +63,6 @@ var FuriganaInjector = {
 		FuriganaInjector.serverUrl = svrUrl;
 		document.getElementById("furigana-injector-menu-lbl").disabled = false;
 		
-		//Disabling pageLoad ... not required a.t.m.
-		//document.getElementById("appcontent").addEventListener("DOMContentLoaded", FuriganaInjector.onPageLoad, true);
-		
 		getBrowser().addProgressListener(FuriganaInjectorWebProgressListener, Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
 		getBrowser().tabContainer.addEventListener("TabSelect", FuriganaInjector.onTabSelectionChange, false);
 		
@@ -86,7 +83,6 @@ var FuriganaInjector = {
 		if (this.initialized) {
 			getBrowser().removeProgressListener(FuriganaInjectorWebProgressListener);
 			getBrowser().tabContainer.removeEventListener("TabSelect", this.onTabSelectionChange, false);
-			//document.getElementById("appcontent").removeEventListener("DOMContentLoaded", this.onPageLoad, true);
 			document.getElementById("contentAreaContextMenu").removeEventListener("popupshowing", this.onShowContextMenu, false);
 			document.getElementById("contentAreaContextMenu").removeEventListener("popuphidden", this.onHideContextMenu, false);
 		}
@@ -94,8 +90,6 @@ var FuriganaInjector = {
 		//	dump("Error during FuriganaInjector.onUnload(): " + err.toString() + "\n");
 		//}
 	},
-	
-	//onPageLoad: function() {}, //disabled
 	
 	onWindowProgressStateStop: function(aProgress, aRequest, aStatus) {
 		FuriganaInjector.setCurrentStatusIconAndCmdModes();
@@ -198,8 +192,8 @@ var FuriganaInjector = {
 	postAddKanjiToExclusionList: function(newKanji) {	//i.e. after Ignore-furigana-for-X
 		var rubyElems = content.document.getElementsByTagName("RUBY");
 		for (var x= 0; x < rubyElems.length; x++) {
-			if (VocabAdjuster.tooEasy(RubyInserter.rubyBaseText(rubyElems[x])))
-				RubyInserter.revertRuby(rubyElems[x]);
+			if (VocabAdjuster.tooEasy(FuriganaInjector.rubyBaseText(rubyElems[x])))
+				FuriganaInjector.revertRuby(rubyElems[x]);
 		}
 	},
   	
@@ -386,7 +380,7 @@ if (submittedKanjiTextNodes[key]) {
 	stripRubyForSimpleKanji: function(origStr) {
 		var newStr = "";
 		var offset = 0;
-		var currRubyBeginOffset = origStr.indexOf("<ruby>", 0);	//Todo: make case-insestive
+		var currRubyBeginOffset = origStr.indexOf("<ruby>", 0);
 		if (currRubyBeginOffset < 0)
 			return origStr;
 var safetCtr = 0;
@@ -481,7 +475,7 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 		}
 		while (rubyElemArray.length > 0) {
 			tempRubyElem = rubyElemArray.pop();
-			RubyInserter.revertRuby(tempRubyElem);
+			FuriganaInjector.revertRuby(tempRubyElem);
 		}
 		FuriganaInjector.setCurrentContentProcessed(false);
 		var allRubysReverted = content.document.getElementsByTagName("RUBY").length == 0;
@@ -495,9 +489,51 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 		}
 	},
 	
+	revertRuby: function (rubyElem) {
+		var parentElement = rubyElem.parentNode;
+		var newTextNode  = rubyElem.ownerDocument.createTextNode("");
+		newTextNode.data = this.rubyBaseText(rubyElem);
+		parentElement.insertBefore(newTextNode, rubyElem);
+		parentElement.removeChild(rubyElem);
+		parentElement.normalize();
+	},
+	
+	//Devnote: the XHMTL Ruby Support extension sometimes inserts html elements such as:
+	//  "転載" --> "<ruby><rb>転<span class="ruby-text-lastLetterBox">載</span></rb><rp>(</rp><rt> ....".
+	//  Note that there is a <span> element inside the <rb> element. For this reason iterations for text nodes go to a second level.
+	//Devnote: if ruby are natively supported by firefox then the second loop for children such as the span class should be skipped.
+	rubyBaseText: function (rubyElem) {
+		var tempChildNodes;
+		var rbText = "";
+		tempRBNodes = rubyElem.getElementsByTagName("RB");
+		for (var r = 0; r < tempRBNodes.length; r++) {
+			tempChildNodes = tempRBNodes[r].childNodes;
+			for (var x = 0; x < tempChildNodes.length; x++) {
+				if (tempChildNodes[x].nodeType == Node.TEXT_NODE) {
+					rbText += tempChildNodes[x].data;
+				} else if(tempChildNodes[x].nodeType == Node.ELEMENT_NODE) {
+					for (var y = 0; y < tempChildNodes[x].childNodes.length; y++) {
+						if (tempChildNodes[x].childNodes[y].nodeType == Node.TEXT_NODE)
+							rbText += tempChildNodes[x].childNodes[y].data;
+					}
+				}
+			}
+		}
+		return rbText;
+	},
+	
+	rubySupportedNatively: function() {
+		var dummyElem = document.createElement("P");
+		dummyElem.style.display = "block";
+		dummyElem.style.display = "ruby";
+		var rubyNativeSupport = dummyElem.style.display == "ruby";
+		dummyElem = null;
+		return rubyNativeSupport;
+	},
+	
 	setCurrentContentProcessed: function(processingResult) {
 		//If Ruby XHTML Support extension is being used, call it's delayedReformRubyElement() method for all rubies.
-		if (window.RubyService && !RubyInserter.rubySupportedNatively()) {
+		if (window.RubyService && !FuriganaInjector.rubySupportedNatively()) {
 			try {
 				var rubyNodeList = content.document.getElementsByTagName("RUBY");	//N.B. the return val is a NodeList object, not a standard array.
 				var tempRubyElem;

@@ -5,13 +5,10 @@
 
 	<script src="furiganainjector.js"/>
 	<script src="server_selector_obj.js"/>
-	<script src="rubyinserter.js"/>
 	<script src="vocabadjuster.js"/>
 	<!-- It would be more ideal if the javascipt below could be loaded dynamically. It's only used in dev testing-->
 	<script src="unittests/unittester.js"/>
-	<script src="unittests/fimecabparser.js"/>
 	<script src="unittests/furiganainjector.js"/>
-	<script src="unittests/rubyinserter.js"/>
 	<script src="unittests/vocabadjuster.js"/>
 	<!-- end of javascipt that is only used for dev testing-->
 	<script src="user_guides/install_welcome.js"/>
