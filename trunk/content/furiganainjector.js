@@ -9,7 +9,6 @@ var FuriganaInjector = {
 	userKanjiRegex: null,
 	kanjiAdjustMenuItems: [], 
 	strBundle: null,
-	kanjiTextNodes: {},
 	
 	/******************************************************************************
 	 *	Event handlers
@@ -31,6 +30,9 @@ var FuriganaInjector = {
 		this.prefs = Components.classes["@mozilla.org/preferences-service;1"].
 			getService(Components.interfaces.nsIPrefService).getBranch("extensions.furiganainjector.");
 		FuriganaInjectorPrefsObserver.register(this.prefs);
+		
+		//this.consoleService = Components.classes["@mozilla.org/consoleservice;1"]
+        //	.getService(Components.interfaces.nsIConsoleService);
 		
 		try{
 			var tempEM = Components.classes["@mozilla.org/extensions/manager;1"].getService(Components.interfaces.nsIExtensionManager);
@@ -224,6 +226,7 @@ var FuriganaInjector = {
 	processWholeDocument: function() {
 		content.document.body.setAttribute("furigana-injection", "processing");
 		kanjiTextNodes = {};
+		submittedKanjiTextNodes = {};
 		FuriganaInjector.queueAllTextNodesOfElement(content.document.body);
 		//Todo: Add matching nodes found in frames as well?
 		//var framesList = content.frames;
@@ -240,6 +243,7 @@ var FuriganaInjector = {
 	
 	processContextSection: function() {
 		kanjiTextNodes = {};
+		submittedKanjiTextNodes = {};
 		var selectionObject = content.getSelection();
 		var selText = selectionObject.toString();
 		var parentBlockElem = document.popupNode;
@@ -324,19 +328,24 @@ var FuriganaInjector = {
 
 	startFuriganizeAJAX: function(completionCallback, keepAllRubies) {
 		if (isEmpty(kanjiTextNodes)) {
-			alert("DEBUG: no difficult-kanji text nodes found");
+			//alert("DEBUG: no difficult-kanji text nodes found");
 			return;
 		}
 		var postData = "";
-		for (key in kanjiTextNodes)
+		for (key in kanjiTextNodes) {
 			postData += "&" + key + "=" + encodeURIComponent(kanjiTextNodes[key].data);
+			submittedKanjiTextNodes[key] = kanjiTextNodes[key];
+			delete kanjiTextNodes[key];
+			if (postData.length > 20000)	//Only process this amount per request to the server.
+				break;
+		}
 		postData = postData.substr(1);
 		var xhr = new XMLHttpRequest();
 		xhr.completionCallback = completionCallback;
 		xhr.keepAllRubies = keepAllRubies ? true : false;
-		xhr.onreadystatechange = this.furiganizeAJAXStateChangeHandler; // Implemented elsewhere.
+		xhr.onreadystatechange = this.furiganizeAJAXStateChangeHandler;
 		xhr.onerror = function(error) {
-			console.log("XHR error: " + JSON.stringify(error));
+			//FuriganaInjector.consoleService.logStringMessage("XHR error: " + JSON.stringify(error));
 		}
 		xhr.open("POST", FuriganaInjector.serverUrl, true);
 		xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -351,17 +360,22 @@ var FuriganaInjector = {
 				for (key in returnData){
 					if (!this.keepAllRubies)
 						returnData[key] = FuriganaInjector.stripRubyForSimpleKanji(returnData[key]);
-if (kanjiTextNodes[key]) {
+if (submittedKanjiTextNodes[key]) {
 					var tempDocFrag = content.document.createDocumentFragment();
 					var dummyParent = content.document.createElement("DIV");
 					dummyParent.innerHTML = returnData[key];
 					while(dummyParent.firstChild)
 						tempDocFrag.appendChild(dummyParent.firstChild);
-					kanjiTextNodes[key].parentNode.replaceChild(tempDocFrag, kanjiTextNodes[key]);
+					submittedKanjiTextNodes[key].parentNode.replaceChild(tempDocFrag, submittedKanjiTextNodes[key]);
+					delete submittedKanjiTextNodes[key];
 } else { alert("development error: key \"" + key + "\" had an empty value in the returnData"); }
 				}
-				//processWholeDocumentCallback() or processContextSectionCallback()
-				this.completionCallback(true); 
+				if (!isEmpty(kanjiTextNodes)) {	//start another async request for the remainder.
+					FuriganaInjector.startFuriganizeAJAX(this.completionCallback, false);
+				} else {
+					//processWholeDocumentCallback() or processContextSectionCallback()
+					this.completionCallback(true); 
+				}
 			} else {
 				alert("Error: the status of the reply from mod_furiganainjector was " + this.status + " instead of 200(OK)");
 				this.completionCallback(false);
@@ -388,7 +402,7 @@ var safetCtr = 0;
 			currRubyBeginOffset = origStr.indexOf("<ruby>", currRubyBeginOffset + 1);
 safetCtr++;
 		}
-if (safetCtr > 90) console.log("safetCtr = " + safetCtr);
+//if (safetCtr > 90) FuriganaInjector.consoleService.logStringMessage("safetCtr = " + safetCtr);
 		newStr += origStr.substring(offset);
 		return newStr;
 	},
