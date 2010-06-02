@@ -1,7 +1,8 @@
 //ユニコード文字列
 
-var VocabAdjuster = {
+var FIVocabAdjuster = {
 
+	//Various patterns to match different japanese scripts
 	kanjiPattern: "(?:[\u3400-\u9FBF][\u3005\u3400-\u9FBF]*)",	//"\u3005" is "々", the kanji repeater character
 	kanjiRevPattern: "[^\u3005\u3400-\u9FBF]",	//N.B. no attempt to made to avoid leading "々" char
 	hiraganaPattern: "[\u3042\u3044\u3046\u3048\u304A-\u3093]",
@@ -81,7 +82,7 @@ var VocabAdjuster = {
 	getSimpleKanjiList: function() {
 		if (!this._simpleKanjiList) { 
 			var temp_pref_string = FuriganaInjector.getPref("exclusion_kanji");
-			this._simpleKanjiList = temp_pref_string.replace(RegExp(VocabAdjuster.kanjiRevPattern ,"g"), "");
+			this._simpleKanjiList = temp_pref_string.replace(RegExp(FIVocabAdjuster.kanjiRevPattern ,"g"), "");
 		}
 		return this._simpleKanjiList;
 	},

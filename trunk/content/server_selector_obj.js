@@ -1,4 +1,4 @@
-var serverSelector = {
+var FIServerSelector = {
 	candidateQueue: null,
 	currServerUrl: null,
 	confirmServerCallback: null,
@@ -20,13 +20,13 @@ var serverSelector = {
 		if(this.readyState == 4) {
 			if (this.status == 200 && this.getResponseHeader("Server") &&
 				this.getResponseHeader("Server").match(/mod_furiganainjector/)) {
-				serverSelector.confirmServerCallback(serverSelector.currServerUrl);
+				FIServerSelector.confirmServerCallback(FIServerSelector.currServerUrl);
 			} else {
-				if (serverSelector.candidateQueue.length > 0) {
-					serverSelector.currServerUrl = serverSelector.candidateQueue.shift();
-					serverSelector.sendTestRequest();
+				if (FIServerSelector.candidateQueue.length > 0) {
+					FIServerSelector.currServerUrl = FIServerSelector.candidateQueue.shift();
+					FIServerSelector.sendTestRequest();
 				} else {
-					serverSelector.reportNoServerCallback();
+					FIServerSelector.reportNoServerCallback();
 				}
 			}
 		}
