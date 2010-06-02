@@ -1,6 +1,6 @@
 //ユニコード文字列
 
-var InstallationWelcomeFX = {
+var FIInstallationWelcomeFX = {
 
 	firstRunURI: "chrome://furiganainjector/locale/user_guides/installation_welcome.html",
 	
@@ -8,24 +8,24 @@ var InstallationWelcomeFX = {
 	privacyWarningDisplayed: false,	/*Only used for the < 2.0 to 2.0+ upgrade*/
 	
 	addTabWithLoadListener: function() {
-		document.getElementById("appcontent").addEventListener("DOMContentLoaded", InstallationWelcomeFX.onInstallationWelcomeLoad, true);
+		document.getElementById("appcontent").addEventListener("DOMContentLoaded", FIInstallationWelcomeFX.onInstallationWelcomeLoad, true);
 		//N.B. setting this next step to run after a 0.1 sec timeout seems to avoid the problem of Firefox closing the tab after a restart
-		setTimeout( function() { getBrowser().selectedTab = getBrowser().addTab(InstallationWelcomeFX.firstRunURI); }, 100);
+		setTimeout( function() { getBrowser().selectedTab = getBrowser().addTab(FIInstallationWelcomeFX.firstRunURI); }, 100);
 	},
 
 	onInstallationWelcomeLoad: function() {
-		if (content.document.URL !=  InstallationWelcomeFX.firstRunURI)
+		if (content.document.URL !=  FIInstallationWelcomeFX.firstRunURI)
 			return;
 			
 		var tempFirstRunPrefs = Components.classes["@mozilla.org/preferences-service;1"].
 			getService(Components.interfaces.nsIPrefService).getBranch("extensions.furiganainjector.");
 		tempFirstRunPrefs.setBoolPref("firstrun", false);
-		document.getElementById("appcontent").removeEventListener("DOMContentLoaded", InstallationWelcomeFX.onInstallationWelcomeLoad, true);
+		document.getElementById("appcontent").removeEventListener("DOMContentLoaded", FIInstallationWelcomeFX.onInstallationWelcomeLoad, true);
 		
 		
 		//Special check for the v2.0 upgrade - upgrading users will be forced to view the new privacy warning.
 		var highlightPrivacyWarning = !this.privacyWarningDisplayed && FuriganaInjector.versionUpdatingFrom && 
-			fiCompareVersions(FuriganaInjector.versionUpdatingFrom, "2.0") < 0;
+			FuriganaInjectorUtilities.compareVersions(FuriganaInjector.versionUpdatingFrom, "2.0") < 0;
 		this.privacyWarningDisplayed = highlightPrivacyWarning;	//Avoid displaying this message twice
 		
 		if (highlightPrivacyWarning) {
@@ -70,13 +70,13 @@ var InstallationWelcomeFX = {
 			if (attentionArrowImg) {
 					attentionArrowImg.setAttribute("style", "visibility: visible; position: fixed; bottom: 5px; right: " + sbIconRightIndent + "px;");
 					for (var x =0; x < 5000; x += 100) {
-						InstallationWelcomeFX.animationTimeouts.push(setTimeout(
+						FIInstallationWelcomeFX.animationTimeouts.push(setTimeout(
 							function(tickTime) {
 								var newOpacity = 0.6 + (0.4 * Math.sin((tickTime/200) * (Math.PI/2)));
 								try {
 									content.document.getElementById("sb_icon_indicator_img").style.opacity = newOpacity;
 								} catch (err) {
-									InstallationWelcomeFX.clearAnimationTimeouts();
+									FIInstallationWelcomeFX.clearAnimationTimeouts();
 								}
 							},
 							3000 + x, x));
@@ -85,7 +85,7 @@ var InstallationWelcomeFX = {
 			
 			content.document.addEventListener("HideAttentionArrow", 
 				function(evt) { 
-					InstallationWelcomeFX.clearAnimationTimeouts();
+					FIInstallationWelcomeFX.clearAnimationTimeouts();
 					evt.target.parentNode.removeChild(evt.target); 
 				}, false, true);
 				

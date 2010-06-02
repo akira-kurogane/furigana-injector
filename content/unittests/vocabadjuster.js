@@ -3,35 +3,35 @@
 /******************************************************
  *	Unit Tests 
  ******************************************************/
-var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
+var utmodFIVocabAdjuster = new UnitTestModule("FIVocabAdjuster", [
 
 	new FIUnitTestItem("Basic var existence", 
 		function() { 
-			return VocabAdjuster && typeof VocabAdjuster == "object"; 
+			return FIVocabAdjuster && typeof FIVocabAdjuster == "object"; 
 		}
 	), 
 
 	new FIUnitTestItem("Regex tests", 
 		function() { 
 			var testsArray = [
-				{ ptn: VocabAdjuster.kanjiPattern, str: "xxx", rslt: false }, 
-				{ ptn: VocabAdjuster.kanjiPattern, str: "あい", rslt: false }, 
-				{ ptn: VocabAdjuster.kanjiPattern, str: "aaa電話。", rslt: true }, 
-				{ ptn: VocabAdjuster.kanjiRevPattern, str: "xxx", rslt: true }, 
-				{ ptn: VocabAdjuster.kanjiRevPattern, str: "あい", rslt: true }, 
-				{ ptn: VocabAdjuster.kanjiRevPattern, str: "aaa電話。", rslt: true }, 
-				{ ptn: VocabAdjuster.hiraganaPattern, str: "xxx", rslt: false }, 
-				{ ptn: VocabAdjuster.hiraganaPattern, str: "ア", rslt: false }, 
-				{ ptn: VocabAdjuster.hiraganaPattern, str: "う", rslt: true }, 
-				{ ptn: VocabAdjuster.hiraganaPattern, str: "aaa電話。", rslt: false }, 
-				{ ptn: VocabAdjuster.hiraganaRevPattern, str: "xxx", rslt: true }, 
-				{ ptn: VocabAdjuster.hiraganaRevPattern, str: "あい", rslt: false }, 
-				{ ptn: VocabAdjuster.hiraganaRevPattern, str: "タタキうヴィ", rslt: true }, 
-				{ ptn: VocabAdjuster.hiraganaRevPattern, str: "aaa電話。", rslt: true }, 
-				{ ptn: VocabAdjuster.kanjiHiraganaPattern, str: "xxx", rslt: false }, 
-				{ ptn: VocabAdjuster.kanjiHiraganaPattern, str: "タタキ", rslt: false }, 
-				{ ptn: VocabAdjuster.kanjiHiraganaPattern, str: "タタキうヴィ", rslt: true }, 
-				{ ptn: VocabAdjuster.kanjiHiraganaPattern, str: "aaa電話。", rslt: true }, 
+				{ ptn: FIVocabAdjuster.kanjiPattern, str: "xxx", rslt: false }, 
+				{ ptn: FIVocabAdjuster.kanjiPattern, str: "あい", rslt: false }, 
+				{ ptn: FIVocabAdjuster.kanjiPattern, str: "aaa電話。", rslt: true }, 
+				{ ptn: FIVocabAdjuster.kanjiRevPattern, str: "xxx", rslt: true }, 
+				{ ptn: FIVocabAdjuster.kanjiRevPattern, str: "あい", rslt: true }, 
+				{ ptn: FIVocabAdjuster.kanjiRevPattern, str: "aaa電話。", rslt: true }, 
+				{ ptn: FIVocabAdjuster.hiraganaPattern, str: "xxx", rslt: false }, 
+				{ ptn: FIVocabAdjuster.hiraganaPattern, str: "ア", rslt: false }, 
+				{ ptn: FIVocabAdjuster.hiraganaPattern, str: "う", rslt: true }, 
+				{ ptn: FIVocabAdjuster.hiraganaPattern, str: "aaa電話。", rslt: false }, 
+				{ ptn: FIVocabAdjuster.hiraganaRevPattern, str: "xxx", rslt: true }, 
+				{ ptn: FIVocabAdjuster.hiraganaRevPattern, str: "あい", rslt: false }, 
+				{ ptn: FIVocabAdjuster.hiraganaRevPattern, str: "タタキうヴィ", rslt: true }, 
+				{ ptn: FIVocabAdjuster.hiraganaRevPattern, str: "aaa電話。", rslt: true }, 
+				{ ptn: FIVocabAdjuster.kanjiHiraganaPattern, str: "xxx", rslt: false }, 
+				{ ptn: FIVocabAdjuster.kanjiHiraganaPattern, str: "タタキ", rslt: false }, 
+				{ ptn: FIVocabAdjuster.kanjiHiraganaPattern, str: "タタキうヴィ", rslt: true }, 
+				{ ptn: FIVocabAdjuster.kanjiHiraganaPattern, str: "aaa電話。", rslt: true }, 
 			];
 			
 			for (var x = 0; x < testsArray.length; x++) {
@@ -52,8 +52,8 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 			var testResult = false;
 			var before_pref_string = FuriganaInjector.getPref("exclusion_kanji");
 			FuriganaInjector.setPref("exclusion_kanji", "日一過単簡");	//includes all kanji of "簡単過ぎる", but none of "晦渋"
-			testResult = VocabAdjuster.tooEasy("簡単過ぎる") &&  VocabAdjuster.tooEasy("かんじがない") && VocabAdjuster.tooEasy("ascii only") && 
-				!VocabAdjuster.tooEasy("晦渋") && !VocabAdjuster.tooEasy("カナ晦渋など");
+			testResult = FIVocabAdjuster.tooEasy("簡単過ぎる") &&  FIVocabAdjuster.tooEasy("かんじがない") && FIVocabAdjuster.tooEasy("ascii only") && 
+				!FIVocabAdjuster.tooEasy("晦渋") && !FIVocabAdjuster.tooEasy("カナ晦渋など");
 			FuriganaInjector.setPref("exclusion_kanji", before_pref_string);
 			
 			return testResult;
@@ -62,7 +62,7 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 	
 	new FIUnitTestItem("removeSimpleWords(matchingTextNodeInstances)", 
 		function() { 
-			var allSimpleKanji = VocabAdjuster.getSimpleKanjiList();
+			var allSimpleKanji = FIVocabAdjuster.getSimpleKanjiList();
 			var simpleKanji1 = allSimpleKanji.charAt(0);
 			var simpleKanji2 = allSimpleKanji.charAt(allSimpleKanji.length - 1);
 			var difficultKanji1 = "譫";
@@ -94,7 +94,7 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 				testMatches.push( { word: difficultWords[x], yomi: "dummy yomikata" } );
 			var junkTextNode = document.createTextNode("");
 			var junkTextNodeInstances = { textNode: junkTextNode, matchInstances: testMatches } 
-			VocabAdjuster.removeSimpleWords( [junkTextNodeInstances] ); //an array of one text node instance
+			FIVocabAdjuster.removeSimpleWords( [junkTextNodeInstances] ); //an array of one text node instance
 			var returnedWords = [];
 			for (var y = 0; y < junkTextNodeInstances.matchInstances.length; y++) 
 				returnedWords.push(junkTextNodeInstances.matchInstances[y].word);
@@ -104,24 +104,24 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 	
 	new FIUnitTestItem("isUnihanChar(testChar)", 
 		function() { 
-			return VocabAdjuster.isUnihanChar("一") /*\u4E00*/ && VocabAdjuster.isUnihanChar("件") /*\u4EF6*/ && //common ideographs
-				VocabAdjuster.isUnihanChar("\u9FBB") && VocabAdjuster.isUnihanChar("\u3400") &&	//less common ideographs
-				VocabAdjuster.isUnihanChar("\u34FF") && VocabAdjuster.isUnihanChar("\u4DB5") && 	//less common ideographs
+			return FIVocabAdjuster.isUnihanChar("一") /*\u4E00*/ && FIVocabAdjuster.isUnihanChar("件") /*\u4EF6*/ && //common ideographs
+				FIVocabAdjuster.isUnihanChar("\u9FBB") && FIVocabAdjuster.isUnihanChar("\u3400") &&	//less common ideographs
+				FIVocabAdjuster.isUnihanChar("\u34FF") && FIVocabAdjuster.isUnihanChar("\u4DB5") && 	//less common ideographs
 				//False cases below
-				!VocabAdjuster.isUnihanChar("0") && !VocabAdjuster.isUnihanChar("a") &&   //latin
-				!VocabAdjuster.isUnihanChar("\u0113") && !VocabAdjuster.isUnihanChar("\u0E05") &&   //extended latin, thai
-				!VocabAdjuster.isUnihanChar("ぁ") && !VocabAdjuster.isUnihanChar("を") &&   //hiragana
-				!VocabAdjuster.isUnihanChar("マ") && !VocabAdjuster.isUnihanChar("\u31FD") &&   //katakana, ext. katakan
-				!VocabAdjuster.isUnihanChar("９") && !VocabAdjuster.isUnihanChar("ｹ") &&   //fullwidth latin and half-width katakana
-				!VocabAdjuster.isUnihanChar("\u3109") && !VocabAdjuster.isUnihanChar("\u31B7") &&   //bopomofo
-				!VocabAdjuster.isUnihanChar("\u2EC7") && !VocabAdjuster.isUnihanChar("\u2F00") &&   //CJK radical, Ki radical
-				!VocabAdjuster.isUnihanChar("\u31C1");  //CJK stroke
+				!FIVocabAdjuster.isUnihanChar("0") && !FIVocabAdjuster.isUnihanChar("a") &&   //latin
+				!FIVocabAdjuster.isUnihanChar("\u0113") && !FIVocabAdjuster.isUnihanChar("\u0E05") &&   //extended latin, thai
+				!FIVocabAdjuster.isUnihanChar("ぁ") && !FIVocabAdjuster.isUnihanChar("を") &&   //hiragana
+				!FIVocabAdjuster.isUnihanChar("マ") && !FIVocabAdjuster.isUnihanChar("\u31FD") &&   //katakana, ext. katakan
+				!FIVocabAdjuster.isUnihanChar("９") && !FIVocabAdjuster.isUnihanChar("ｹ") &&   //fullwidth latin and half-width katakana
+				!FIVocabAdjuster.isUnihanChar("\u3109") && !FIVocabAdjuster.isUnihanChar("\u31B7") &&   //bopomofo
+				!FIVocabAdjuster.isUnihanChar("\u2EC7") && !FIVocabAdjuster.isUnihanChar("\u2F00") &&   //CJK radical, Ki radical
+				!FIVocabAdjuster.isUnihanChar("\u31C1");  //CJK stroke
 		}
 	), 
 	
 	new FIUnitTestItem("getSimpleKanjiList()", 
 		function() { 
-			var resultList = VocabAdjuster.getSimpleKanjiList();
+			var resultList = FIVocabAdjuster.getSimpleKanjiList();
 			if (typeof resultList != "string") {
 				this.caughtErrMsg = "Result is not a string";
 				return false;
@@ -131,7 +131,7 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 				return false;
 			}
 			for (var x = 0; x < resultList.length; x++) {
-				if (!VocabAdjuster.isUnihanChar(resultList.charAt(0))) {
+				if (!FIVocabAdjuster.isUnihanChar(resultList.charAt(0))) {
 					this.caughtErrMsg = "The non-kanji char \"" + resultList.charAt(0) + "\" was found.";
 					return false;
 				}
@@ -153,9 +153,9 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 			if (before_pref_string.indexOf(difficultKanji) >= 0) {
 				throw("Aborted: The test-use kanji \"" + difficultKanji + "\" is already present in user's list of 'exclusion' kanji.");
 			}
-			VocabAdjuster.flagSimpleKanjiListForReset();
+			FIVocabAdjuster.flagSimpleKanjiListForReset();
 			FuriganaInjector.setPref("exclusion_kanji", (before_pref_string + difficultKanji));
-			var afterList = VocabAdjuster.getSimpleKanjiList();
+			var afterList = FIVocabAdjuster.getSimpleKanjiList();
 			testResult = afterList.indexOf(difficultKanji) >= 0;
 			FuriganaInjector.setPref("exclusion_kanji", before_pref_string);
 			
@@ -172,7 +172,7 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 			if (before_pref_string.indexOf(difficultKanji) >= 0) {
 				throw("Aborted: The test-use kanji \"" + difficultKanji + "\" is already present in user's list of 'exclusion' kanji.");
 			}
-			VocabAdjuster.addKanjiToExclusionList(difficultKanji);
+			FIVocabAdjuster.addKanjiToExclusionList(difficultKanji);
 			var afterList = FuriganaInjector.getPref("exclusion_kanji");
 			var foundPos = afterList.indexOf(difficultKanji);
 			testResult = foundPos >= 0 && afterList.indexOf(difficultKanji, foundPos + 1) < 0;	//i.e. found once but only once
@@ -191,7 +191,7 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 			if (before_pref_string.indexOf(simpleKanji) < 0) {
 				throw("Aborted: The test-use kanji \"" + simpleKanji + "\" needs to be in the user's list of 'exclusion' kanji to do this test.");
 			}
-			VocabAdjuster.removeKanjiFromExclusionList(simpleKanji);
+			FIVocabAdjuster.removeKanjiFromExclusionList(simpleKanji);
 			var afterList = FuriganaInjector.getPref("exclusion_kanji");
 			testResult = afterList.indexOf(simpleKanji) < 0;
 			FuriganaInjector.setPref("exclusion_kanji", before_pref_string);
@@ -203,4 +203,4 @@ var utmodVocabAdjuster = new UnitTestModule("VocabAdjuster", [
 	]
 );
 
-FuriganaInjectorUnitTester.addUTM(utmodVocabAdjuster);
+FuriganaInjectorUnitTester.addUTM(utmodFIVocabAdjuster);

@@ -44,10 +44,10 @@ var FuriganaInjector = {
 			dump("There was an error retrieving the add-on's version. Debug and fix.\n" + err.toString());
 		}
 		
-		userKanjiRegex = new RegExp("[" + VocabAdjuster.getSimpleKanjiList() + "]");
+		userKanjiRegex = new RegExp("[" + FIVocabAdjuster.getSimpleKanjiList() + "]");
 		
-		//serverSelector defined in server_selector_obj.js. Selects a working serverUrl asynchronously.
-		serverSelector.startTestLoop(
+		//FIServerSelector defined in server_selector_obj.js. Selects a working serverUrl asynchronously.
+		FIServerSelector.startTestLoop(
 			[ "http://fi.yayakoshi.net/furiganainjector", "http://fi2.yayakoshi.net/furiganainjector" ], 
 			this.onServerConfirm, this.onNoServerFound );
 
@@ -134,21 +134,21 @@ var FuriganaInjector = {
 		if (selText.length > 0) {
 			var kanjiCount = 0;
 			var currKanji;
-			var exclusionKanji = VocabAdjuster.getSimpleKanjiList();
+			var exclusionKanji = FIVocabAdjuster.getSimpleKanjiList();
 			var kanjiAdjustMenuItem;
 			var kanjiAdjustMenuItemLabel;
 			var kanjiAdjustMenuItemOnCmd;
 			for (var x = 0; x < selText.length && kanjiCount <= 4; x++) {
 				currKanji = selText.charAt(x);
-				if (VocabAdjuster.isUnihanChar(currKanji)) {
+				if (FIVocabAdjuster.isUnihanChar(currKanji)) {
 					kanjiCount++;
 					if (exclusionKanji.indexOf(currKanji) >= 0) {
 						kanjiAdjustMenuItemLabel = FuriganaInjector.strBundle.getFormattedString("menuLabelShowFuriganaForX", [ currKanji ]);
-						kanjiAdjustMenuItemOnCmd = "VocabAdjuster.removeKanjiFromExclusionList('" + currKanji + 
+						kanjiAdjustMenuItemOnCmd = "FIVocabAdjuster.removeKanjiFromExclusionList('" + currKanji + 
 							"'); FuriganaInjector.postRemoveKanjiFromExclusionList();";
 					} else {
 						kanjiAdjustMenuItemLabel = FuriganaInjector.strBundle.getFormattedString("menuLabelIgnoreFuriganaForX", [ currKanji ]);
-						kanjiAdjustMenuItemOnCmd = "VocabAdjuster.addKanjiToExclusionList('" + currKanji + 
+						kanjiAdjustMenuItemOnCmd = "FIVocabAdjuster.addKanjiToExclusionList('" + currKanji + 
 							"'); FuriganaInjector.postAddKanjiToExclusionList('" + currKanji + "')";
 					}
 					document.getElementById("furigana-injector-submenu").addMenuItem
@@ -192,7 +192,7 @@ var FuriganaInjector = {
 	postAddKanjiToExclusionList: function(newKanji) {	//i.e. after Ignore-furigana-for-X
 		var rubyElems = content.document.getElementsByTagName("RUBY");
 		for (var x= 0; x < rubyElems.length; x++) {
-			if (VocabAdjuster.tooEasy(FuriganaInjector.rubyBaseText(rubyElems[x])))
+			if (FIVocabAdjuster.tooEasy(FuriganaInjector.rubyBaseText(rubyElems[x])))
 				FuriganaInjector.revertRuby(rubyElems[x]);
 		}
 	},
@@ -209,7 +209,7 @@ var FuriganaInjector = {
 			var nodeCtr = 100;
 			var thisNode;
 			while (thisNode = iterator.iterateNext()) {
-				if (thisNode.textContent.match(/[\u3400-\u9FBF]/))
+				if (thisNode.textContent.match(/[\u3400-\u9FBF]/))	//Kanji (a.k.a. chinese ideograph) range
 					kanjiTextNodes[nodeCtr++] = thisNode;
 			}
 		} catch (e) {
@@ -301,7 +301,7 @@ var FuriganaInjector = {
 					while (thisNode = iterator.iterateNext()) {
 						if (endTextNode.compareDocumentPosition(thisNode) != Node.DOCUMENT_POSITION_PRECEDING)
 							break;
-						if (thisNode.textContent.match(/[\u3400-\u9FBF]/)) 
+						if (thisNode.textContent.match(/[\u3400-\u9FBF]/)) 	//Kanji (a.k.a. chinese ideograph) range
 							kanjiTextNodes[nodeCtr++] = thisNode;
 					}
 				} catch (e) {
@@ -321,7 +321,7 @@ var FuriganaInjector = {
 	}, 
 
 	startFuriganizeAJAX: function(completionCallback, keepAllRubies) {
-		if (isEmpty(kanjiTextNodes)) {
+		if (FuriganaInjectorUtilities.isEmpty(kanjiTextNodes)) {
 			//alert("DEBUG: no difficult-kanji text nodes found");
 			return;
 		}
@@ -364,7 +364,7 @@ if (submittedKanjiTextNodes[key]) {
 					delete submittedKanjiTextNodes[key];
 } else { alert("development error: key \"" + key + "\" had an empty value in the returnData"); }
 				}
-				if (!isEmpty(kanjiTextNodes)) {	//start another async request for the remainder.
+				if (!FuriganaInjectorUtilities.isEmpty(kanjiTextNodes)) {	//start another async request for the remainder.
 					FuriganaInjector.startFuriganizeAJAX(this.completionCallback, false);
 				} else {
 					//processWholeDocumentCallback() or processContextSectionCallback()
@@ -402,7 +402,7 @@ safetCtr++;
 	},
 
 	hasOnlySimpleKanji: function(rubySubstr) {
-		var foundKanji = rubySubstr.match(/[\u3400-\u9FBF]/g);
+		var foundKanji = rubySubstr.match(/[\u3400-\u9FBF]/g);	//Kanji (a.k.a. chinese ideograph) range
 		if (foundKanji) {
 			for (var x = 0; x < foundKanji.length; x++) {
 				if (!userKanjiRegex.exec(foundKanji[x]))
@@ -602,8 +602,8 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 				var newPrefValStr = Components.classes["@mozilla.org/supports-string;1"].createInstance(Components.interfaces.nsISupportsString);
 				newPrefValStr.data = newPrefVal;
 				this.prefs.setComplexValue(prefName, Components.interfaces.nsISupportsString, newPrefValStr);
-				VocabAdjuster.flagSimpleKanjiListForReset();
-				userKanjiRegex = new RegExp("[" + VocabAdjuster.getSimpleKanjiList() + "]");
+				FIVocabAdjuster.flagSimpleKanjiListForReset();
+				userKanjiRegex = new RegExp("[" + FIVocabAdjuster.getSimpleKanjiList() + "]");
 			} else if (prefName == "last_version") {	//an ascii-type string
 				return this.prefs.setCharPref(prefName, newPrefVal);
 			//} else if (prefName == "known_string_preference") {
@@ -680,18 +680,36 @@ var FuriganaInjectorPrefsObserver =	{
 			return;
 		switch (aData) {
 		case "exclusion_kanji":
-			VocabAdjuster.flagSimpleKanjiListForReset();
+			FIVocabAdjuster.flagSimpleKanjiListForReset();
 			break;
 		}
 	}
 }
 
-/********* Simple object check utility ****************/
-function isEmpty(obj) {
-	for(var prop in obj) {
-		if(obj.hasOwnProperty(prop))
-			return false;
+/******************************************************************************
+ *	Utilities, wrapped to avoid namespace clash
+ ******************************************************************************/
+var FuriganaInjectorUtilities = {
+
+	/***** Simple object check ******/
+	isEmpty: function (obj) {
+		for(var prop in obj) {
+			if(obj.hasOwnProperty(prop))
+				return false;
+		}
+		return true;
+	},
+	
+	/*** a mozilla-specific version number comparison function ******/
+	compareVersions: function(a,b) {
+		var x = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
+			.getService(Components.interfaces.nsIVersionComparator)
+			.compare(a,b);
+
+		return x;
 	}
-	return true;
+//dump("1.0pre vs 1.0 = " + compareVersions("1.0pre", "1.0"));
+
+	
 }
 

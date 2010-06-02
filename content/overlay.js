@@ -1,5 +1,7 @@
 //ユニコード文字列
 
+var FuriganaInjectorOverlayInit = function() {
+
 /******************************************************************************
  *	Attach listener for browser's load and unload events (N.B. Does not mean page load/move).
  *	Devnote: FuriganaInjector.onLoad() is effectively it's init() function.
@@ -21,8 +23,8 @@ var tempLastVersion = tempFirstRunPrefs.prefHasUserValue("last_version") ? tempF
 //N.B. a parallel conditional block in install_welcome.js's onInstallationWelcomeLoad() function 
 //  will detect the version change from < 2.0 to 2.0+.
 if (!tempFirstRunPrefs.prefHasUserValue("firstrun") || tempFirstRunPrefs.getBoolPref("firstrun") == true || 
-	(tempLastVersion && fiCompareVersions(tempLastVersion, "2.0") < 0)) {	
-	window.addEventListener("load", InstallationWelcomeFX.addTabWithLoadListener, false);
+	(tempLastVersion && FuriganaInjectorUtilities.compareVersions(tempLastVersion, "2.0") < 0)) {	
+	window.addEventListener("load", FIInstallationWelcomeFX.addTabWithLoadListener, false);
 }
 tempFirstRunPrefs = undefined;
 tempLastVersion = undefined;
@@ -45,15 +47,5 @@ document.getElementById("appcontent").addEventListener("DOMContentLoaded",
 	}, 
 	false);
 
-/*
-/******************************************************************************
- *	fiCompareVersions()- a mozilla-specific version number comparing function.
- ******************************************************************************/
-function fiCompareVersions(a,b) {
-	var x = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
-		.getService(Components.interfaces.nsIVersionComparator)
-		.compare(a,b);
-
-	return x;
-}
-//dump("1.0pre vs 1.0 = " + fiCompareVersions("1.0pre", "1.0"));
+};	//end of FuriganaInjectorOverlayInit declaration;
+FuriganaInjectorOverlayInit();

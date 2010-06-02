@@ -5,11 +5,11 @@
 
 	<script src="furiganainjector.js"/>
 	<script src="server_selector_obj.js"/>
-	<script src="vocabadjuster.js"/>
+	<script src="vocabAdjuster.js"/>
 	<!-- It would be more ideal if the javascipt below could be loaded dynamically. It's only used in dev testing-->
 	<script src="unittests/unittester.js"/>
 	<script src="unittests/furiganainjector.js"/>
-	<script src="unittests/vocabadjuster.js"/>
+	<script src="unittests/vocabAdjuster.js"/>
 	<!-- end of javascipt that is only used for dev testing-->
 	<script src="user_guides/install_welcome.js"/>
 	<script src="overlay.js"/>
@@ -54,7 +54,7 @@
 			<!-- N.B. using "if (event.button != 2) ..." is hack way of detecting context click. Will not work for macintosh, obviously -->
 		<menupopup id="status-icon-context-menu" onpopupshowing="FuriganaInjector.initStatusbarPopup();" position="before_start">
 			<menuitem id="fi-open-install-welcome-menuitem" label="&fi_help_welcome.label;" accesskey="&fi_help_welcome.accesskey;"
-				oncommand="InstallationWelcomeFX.addTabWithLoadListener()" />
+				oncommand="FIInstallationWelcomeFX.addTabWithLoadListener()" />
 			<menuitem id="fi-process-link-text-menuitem" type="checkbox" label="&fi_process_link_text.label;" accesskey="&fi_process_link_text.accesskey;"
 				oncommand="FuriganaInjector.setPref('process_link_text', this.hasAttribute('checked'))" />			
 			<menuitem id="fi-open-options-menuitem" label="&fi_open_options.label;" accesskey="&fi_open_options.accesskey;"
