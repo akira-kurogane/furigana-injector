@@ -31,14 +31,14 @@ var FIInstallationWelcomeFX = {
 		if (highlightPrivacyWarning) {
 			try {
 				content.document.getElementById("starting_steps_header").style.display = "none";
-				content.document.getElementById("XHTML_Ruby_Support_div").style.display = "none";
+				content.document.getElementById("HTML_Ruby_addon_div").style.display = "none";
 				content.document.getElementById("RubyService_KanjiSelector").style.display = "none";
 				content.document.getElementById("No_RubyService_KanjiSelector").style.display = "none";
 				var privacyWarningDivCopy = content.document.getElementById("privacy_warning").cloneNode(true);
 				var shadeDiv = content.document.getElementById("full_page_shade");
 				var modalMsgDiv = content.document.getElementById("modal_message_area");
 				var msgHeadline = content.document.createElement("H1");
-				msgHeadline.innerHTML = content.document.title + " <em>v2.0</em>";
+				msgHeadline.innerHTML = content.document.title + " <em>v2.2</em>";
 				modalMsgDiv.insertBefore(privacyWarningDivCopy, modalMsgDiv.firstChild);
 				modalMsgDiv.insertBefore(msgHeadline, modalMsgDiv.firstChild);
 				shadeDiv.style.display = "block";
@@ -48,9 +48,18 @@ var FIInstallationWelcomeFX = {
 		
 			//N.B. accepting the HTML Ruby extension as well as the XHTML Ruby support extension, 
 			//  even though the page content only mentions the latter.
-			if (window.RubyService || window.HtmlRuby || window.HTMLRuby) {	//A global variable instantiated by the XHTML Ruby support extension/HTML Ruby extension
-				var XHTML_Ruby_Support_div = content.document.getElementById("XHTML_Ruby_Support_div");
-				XHTML_Ruby_Support_div.style.display = "none";
+			var extsMgr = Components.classes["@mozilla.org/extensions/manager;1"].getService(Components.interfaces.nsIExtensionManager);
+			var rubyAddon = extsMgr.getItemForID("{e10bc159-aa26-41d8-aa24-65de9464ca5a}");	/*HTML Ruby*/
+			if (!rubyAddon)
+				rubyAddon = extsMgr.getItemForID("{0620B69D-7B58-416d-A92A-0198860C2757}");	/*XHTML Ruby Support*/
+			//Checking iconURL is hack workaround because I can't find a proper way to check if an extension is user-disabled.
+			//Todo: use the AddonManager once Gecko 1.9.3 / Firefox 4 is released ? 
+			//  https://developer.mozilla.org/en/Addons/Add-on_Manager/AddonManager
+			//Current firefox: ns(I)ExtensionManager.js(.in)
+			var rubyAddonEnabled = rubyAddon && !(rubyAddon.iconURL && rubyAddon.iconURL.match(/^chrome:\/\/mozapps\//));	//generic icon -  used by disabled apps
+			if (rubyAddonEnabled) {
+				var HTML_Ruby_addon_div = content.document.getElementById("HTML_Ruby_addon_div");
+				HTML_Ruby_addon_div.style.display = "none";
 			} else {
 				try {
 					var RubyService_KanjiSelector_div = content.document.getElementById("RubyService_KanjiSelector");
