@@ -200,13 +200,18 @@ var FuriganaInjector = {
   	/******************************************************************************
   	 *	Meat
 	 ******************************************************************************/
-	queueAllTextNodesOfElement: function(elem) {
+	queueAllTextNodesOfElement: function(doc, elem) {
 		var includeLinkText = FuriganaInjector.getPref("process_link_text");
 		var xPathPattern = 'descendant-or-self::*[not(ancestor-or-self::head) and not(ancestor::select) and not(ancestor-or-self::script)and not(ancestor-or-self::ruby)' + (includeLinkText ? '' : ' and not(ancestor-or-self::a)') + ']/text()[normalize-space(.) != ""]';
 
 		try {
-			var iterator = content.document.evaluate(xPathPattern, elem, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
+			var iterator = doc.evaluate(xPathPattern, elem, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
 			var nodeCtr = 100;
+			//in case this called multiple times on one page (i.e. a multi-frame page), raise the nodeCtr
+			for (idx in kanjiTextNodes) {
+				if (!isNaN(idx) && nodeCtr < idx)
+					nodeCtr = idx + 1;
+			}
 			var thisNode;
 			while (thisNode = iterator.iterateNext()) {
 				if (thisNode.textContent.match(/[\u3400-\u9FBF]/))	//Kanji (a.k.a. chinese ideograph) range
@@ -221,12 +226,14 @@ var FuriganaInjector = {
 		content.document.body.setAttribute("furigana-injection", "processing");
 		kanjiTextNodes = {};
 		submittedKanjiTextNodes = {};
-		FuriganaInjector.queueAllTextNodesOfElement(content.document.body);
-		//Todo: Add matching nodes found in frames as well?
-		//var framesList = content.frames;
-		//for (var x = 0; x < framesList.length; x++) {
-		//	this.queueAllTextNodesOfElement(framesList[x].document.body)
-		//}
+		if (!content.frames || content.frames.length == 0) {
+			FuriganaInjector.queueAllTextNodesOfElement(content.document, content.document.body);
+		} else {
+			var framesList = content.frames;
+			for (var x = 0; x < framesList.length; x++) {
+				this.queueAllTextNodesOfElement(framesList[x].document, framesList[x].document.body)
+			}
+		}
 		FuriganaInjector.startFuriganizeAJAX(FuriganaInjector.processWholeDocumentCallback, false);
 	}, 
 	
@@ -247,7 +254,7 @@ var FuriganaInjector = {
 
 		if (selText.length == 0) {
 			if (parentBlockElem.tagName == "BODY") {
-				FuriganaInjector.queueAllTextNodesOfElement(parentBlockElem);
+				FuriganaInjector.queueAllTextNodesOfElement(parentBlockElem.ownerDocument, parentBlockElem);
 				FuriganaInjector.startFuriganizeAJAX(FuriganaInjector.processWholeDocumentCallback, false);
 			} else {
 				//Blink the context block that has been selected
@@ -256,7 +263,7 @@ var FuriganaInjector = {
 				setTimeout(function() { parentBlockElem.style.visibility = "hidden"}, 700 );
 				setTimeout(function() { parentBlockElem.style.visibility = "visible"}, 800 );
 				setTimeout(function() { 
-					FuriganaInjector.queueAllTextNodesOfElement(parentBlockElem);
+					FuriganaInjector.queueAllTextNodesOfElement(parentBlockElem.ownerDocument, parentBlockElem);
 					FuriganaInjector.startFuriganizeAJAX(FuriganaInjector.processContextSectionCallback, false);
 				}, 810);
 			}
@@ -355,6 +362,7 @@ var FuriganaInjector = {
 					if (!this.keepAllRubies)
 						returnData[key] = FuriganaInjector.stripRubyForSimpleKanji(returnData[key]);
 if (submittedKanjiTextNodes[key]) {
+					//Todo: figure out why content.document is okay, rather than needing submittedKanjiTextNodes[key].ownerDocument ...
 					var tempDocFrag = content.document.createDocumentFragment();
 					var dummyParent = content.document.createElement("DIV");
 					dummyParent.innerHTML = returnData[key];
