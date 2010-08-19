@@ -9,6 +9,7 @@ var FuriganaInjector = {
 	userKanjiRegex: null,
 	kanjiAdjustMenuItems: [], 
 	strBundle: null,
+	serviceURLsList: [ "http://fi.yayakoshi.net/furiganainjector", "http://fi2.yayakoshi.net/furiganainjector" ],
 	
 	/******************************************************************************
 	 *	Event handlers
@@ -46,10 +47,8 @@ var FuriganaInjector = {
 		
 		userKanjiRegex = new RegExp("[" + FIVocabAdjuster.getSimpleKanjiList() + "]");
 		
-		//FIServerSelector defined in server_selector_obj.js. Selects a working serverUrl asynchronously.
-		FIServerSelector.startTestLoop(
-			[ "http://fi.yayakoshi.net/furiganainjector", "http://fi2.yayakoshi.net/furiganainjector" ], 
-			this.onServerConfirm, this.onNoServerFound );
+		//ServerSelector defined in server_selector_obj.js. Selects a working serverUrl asynchronously.
+		var fiSvrSel = new ServerSelector(this.serviceURLsList, this.onServerConfirm, this.onNoServerFound );
 
 		try {
 			document.getElementById("open-tests-window-menuitem").hidden = !this.getPref("enable_tests");
@@ -223,6 +222,7 @@ var FuriganaInjector = {
 	}, 
 	
 	processWholeDocument: function() {
+		//Todo: once ruby is supported natively, execute the code found in css_fontsize_fix_for_rt.js in the chrome version.
 		content.document.body.setAttribute("furigana-injection", "processing");
 		kanjiTextNodes = {};
 		submittedKanjiTextNodes = {};
