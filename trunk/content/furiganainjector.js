@@ -3,13 +3,14 @@
 var FuriganaInjector = {
 
 	initialized: false, 
-	serverUrl: null,
+	furiganaServerUrl: null,
 	prefs: null,
 	versionUpdatingFrom: null,
 	userKanjiRegex: null,
 	kanjiAdjustMenuItems: [], 
 	strBundle: null,
-	serviceURLsList: [ "http://fi.yayakoshi.net/furiganainjector", "http://fi2.yayakoshi.net/furiganainjector" ],
+	furiganaSvrReqBatches: {}, //This object will be used like a hash
+	furiganaServiceURLsList: [ "http://fi.yayakoshi.net/furiganainjector", "http://fi2.yayakoshi.net/furiganainjector" ],
 	
 	/******************************************************************************
 	 *	Event handlers
@@ -32,8 +33,8 @@ var FuriganaInjector = {
 			getService(Components.interfaces.nsIPrefService).getBranch("extensions.furiganainjector.");
 		FuriganaInjectorPrefsObserver.register(this.prefs);
 		
-		//this.consoleService = Components.classes["@mozilla.org/consoleservice;1"]
-        //	.getService(Components.interfaces.nsIConsoleService);
+		this.consoleService = Components.classes["@mozilla.org/consoleservice;1"]
+        	.getService(Components.interfaces.nsIConsoleService);
 		
 		try{
 			var tempEM = Components.classes["@mozilla.org/extensions/manager;1"].getService(Components.interfaces.nsIExtensionManager);
@@ -45,10 +46,10 @@ var FuriganaInjector = {
 			dump("There was an error retrieving the add-on's version. Debug and fix.\n" + err.toString());
 		}
 		
-		userKanjiRegex = new RegExp("[" + FIVocabAdjuster.getSimpleKanjiList() + "]");
+		this.userKanjiRegex = new RegExp("[" + FIVocabAdjuster.getSimpleKanjiList() + "]");
 		
-		//ServerSelector defined in server_selector_obj.js. Selects a working serverUrl asynchronously.
-		var fiSvrSel = new ServerSelector(this.serviceURLsList, this.onServerConfirm, this.onNoServerFound );
+		//ServerSelector defined in server_selector_obj.js. Selects a working furiganaServerUrl asynchronously.
+		var fiSvrSel = new ServerSelector(this.furiganaServiceURLsList, this.onServerConfirm, this.onNoFuriganaServerFound );
 
 		try {
 			document.getElementById("open-tests-window-menuitem").hidden = !this.getPref("enable_tests");
@@ -57,23 +58,38 @@ var FuriganaInjector = {
 		}
 	},
 	
-	onServerConfirm: function(svrUrl) {
+	onServerConfirm: function(svrUrl/*, contextObj*/) {
 	
-		FuriganaInjector.serverUrl = svrUrl;
-		document.getElementById("furigana-injector-menu-lbl").disabled = false;
-		
-		getBrowser().addProgressListener(FuriganaInjectorWebProgressListener, Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
-		getBrowser().tabContainer.addEventListener("TabSelect", FuriganaInjector.onTabSelectionChange, false);
-		
-		//Devnote: just setting the onpopupshowing attribute in overlay.xul didn't seem to work. Besides, the event object will probably be needed later for context actions
-		document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", FuriganaInjector.onShowContextMenu, false);
-		document.getElementById("contentAreaContextMenu").addEventListener("popuphidden", FuriganaInjector.onHideContextMenu, false);
+		FuriganaInjector.furiganaServerUrl = svrUrl;
+		//FuriganaInjector.consoleService.logStringMessage("FuriganaInjector service at " + FuriganaInjector.furiganaServerUrl + " confirmed");
+		document.getElementById("furiganainjector-statusbarpanel").tooltipText = "";
+		FuriganaInjector.setCurrentStatusIconAndCmdModes();	//should be the same as FuriganaInjector.setStatusIcon("default");, for valid pages ??
+		//???? document.getElementById("furigana-injector-menu-lbl").disabled = false;
+
+		if (!FuriganaInjector.initialized ) {
+			getBrowser().addProgressListener(FuriganaInjectorWebProgressListener, Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+			getBrowser().tabContainer.addEventListener("TabSelect", FuriganaInjector.onTabSelectionChange, false);
+			//Devnote: just setting the onpopupshowing attribute in overlay.xul didn't seem to work. Besides, the event object will probably be needed later for context actions
+			document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", FuriganaInjector.onShowContextMenu, false);
+			document.getElementById("contentAreaContextMenu").addEventListener("popuphidden", FuriganaInjector.onHideContextMenu, false);
+		}
 		
 		FuriganaInjector.initialized = true;
 	},
 	
-	onNoServerFound: function() {
+	onNoFuriganaServerFound: function(/*contextObj*/) {
 		document.getElementById("furiganainjector-statusbarpanel").tooltipText = FuriganaInjector.strBundle.getString("tooltipTextNoFuriganaServerFound");
+		/*Then schedule more server checks*/
+		if (!FuriganaInjector["serverRecheckInterval"])
+			FuriganaInjector.serverRecheckInterval = 30000;	//30 secs
+//FuriganaInjector.consoleService.logStringMessage("Notice: none of the furigana servers could be connected to. Scheduling another check in " + FuriganaInjector.serverRecheckInterval/1000 + " secs.");
+		setTimeout(function() {
+				if (!FuriganaInjector["furiganaServerUrl"]) //Just in case the server was selected somehow in the meantime.
+					var fiSvrSel = new ServerSelector(FuriganaInjector.furiganaServiceURLsList, FuriganaInjector.onServerConfirm, FuriganaInjector.onNoFuriganaServerFound, "mod_furiganainjector");
+			}, FuriganaInjector.serverRecheckInterval);
+		/*DEBUG DISABLED FuriganaInjector.serverRecheckInterval *= 2;
+		if (FuriganaInjector.serverRecheckInterval >= 3600000)
+			FuriganaInjector.serverRecheckInterval = 3600000;	//cap at 1hr.*/
 	},
 	
 	onUnload: function() {
@@ -207,34 +223,53 @@ var FuriganaInjector = {
 			var iterator = doc.evaluate(xPathPattern, elem, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
 			var nodeCtr = 100;
 			//in case this called multiple times on one page (i.e. a multi-frame page), raise the nodeCtr
-			for (idx in kanjiTextNodes) {
+			for (idx in this.kanjiTextNodes) {
 				if (!isNaN(idx) && nodeCtr < idx)
 					nodeCtr = idx + 1;
 			}
 			var thisNode;
 			while (thisNode = iterator.iterateNext()) {
 				if (thisNode.textContent.match(/[\u3400-\u9FBF]/))	//Kanji (a.k.a. chinese ideograph) range
-					kanjiTextNodes[nodeCtr++] = thisNode;
+					this.kanjiTextNodes[nodeCtr++] = thisNode;
 			}
 		} catch (e) {
 			alert( 'Error during XPath document iteration: ' + e );
 		}
 	}, 
 	
+	/*	Take kanjiTextNodes up to the batch size specified and put them in one object. That single object 
+	 *	  can be re-submitted easily to a secondary server if the current one fails.*/
+	unshiftKanjiTxtNdToBatch: function(keepAllRuby) {
+		var batchData = {textToFuriganize: []};
+		var tmpLen = 0;
+		for (key in this.kanjiTextNodes) {
+			batchData.textToFuriganize[key] = this.kanjiTextNodes[key]; 
+			tmpLen += batchData.textToFuriganize[key].data.length;
+			delete this.kanjiTextNodes[key];
+			if (tmpLen > 20000)	//Only process this amount per request to the server.
+				break;
+		}
+		batchData.keepAllRuby = keepAllRuby;
+		var tmpDt = new Date();
+		var reqTimestampId = tmpDt.getTime();
+		this.furiganaSvrReqBatches[reqTimestampId] = batchData;
+		return reqTimestampId;
+	},
+	
 	processWholeDocument: function() {
 		//Todo: once ruby is supported natively, execute the code found in css_fontsize_fix_for_rt.js in the chrome version.
 		content.document.body.setAttribute("furigana-injection", "processing");
-		kanjiTextNodes = {};
-		submittedKanjiTextNodes = {};
+		this.kanjiTextNodes = {};
+		this.submittedKanjiTextNodes = {};
 		if (!content.frames || content.frames.length == 0) {
-			FuriganaInjector.queueAllTextNodesOfElement(content.document, content.document.body);
+			this.queueAllTextNodesOfElement(content.document, content.document.body);
 		} else {
 			var framesList = content.frames;
 			for (var x = 0; x < framesList.length; x++) {
 				this.queueAllTextNodesOfElement(framesList[x].document, framesList[x].document.body)
 			}
 		}
-		FuriganaInjector.startFuriganizeAJAX(FuriganaInjector.processWholeDocumentCallback, false);
+		this.startFuriganizeAJAX(this.furiganaServiceURLsList, this.unshiftKanjiTxtNdToBatch(false), this.processWholeDocumentCallback);
 	}, 
 	
 	processWholeDocumentCallback: function(processingResult) {
@@ -243,8 +278,8 @@ var FuriganaInjector = {
 	}, 
 	
 	processContextSection: function() {
-		kanjiTextNodes = {};
-		submittedKanjiTextNodes = {};
+		this.kanjiTextNodes = {};
+		this.submittedKanjiTextNodes = {};
 		var selectionObject = content.getSelection();
 		var selText = selectionObject.toString();
 		var parentBlockElem = document.popupNode;
@@ -254,8 +289,8 @@ var FuriganaInjector = {
 
 		if (selText.length == 0) {
 			if (parentBlockElem.tagName == "BODY") {
-				FuriganaInjector.queueAllTextNodesOfElement(parentBlockElem.ownerDocument, parentBlockElem);
-				FuriganaInjector.startFuriganizeAJAX(FuriganaInjector.processWholeDocumentCallback, false);
+				this.queueAllTextNodesOfElement(parentBlockElem.ownerDocument, parentBlockElem);
+				this.startFuriganizeAJAX(this.furiganaServiceURLsList, this.unshiftKanjiTxtNdToBatch(false), FuriganaInjector.processWholeDocumentCallback);
 			} else {
 				//Blink the context block that has been selected
 				setTimeout(function() { parentBlockElem.style.visibility = "hidden"}, 400 );
@@ -264,7 +299,7 @@ var FuriganaInjector = {
 				setTimeout(function() { parentBlockElem.style.visibility = "visible"}, 800 );
 				setTimeout(function() { 
 					FuriganaInjector.queueAllTextNodesOfElement(parentBlockElem.ownerDocument, parentBlockElem);
-					FuriganaInjector.startFuriganizeAJAX(FuriganaInjector.processContextSectionCallback, false);
+					FuriganaInjector.startFuriganizeAJAX(FuriganaInjector.furiganaServiceURLsList, this.unshiftKanjiTxtNdToBatch(false), FuriganaInjector.processContextSectionCallback);
 				}, 810);
 			}
 			
@@ -298,9 +333,9 @@ var FuriganaInjector = {
 
 			var nodeCtr = 100;
 			if (singleTextNode) {
-				kanjiTextNodes[nodeCtr++] = startTextNode;
+				this.kanjiTextNodes[nodeCtr++] = startTextNode;
 			} else {
-				kanjiTextNodes[nodeCtr++] = startTextNode;
+				this.kanjiTextNodes[nodeCtr++] = startTextNode;
 				try {
 					var xPathPattern = "following::*/text()";
 					var iterator = content.document.evaluate(xPathPattern, startTextNode, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
@@ -309,14 +344,14 @@ var FuriganaInjector = {
 						if (endTextNode.compareDocumentPosition(thisNode) != Node.DOCUMENT_POSITION_PRECEDING)
 							break;
 						if (thisNode.textContent.match(/[\u3400-\u9FBF]/)) 	//Kanji (a.k.a. chinese ideograph) range
-							kanjiTextNodes[nodeCtr++] = thisNode;
+							this.kanjiTextNodes[nodeCtr++] = thisNode;
 					}
 				} catch (e) {
 					alert( 'Error during XPath document iteration: ' + e );
 				}
-				kanjiTextNodes[nodeCtr++] = endTextNode;
+				this.kanjiTextNodes[nodeCtr++] = endTextNode;
 			}
-			FuriganaInjector.startFuriganizeAJAX(FuriganaInjector.processContextSectionCallback, true);
+			this.startFuriganizeAJAX(this.furiganaServiceURLsList, this.unshiftKanjiTxtNdToBatch(true), this.processContextSectionCallback);
 		}
 	}, 
 	
@@ -327,28 +362,24 @@ var FuriganaInjector = {
 		}
 	}, 
 
-	startFuriganizeAJAX: function(completionCallback, keepAllRubies) {
-		if (FuriganaInjectorUtilities.isEmpty(kanjiTextNodes)) {
-			//alert("DEBUG: no difficult-kanji text nodes found");
-			return;
-		}
+	startFuriganizeAJAX: function(urlsList, reqTimestampId, completionCallback) {
 		var postData = "";
-		for (key in kanjiTextNodes) {
-			postData += "&" + key + "=" + encodeURIComponent(kanjiTextNodes[key].data);
-			submittedKanjiTextNodes[key] = kanjiTextNodes[key];
-			delete kanjiTextNodes[key];
-			if (postData.length > 20000)	//Only process this amount per request to the server.
-				break;
+		var batchData = FuriganaInjector.furiganaSvrReqBatches[reqTimestampId];
+		for (key in batchData.textToFuriganize) {
+			postData += "&" + key + "=" + encodeURIComponent(batchData.textToFuriganize[key].data);
+			this.submittedKanjiTextNodes[key] = batchData.textToFuriganize[key];
 		}
 		postData = postData.substr(1);
 		var xhr = new XMLHttpRequest();
+		xhr.urlsList = urlsList;	//Will only be referenced if the request fails.
+		xhr.reqTimestampId = reqTimestampId;
 		xhr.completionCallback = completionCallback;
-		xhr.keepAllRubies = keepAllRubies ? true : false;
+		xhr.keepAllRubies = batchData.keepAllRubies;
 		xhr.onreadystatechange = this.furiganizeAJAXStateChangeHandler;
 		xhr.onerror = function(error) {
 			//FuriganaInjector.consoleService.logStringMessage("XHR error: " + JSON.stringify(error));
 		}
-		xhr.open("POST", FuriganaInjector.serverUrl, true);
+		xhr.open("POST", FuriganaInjector.furiganaServerUrl, true);
 		xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		//xhr.setRequestHeader("Content-Length", postData.length);
 		xhr.send(postData);
@@ -361,28 +392,56 @@ var FuriganaInjector = {
 				for (key in returnData){
 					if (!this.keepAllRubies)
 						returnData[key] = FuriganaInjector.stripRubyForSimpleKanji(returnData[key]);
-if (submittedKanjiTextNodes[key]) {
+if (FuriganaInjector.submittedKanjiTextNodes[key]) {
+//FuriganaInjector.consoleService.logStringMessage(JSON.stringify(returnData[key]));
 					//Todo: figure out why content.document is okay, rather than needing submittedKanjiTextNodes[key].ownerDocument ...
 					var tempDocFrag = content.document.createDocumentFragment();
 					var dummyParent = content.document.createElement("DIV");
 					dummyParent.innerHTML = returnData[key];
 					while(dummyParent.firstChild)
 						tempDocFrag.appendChild(dummyParent.firstChild);
-					submittedKanjiTextNodes[key].parentNode.replaceChild(tempDocFrag, submittedKanjiTextNodes[key]);
-					delete submittedKanjiTextNodes[key];
+					FuriganaInjector.submittedKanjiTextNodes[key].parentNode.replaceChild(tempDocFrag, FuriganaInjector.submittedKanjiTextNodes[key]);
+					delete FuriganaInjector.submittedKanjiTextNodes[key];
 } else { alert("development error: key \"" + key + "\" had an empty value in the returnData"); }
 				}
-				if (!FuriganaInjectorUtilities.isEmpty(kanjiTextNodes)) {	//start another async request for the remainder.
-					FuriganaInjector.startFuriganizeAJAX(this.completionCallback, false);
+				delete FuriganaInjector.furiganaSvrReqBatches[this.reqTimestampId];
+				if (!FuriganaInjectorUtilities.isEmpty(this.kanjiTextNodes)) {	//start another async request for the remainder.
+					FuriganaInjector.startFuriganizeAJAX(this.urlsList, this.reqTimestamp, this.completionCallback);
 				} else {
 					//processWholeDocumentCallback() or processContextSectionCallback()
 					this.completionCallback(true); 
 				}
 			} else {
-				alert("Error: the status of the reply from mod_furiganainjector was " + this.status + " instead of 200(OK)");
-				this.completionCallback(false);
+				var tmpIdx = this.urlsList.indexOf(FuriganaInjector.furiganaServerUrl);
+				if (tmpIdx)
+					this.urlsList.splice(tmpIdx, 1);
+				if (this.urlsList.length == 0)
+					FuriganaInjector.onNoServerFoundAfterReseek(this);
+				else
+					var tempSvrSel = new ServerSelector(this.urlsList, FuriganaInjector.updateServerURLAfterRequestFailure, 
+						FuriganaInjector.onNoServerFoundAfterReseek, "mod_furiganainjector", 
+						this/*including the xhr object so it can be passed back from the callback*/);
+				//alert("Error: the status of the reply from mod_furiganainjector was " + this.status + " instead of 200(OK)");
+				//this.completionCallback(false);
 			}
 		}
+	},
+
+	updateServerURLAfterRequestFailure: function(svrUrl, failedXHR) {
+//FuriganaInjector.consoleService.logStringMessage("updateServerURLAfterRequestFailure()");
+		var oldServerUrl = FuriganaInjector.furiganaServerUrl;
+		FuriganaInjector.furiganaServerUrl = svrUrl;
+		//FuriganaInjector.consoleService.logStringMessage("FuriganaInjector service at " + svrUrl + " selected after failure requesting from " + oldServerUrl);
+		FuriganaInjector.startFuriganizeAJAX(failedXHR.urlsList, failedXHR.reqTimestampId, failedXHR.completionCallback);
+	},
+
+	onNoServerFoundAfterReseek: function(failedXHR) {
+//FuriganaInjector.consoleService.logStringMessage("onNoServerFoundAfterReseek()");
+		FuriganaInjector.furiganaServerUrl = null;
+		delete FuriganaInjector.furiganaSvrReqBatches[failedXHR.reqTimestampId];	//dequeue
+		document.getElementById("furiganainjector-statusbarpanel").tooltipText = FuriganaInjector.strBundle.getString("tooltipTextNoFuriganaServerFound");
+		FuriganaInjector.setStatusIcon("disabled");
+		alert("Sorry- the furigana servers have failed.");
 	},
 	
 	stripRubyForSimpleKanji: function(origStr) {
@@ -393,7 +452,7 @@ if (submittedKanjiTextNodes[key]) {
 			return origStr;
 var safetCtr = 0;
 		while (currRubyBeginOffset >= 0 && safetCtr < 100) {
-			rubySubstr = origStr.substring(currRubyBeginOffset, origStr.indexOf("</ruby>", currRubyBeginOffset) + 7);
+			var rubySubstr = origStr.substring(currRubyBeginOffset, origStr.indexOf("</ruby>", currRubyBeginOffset) + 7);
 			if (FuriganaInjector.hasOnlySimpleKanji(rubySubstr)) {
 				newStr += origStr.substring(offset, currRubyBeginOffset);
 				newStr += rubySubstr.replace(
@@ -413,7 +472,7 @@ safetCtr++;
 		var foundKanji = rubySubstr.match(/[\u3400-\u9FBF]/g);	//Kanji (a.k.a. chinese ideograph) range
 		if (foundKanji) {
 			for (var x = 0; x < foundKanji.length; x++) {
-				if (!userKanjiRegex.exec(foundKanji[x]))
+				if (!this.userKanjiRegex.exec(foundKanji[x]))
 					return false;
 			}
 		}
@@ -541,7 +600,7 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 	
 	setCurrentContentProcessed: function(processingResult) {
 		//If Ruby XHTML Support extension is being used, call it's delayedReformRubyElement() method for all rubies.
-		if (window.RubyService && !FuriganaInjector.rubySupportedNatively()) {
+		if (window["RubyService"] !== "undefined" && !FuriganaInjector.rubySupportedNatively()) {
 			try {
 				var rubyNodeList = content.document.getElementsByTagName("RUBY");	//N.B. the return val is a NodeList object, not a standard array.
 				var tempRubyElem;
@@ -611,7 +670,7 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 				newPrefValStr.data = newPrefVal;
 				this.prefs.setComplexValue(prefName, Components.interfaces.nsISupportsString, newPrefValStr);
 				FIVocabAdjuster.flagSimpleKanjiListForReset();
-				userKanjiRegex = new RegExp("[" + FIVocabAdjuster.getSimpleKanjiList() + "]");
+				this.userKanjiRegex = new RegExp("[" + FIVocabAdjuster.getSimpleKanjiList() + "]");
 			} else if (prefName == "last_version") {	//an ascii-type string
 				return this.prefs.setCharPref(prefName, newPrefVal);
 			//} else if (prefName == "known_string_preference") {
