@@ -64,7 +64,7 @@ var FuriganaInjector = {
 		//FuriganaInjector.consoleService.logStringMessage("FuriganaInjector service at " + FuriganaInjector.furiganaServerUrl + " confirmed");
 		document.getElementById("furiganainjector-statusbarpanel").tooltipText = "";
 		FuriganaInjector.setCurrentStatusIconAndCmdModes();	//should be the same as FuriganaInjector.setStatusIcon("default");, for valid pages ??
-		//???? document.getElementById("furigana-injector-menu-lbl").disabled = false;
+		document.getElementById("furigana-injector-menu-lbl").disabled = false;
 
 		if (!FuriganaInjector.initialized ) {
 			getBrowser().addProgressListener(FuriganaInjectorWebProgressListener, Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
