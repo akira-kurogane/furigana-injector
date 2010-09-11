@@ -1,4 +1,35 @@
 //ユニコード文字列
+(function (/*window, undefined*/) {
+
+	/*Remove the jQuery in this extension from the global scope. */
+	$ = jQuery = jQuery.noConflict(true);	//using true strips window.jQuery as well as window.$. 
+		//  N.B. not having a global jQuery will break jQuery plugins.
+
+/******************************************************************************
+ *	Attach listener for browser's load and unload events (N.B. Does not mean page load/move).
+ *	Devnote: FuriganaInjector.onLoad() is effectively it's init() function.
+ ******************************************************************************/
+ 
+window.addEventListener("load", function(e) { FuriganaInjector.onLoad(e); }, false);
+window.addEventListener("unload", function(e) { FuriganaInjector.onUnload(e); }, false); 
+
+/******************************************************************************
+ *	Attach listener for "SetKanjiByMaxFOUValRequest" events if the page loaded is the 'Simple 
+ *	  Kanji Selection' page.
+ ******************************************************************************/
+var setKanjiLevelURI = "chrome://furiganainjector/locale/user_guides/simple_kanji_level_selector.html";
+
+//Devnote: element "appcontent" is defined by Firefox. Use "messagepane" for Thunderbird
+document.getElementById("appcontent").addEventListener("DOMContentLoaded", 
+	function() {
+		if (content.document.URL == setKanjiLevelURI) {
+			content.document.addEventListener("SetKanjiByMaxFOUValRequest", 
+				function(evt) { FuriganaInjector.onSetKanjiByMaxFOUValRequest(evt); }, false, true);
+			//N.B. By testing it seems the "SetKanjiByMaxFOUValRequest" event listener is destroyed when 
+			//  the document is closed, so there is no need for a matching removeEventListener();
+		}
+	}, 
+	false);
 
 var FuriganaInjector = {
 
@@ -11,6 +42,7 @@ var FuriganaInjector = {
 	strBundle: null,
 	furiganaSvrReqBatches: {}, //This object will be used like a hash
 	furiganaServiceURLsList: [ "http://fi.yayakoshi.net/furiganainjector", "http://fi2.yayakoshi.net/furiganainjector" ],
+	wwwjdicServerURL: null,
 	
 	/******************************************************************************
 	 *	Event handlers
@@ -72,9 +104,52 @@ var FuriganaInjector = {
 			//Devnote: just setting the onpopupshowing attribute in overlay.xul didn't seem to work. Besides, the event object will probably be needed later for context actions
 			document.getElementById("contentAreaContextMenu").addEventListener("popupshowing", FuriganaInjector.onShowContextMenu, false);
 			document.getElementById("contentAreaContextMenu").addEventListener("popuphidden", FuriganaInjector.onHideContextMenu, false);
+			/*** New event listeners version 2.3? 
+			 * Todo: make all of this named functions,
+			 * Todo: remove event listeners in the onUnload function
+			 */
+			document.getElementById("status-icon-context-menu").addEventListener("popupshowing", function (event) {
+				FuriganaInjector.processContextSection(true);
+			}, false);
+			document.getElementById("process-context-section-context-menuitem").addEventListener("command", function (event) {
+				FuriganaInjector.processContextSection(true);
+			}, false);
+			document.getElementById("process-whole-page-context-menuitem").addEventListener("command", function (event) {
+				FuriganaInjector.processWholeDocument();
+			}, false);
+			document.getElementById("furiganainjector-statusbarpanel").addEventListener("command", function (event) {
+				var pState = FuriganaInjector.currentContentProcessed(); 
+				if (pState == 'processing')
+					;/*do nothing*/
+				else if (pState)
+					FuriganaInjector.revertAllRubys(); 
+				else
+					FuriganaInjector.processWholeDocument(); 
+			}, false);
+			document.getElementById("remove-page-furigana-context-menuitem").addEventListener("command", function (event) {
+				FuriganaInjector.revertAllRubys();
+			}, false);
+			document.getElementById("fi-process-link-text-menuitem").addEventListener("command", function (event) {
+				FuriganaInjector.setPref('process_link_text', this.hasAttribute('checked'));	//_this_ is the menuitem element
+			}, false);
+			document.getElementById("fi-open-options-menuitem").addEventListener("command", function (event) {
+				FuriganaInjector.openOptionsWindow();
+			}, false);
+			document.getElementById("fi-open-install-welcome-menuitem").addEventListener("command", function (event) {
+try {
+				FIInstallationWelcomeFX.addTabWithLoadListener();
+} catch (err) { alert(err); }
+			}, false);
 		}
 		
 		FuriganaInjector.initialized = true;
+		
+		//Now find a WWWJDIC server
+		var wwwjdicSvrSel = new ServerSelector(
+			[ "http://www.csse.monash.edu.au/~jwb/cgi-bin/wwwjdic.cgi", "http://ryouko.imsb.nrc.ca/cgi-bin/wwwjdic", 
+				"http://jp.msmobiles.com/cgi-bin/wwwjdic", "http://www.aa.tufs.ac.jp/~jwb/cgi-bin/wwwjdic.cgi", 
+				"http://wwwjdic.sys5.se/cgi-bin/wwwjdic.cgi", "http://www.edrdg.org/cgi-bin/wwwjdic/wwwjdic"],
+			FuriganaInjector.confirmWWWJDICServer, FuriganaInjector.onNoWWWJDICServerFound);
 	},
 	
 	onNoFuriganaServerFound: function(/*contextObj*/) {
@@ -90,6 +165,15 @@ var FuriganaInjector = {
 		/*DEBUG DISABLED FuriganaInjector.serverRecheckInterval *= 2;
 		if (FuriganaInjector.serverRecheckInterval >= 3600000)
 			FuriganaInjector.serverRecheckInterval = 3600000;	//cap at 1hr.*/
+	},
+
+	confirmWWWJDICServer: function(svrUrl/*, contextObj*/) {
+		FuriganaInjector.wwwjdicServerURL = svrUrl;
+		FuriganaInjector.consoleService.logStringMessage("WWWJDIC service at " + svrUrl + " confirmed");
+	},
+
+	onNoWWWJDICServerFound: function(/*contextObj*/) {
+		FuriganaInjector.consoleService.logStringMessage("Error: none of the WWWJDIC servers could be connected to.");
 	},
 	
 	onUnload: function() {
@@ -118,12 +202,12 @@ var FuriganaInjector = {
 		if(content.document.contentType == "text/html") {
 			var alreadyProcessed = FuriganaInjector.currentContentProcessed() === true;
 			FuriganaInjector.setStatusIcon(alreadyProcessed ? "processed" : "default");
-			document.getElementById("process-context-section-command").setAttribute("disabled", alreadyProcessed);
-			document.getElementById("process-whole-page-command").setAttribute("disabled", alreadyProcessed);
+			document.getElementById("process-context-section-context-menuitem").setAttribute("disabled", alreadyProcessed);
+			document.getElementById("process-whole-page-context-menuitem").setAttribute("disabled", alreadyProcessed);
 		} else {
 			FuriganaInjector.setStatusIcon("disabled");
-			document.getElementById("process-context-section-command").setAttribute("disabled", true);
-			document.getElementById("process-whole-page-command").setAttribute("disabled", true);
+			document.getElementById("process-context-section-context-menuitem").setAttribute("disabled", true);
+			document.getElementById("process-whole-page-context-menuitem").setAttribute("disabled", true);
 		}
 	},
 	
@@ -275,6 +359,8 @@ var FuriganaInjector = {
 	processWholeDocumentCallback: function(processingResult) {
 		FuriganaInjector.setCurrentContentProcessed(processingResult);
 		FuriganaInjector.setStatusIcon(FuriganaInjector.currentContentProcessed() === true ? "processed" : "failed"); 
+		//Todo: activate_wwwjdic_lookup.js
+		$("rt", content.document).bind("mouseenter", showRubyDopplegangerAndRequestGloss);
 	}, 
 	
 	processContextSection: function() {
@@ -360,6 +446,8 @@ var FuriganaInjector = {
 			FuriganaInjector.setCurrentContentProcessed(processingResult ? "partially_processed" : false);
 			FuriganaInjector.setStatusIcon(processingResult ? "partially_processed" : "failed"); 	
 		}
+		//Todo: activate_wwwjdic_lookup.js
+		$("rt", content.document).bind("mouseenter", showRubyDopplegangerAndRequestGloss);
 	}, 
 
 	startFuriganizeAJAX: function(urlsList, reqTimestampId, completionCallback) {
@@ -780,3 +868,100 @@ var FuriganaInjectorUtilities = {
 	
 }
 
+/********* The contents of vocabadjuster **************/
+
+var FIVocabAdjuster = {
+
+	//Various patterns to match different japanese scripts
+	kanjiPattern: "(?:[\u3400-\u9FBF][\u3005\u3400-\u9FBF]*)",	//"\u3005" is "々", the kanji repeater character
+	kanjiRevPattern: "[^\u3005\u3400-\u9FBF]",	//N.B. no attempt to made to avoid leading "々" char
+	hiraganaPattern: "[\u3042\u3044\u3046\u3048\u304A-\u3093]",
+	hiraganaRevPattern: "[^\u3042\u3044\u3046\u3048\u304A-\u3093]",
+	kanjiHiraganaPattern: "[\u3005\u3042\u3044\u3046\u3048\u304A-\u3093\u3400-\u9FBF]",	//N.B. no attempt to made to avoid leading "々" char
+	
+	_simpleKanjiList: null, 
+
+	tooEasy: function(word) {
+		var ignore = this.getSimpleKanjiList();	//just to make sure this._simpleKanjiList is initialized for tooEasy_NoInit()
+		return this.tooEasy_NoInit(word);
+	}, 
+
+	tooEasy_NoInit: function(word) {
+		var charTemp;
+		for (var charPos = 0; charPos < word.length; charPos++) {
+			charTemp = word.charAt(charPos);
+			if (this.isUnihanChar(charTemp) && this._simpleKanjiList.indexOf(charTemp) < 0) {
+				return false;
+			}
+		}
+		return true;
+	},
+
+	removeSimpleWords: function(matchingTextNodeInstances) {
+		var tni;
+		var mi;
+		var replacementArray;
+		var ignore = this.getSimpleKanjiList();	//just to make sure this._simpleKanjiList is initialized for tooEasy_NoInit()
+		for (var x = 0; x < matchingTextNodeInstances.length; x++) {
+			tni = matchingTextNodeInstances[x];
+			replacementArray = [];
+			for (var y = 0; y < tni.matchInstances.length; y++) {
+				mi = tni.matchInstances[y];
+				if (!this.tooEasy_NoInit(mi.word)) {
+					replacementArray.push(mi);
+				}
+			}
+			tni.matchInstances.splice(0, tni.matchInstances.length);
+			for (var y = 0; y < replacementArray.length; y++) {
+				tni.matchInstances[y] = replacementArray[y];
+			}
+		}
+		return matchingTextNodeInstances;
+	},
+	
+	addKanjiToExclusionList: function(kanjiChar) {
+		var temp_pref_string = FuriganaInjector.getPref("exclusion_kanji");
+		if (temp_pref_string.indexOf(kanjiChar) >= 0) {
+			if (FuriganaInjector.getPref("enable_tests"))
+				alert("addKanjiToExclusionList(): The kanji \"" + kanjiChar + "\" is already in the kanji exclusion list");
+		} else {
+			temp_pref_string += kanjiChar;
+			FuriganaInjector.setPref("exclusion_kanji", temp_pref_string);
+			this.flagSimpleKanjiListForReset();
+		}
+	},
+	
+	removeKanjiFromExclusionList: function(kanjiChar) {
+		var temp_pref_string = FuriganaInjector.getPref("exclusion_kanji");
+		if (temp_pref_string.indexOf(kanjiChar) < 0) {
+			if (FuriganaInjector.getPref("enable_tests"))
+				alert("removeKanjiFromExclusionList(): The kanji \"" + kanjiChar + "\" is not in the kanji exclusion list");
+		} else {
+			temp_pref_string = temp_pref_string.replace(kanjiChar, "");
+			FuriganaInjector.setPref("exclusion_kanji", temp_pref_string);
+			this.flagSimpleKanjiListForReset();
+		}
+	},
+	
+	/* N.B. No detection for the "CJK Compatibility Ideographs"or "CJK Ideographs Ext B"*/
+	//Todo: initialise a RegExp object, use kanjiRevPattern
+	isUnihanChar: function(testChar) {
+		return testChar >= "\u3400" && testChar <= "\u9FBF";
+	}, 
+
+	getSimpleKanjiList: function() {
+		if (!this._simpleKanjiList) { 
+			var temp_pref_string = FuriganaInjector.getPref("exclusion_kanji");
+			this._simpleKanjiList = temp_pref_string.replace(RegExp(FIVocabAdjuster.kanjiRevPattern ,"g"), "");
+		}
+		return this._simpleKanjiList;
+	},
+	
+	flagSimpleKanjiListForReset: function() {
+		this._simpleKanjiList = null;
+	}
+
+};
+/************ End of the contents of vocab adjuster ****************/
+
+})();
