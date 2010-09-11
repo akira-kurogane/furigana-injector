@@ -3,28 +3,21 @@
 <!DOCTYPE overlay SYSTEM "chrome://furiganainjector/locale/furiganainjector.dtd">
 <overlay id="furiganainjector-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
+	<script src="jquery.js"/>
 	<script src="furiganainjector.js"/>
 	<script src="server_selector_obj.js"/>
+	<script src="activate_wwwjdic_lookup.js"/>
 	<script src="vocabadjuster.js"/>
-	<!-- It would be more ideal if the javascipt below could be loaded dynamically. It's only used in dev testing-->
-	<script src="unittests/unittester.js"/>
-	<script src="unittests/furiganainjector.js"/>
-	<script src="unittests/vocabadjuster.js"/>
-	<!-- end of javascipt that is only used for dev testing-->
 	<script src="user_guides/install_welcome.js"/>
-	<script src="overlay.js"/>
+	<!-- It would be more ideal if the javascipt below could be loaded dynamically. It's only used in dev testing-->
+	<!-- script src="unittests/unittester.js"/ -->
+	<!-- script src="unittests/furiganainjector.js"/ -->
+	<!-- script src="unittests/vocabadjuster.js"/ -->
+	<!-- end of javascipt that is only used for dev testing-->
 	
 	<stringbundleset id="stringbundleset">
 		<stringbundle id="fi_strings" src="chrome://furiganainjector/locale/fi_strings.properties"/>
 	</stringbundleset>
-	
-	<commandset id="mainCommandSet"><!-- "mainCommandSet" is a merge point -->
-		<command id="process-context-section-command" oncommand="FuriganaInjector.processContextSection(true);" />
-		<command id="process-whole-page-command" oncommand="FuriganaInjector.processWholeDocument();" />
-		<command id="toggle-whole-page-command" oncommand="var pState = FuriganaInjector.currentContentProcessed(); if (pState == 'processing') {/*do nothing*/} else if (pState) { FuriganaInjector.revertAllRubys(); } else { FuriganaInjector.processWholeDocument(); }" />
-		<command id="remove-page-furigana-command" oncommand="FuriganaInjector.revertAllRubys();" />
-		<command id="open-tests-window-command" oncommand="FuriganaInjectorUnitTester.openTestTab();" />
-	</commandset>
 
 	<popup id="contentAreaContextMenu"><!-- "contentAreaContextMenu" is a merge point -->
 		<menu id="furigana-injector-menu-lbl" label="&FuriganaSubmenu.label;"
@@ -33,32 +26,26 @@
 			<menupopup id="furigana-injector-submenu">
 				<menuitem id="process-context-section-context-menuitem" 
 					label="&InjectContextFurigana.label;" accesskey="&InjectContextFurigana.accesskey;" 
-					command="process-context-section-command" class="menuitem-iconic"/>
+					class="menuitem-iconic"/>
 				<menuitem id="process-whole-page-context-menuitem" 
 					label="&InjectFuriganaWholePage.label;" accesskey="&InjectFuriganaWholePage.accesskey;" 
-					command="process-whole-page-command" class="menuitem-iconic" />
+					class="menuitem-iconic" />
 				<menuitem id="remove-page-furigana-context-menuitem" 
 					label="&RemoveFuriganaWholePage.label;" accesskey="&RemoveFuriganaWholePage.accesskey;" 
-					command="remove-page-furigana-command" class="menuitem-iconic" hidden="true" />
-				<menuitem id="open-tests-window-menuitem" 
-					label="Furigana Injector Tests"  
-					command="open-tests-window-command" class="menuitem-iconic" hidden="true" />
+					cclass="menuitem-iconic" hidden="true" />
 			</menupopup>
 		</menu>
 	</popup>
 
 	<statusbar id="status-bar"><!-- "status-bar" is a merge point -->
 		<statusbarpanel id="furiganainjector-statusbarpanel" class="statusbarpanel-menu-iconic" processing_state="disabled" 
-			command="toggle-whole-page-command" onmousedown="if (event.button != 2) doCommand();" 
+			onmousedown="if (event.button != 2) doCommand();" 
 			context="status-icon-context-menu" /><!-- N.B. the icon is controlled by CSS. The custom "processing_state" attribute is important. -->
 			<!-- N.B. using "if (event.button != 2) ..." is hack way of detecting context click. Will not work for macintosh, obviously -->
-		<menupopup id="status-icon-context-menu" onpopupshowing="FuriganaInjector.initStatusbarPopup();" position="before_start">
-			<menuitem id="fi-open-install-welcome-menuitem" label="&fi_help_welcome.label;" accesskey="&fi_help_welcome.accesskey;"
-				oncommand="FIInstallationWelcomeFX.addTabWithLoadListener()" />
-			<menuitem id="fi-process-link-text-menuitem" type="checkbox" label="&fi_process_link_text.label;" accesskey="&fi_process_link_text.accesskey;"
-				oncommand="FuriganaInjector.setPref('process_link_text', this.hasAttribute('checked'))" />			
-			<menuitem id="fi-open-options-menuitem" label="&fi_open_options.label;" accesskey="&fi_open_options.accesskey;"
-				oncommand="FuriganaInjector.openOptionsWindow()" />
+		<menupopup id="status-icon-context-menu" position="before_start">
+			<menuitem id="fi-open-install-welcome-menuitem" label="&fi_help_welcome.label;" accesskey="&fi_help_welcome.accesskey;" />
+			<menuitem id="fi-process-link-text-menuitem" type="checkbox" label="&fi_process_link_text.label;" accesskey="&fi_process_link_text.accesskey;" />			
+			<menuitem id="fi-open-options-menuitem" label="&fi_open_options.label;" accesskey="&fi_open_options.accesskey;" />
 		</menupopup>
 	</statusbar>
   
