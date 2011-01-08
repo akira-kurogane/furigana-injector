@@ -37,7 +37,7 @@
 		</menu>
 	</popup>
 
-	<statusbar id="status-bar"><!-- "status-bar" is a merge point -->
+	<toolbar id="addon-bar"><!-- "status-bar" is a merge point -->
 		<statusbarpanel id="furiganainjector-statusbarpanel" class="statusbarpanel-menu-iconic" processing_state="disabled" 
 			onmousedown="if (event.button != 2) doCommand();" 
 			context="status-icon-context-menu" /><!-- N.B. the icon is controlled by CSS. The custom "processing_state" attribute is important. -->
@@ -47,6 +47,6 @@
 			<menuitem id="fi-process-link-text-menuitem" type="checkbox" label="&fi_process_link_text.label;" accesskey="&fi_process_link_text.accesskey;" />			
 			<menuitem id="fi-open-options-menuitem" label="&fi_open_options.label;" accesskey="&fi_open_options.accesskey;" />
 		</menupopup>
-	</statusbar>
+	</toolbar>
   
 </overlay>

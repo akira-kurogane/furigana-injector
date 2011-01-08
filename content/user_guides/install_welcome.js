@@ -45,8 +45,13 @@
 						}
 					}
 				});
-		
-			/*var sbPanel = document.getElementById("furiganainjector-statusbarpanel");
+
+			/*Make sure the add-on bar is showing*/
+			var mostRecentWindowDoc = Components.classes['@mozilla.org/appshell/window-mediator;1'].getService(Components.interfaces.nsIWindowMediator).getMostRecentWindow("navigator:browser").document;
+			var addonBar = mostRecentWindowDoc.getElementById("addon-bar");	
+			addonBar.collapsed = false;
+			
+			var sbPanel = document.getElementById("furiganainjector-statusbarpanel");
 			var attentionArrowImg = content.document.getElementById("sb_icon_indicator_img");
 			var attentionArrowTipInset = 10;	//hardcoded for simplicity.
 			var sbIconRightIndent = sbPanel.parentNode.boxObject.width - sbPanel.boxObject.x - (sbPanel.boxObject.width / 2) - attentionArrowTipInset;
@@ -70,7 +75,7 @@
 				function(evt) { 
 					FIInstallationWelcomeFX.clearAnimationTimeouts();
 					evt.target.parentNode.removeChild(evt.target); 
-				}, false, true);*/
+				}, false, true);
 					
 		},
 		
