@@ -1,10 +1,6 @@
 //ユニコード文字列
 (function (/*window, undefined*/) {
 
-	/*Remove the jQuery in this extension from the global scope. */
-	$ = jQuery = jQuery.noConflict(true);	//using true strips window.jQuery as well as window.$. 
-		//  N.B. not having a global jQuery will break jQuery plugins.
-
 	/******************************************************************************
 	 *	Attach listener for browser's load and unload events (N.B. Does not mean page load/move).
 	 *	Devnote: onLoad() is effectively it's init() function.
@@ -342,8 +338,7 @@
 	function processWholeDocumentCallback(processingResult) {
 		setCurrentContentProcessed(processingResult);
 		setStatusIcon(currentContentProcessed() === true ? "processed" : "failed"); 
-		//Todo: activate_wwwjdic_lookup.js
-		//$("rt", content.document).bind("mouseenter", showRubyDopplegangerAndRequestGloss);
+		attachPopupTriggerToAllRT();
 	} 
 	
 	function processContextSection() {
@@ -429,8 +424,7 @@
 			setCurrentContentProcessed(processingResult ? "partially_processed" : false);
 			setStatusIcon(processingResult ? "partially_processed" : "failed"); 	
 		}
-		//Todo: activate_wwwjdic_lookup.js
-		$("rt", content.document).bind("mouseenter", showRubyDopplegangerAndRequestGloss);
+		attachPopupTriggerToAllRT();
 	} 
 
 	function startFuriganizeAJAX(urlsList, reqTimestampId, completionCallback) {
@@ -448,7 +442,7 @@
 		xhr.keepAllRubies = batchData.keepAllRubies;
 		xhr.onreadystatechange = furiganizeAJAXStateChangeHandler;
 		xhr.onerror = function(error) {
-			//consoleService.logStringMessage("XHR error: " + JSON.stringify(error));
+			consoleService.logStringMessage("XHR error: " + JSON.stringify(error));
 		}
 		xhr.open("POST", furiganaServerUrl, true);
 		xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -763,187 +757,371 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 	}
 
 
-/******************************************************************************
- *	FuriganaInjector's browser progress listener
- ******************************************************************************/
-var FuriganaInjectorWebProgressListener = {
+	/******************************************************************************
+	 *	FuriganaInjector's browser progress listener
+	 ******************************************************************************/
+	var FuriganaInjectorWebProgressListener = {
 
-	QueryInterface: function(aIID) {
-		if (aIID.equals(Components.interfaces.nsIWebProgressListener) || 
-			aIID.equals(Components.interfaces.nsISupportsWeakReference) || 
-			aIID.equals(Components.interfaces.nsISupports))
-			return this;
-		throw Components.results.NS_NOINTERFACE;
-	},
+		QueryInterface: function(aIID) {
+			if (aIID.equals(Components.interfaces.nsIWebProgressListener) || 
+				aIID.equals(Components.interfaces.nsISupportsWeakReference) || 
+				aIID.equals(Components.interfaces.nsISupports))
+				return this;
+			throw Components.results.NS_NOINTERFACE;
+		},
 
-	onLocationChange: function() {},
+		onLocationChange: function() {},
 
-	onStateChange: function(aProgress, aRequest, aFlag, aStatus) { 
-		if (aFlag & Components.interfaces.nsIWebProgressListener.STATE_STOP &&
-			aFlag & Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW) {
-			onWindowProgressStateStop(aProgress, aRequest, aStatus);
-		}
-	},
-	
-	onProgressChange: function() {},
-	onStatusChange: function() {},
-	onSecurityChange: function() {},
-	onLinkIconAvailable: function() {}
-};
+		onStateChange: function(aProgress, aRequest, aFlag, aStatus) { 
+			if (aFlag & Components.interfaces.nsIWebProgressListener.STATE_STOP &&
+				aFlag & Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW) {
+				onWindowProgressStateStop(aProgress, aRequest, aStatus);
+			}
+		},
+		
+		onProgressChange: function() {},
+		onStatusChange: function() {},
+		onSecurityChange: function() {},
+		onLinkIconAvailable: function() {}
+	};
 
 
-/******************************************************************************
- *	FuriganaInjector's preferences observer.
- ******************************************************************************/
-var FuriganaInjectorPrefsObserver =	{
+	/******************************************************************************
+	 *	FuriganaInjector's preferences observer.
+	 ******************************************************************************/
+	var FuriganaInjectorPrefsObserver =	{
 
-	_branch: null,
-	
-	register: function(prefsBranch) {
-		this._branch = prefsBranch;
-		this._branch.QueryInterface(Components.interfaces.nsIPrefBranch2);
-		this._branch.addObserver("", this, false);
-	},
+		_branch: null,
+		
+		register: function(prefsBranch) {
+			this._branch = prefsBranch;
+			this._branch.QueryInterface(Components.interfaces.nsIPrefBranch2);
+			this._branch.addObserver("", this, false);
+		},
 
-	unregister: function() {
-		if(!this._branch) 
-			return;
-		this._branch.removeObserver("", this);
-	},
+		unregister: function() {
+			if(!this._branch) 
+				return;
+			this._branch.removeObserver("", this);
+		},
 
-	observe: function(aSubject, aTopic, aData) {
-		if(aTopic != "nsPref:changed") 
-			return;
-		switch (aData) {
-		case "exclusion_kanji":
-			FIVocabAdjuster.flagSimpleKanjiListForReset();
-			break;
-		}
-	}
-}
-
-/******************************************************************************
- *	Utilities, wrapped to avoid namespace clash
- ******************************************************************************/
-var FuriganaInjectorUtilities = {
-
-	/***** Simple object check ******/
-	isEmpty: function (obj) {
-		for(var prop in obj) {
-			if(obj.hasOwnProperty(prop))
-				return false;
-		}
-		return true;
-	},
-	
-	/*** a mozilla-specific version number comparison function ******/
-	compareVersions: function(a,b) {
-		var x = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
-			.getService(Components.interfaces.nsIVersionComparator)
-			.compare(a,b);
-
-		return x;
-	}
-//dump("1.0pre vs 1.0 = " + compareVersions("1.0pre", "1.0"));
-
-	
-}
-
-/********* The contents of vocabadjuster **************/
-
-var FIVocabAdjuster = {
-
-	//Various patterns to match different japanese scripts
-	kanjiPattern: "(?:[\u3400-\u9FBF][\u3005\u3400-\u9FBF]*)",	//"\u3005" is "々", the kanji repeater character
-	kanjiRevPattern: "[^\u3005\u3400-\u9FBF]",	//N.B. no attempt to made to avoid leading "々" char
-	hiraganaPattern: "[\u3042\u3044\u3046\u3048\u304A-\u3093]",
-	hiraganaRevPattern: "[^\u3042\u3044\u3046\u3048\u304A-\u3093]",
-	kanjiHiraganaPattern: "[\u3005\u3042\u3044\u3046\u3048\u304A-\u3093\u3400-\u9FBF]",	//N.B. no attempt to made to avoid leading "々" char
-	
-	_simpleKanjiList: null, 
-
-	tooEasy: function(word) {
-		var ignore = this.getSimpleKanjiList();	//just to make sure this._simpleKanjiList is initialized for tooEasy_NoInit()
-		return this.tooEasy_NoInit(word);
-	}, 
-
-	tooEasy_NoInit: function(word) {
-		var charTemp;
-		for (var charPos = 0; charPos < word.length; charPos++) {
-			charTemp = word.charAt(charPos);
-			if (this.isUnihanChar(charTemp) && this._simpleKanjiList.indexOf(charTemp) < 0) {
-				return false;
+		observe: function(aSubject, aTopic, aData) {
+			if(aTopic != "nsPref:changed") 
+				return;
+			switch (aData) {
+			case "exclusion_kanji":
+				FIVocabAdjuster.flagSimpleKanjiListForReset();
+				break;
 			}
 		}
-		return true;
-	},
+	}
 
-	removeSimpleWords: function(matchingTextNodeInstances) {
-		var tni;
-		var mi;
-		var replacementArray;
-		var ignore = this.getSimpleKanjiList();	//just to make sure this._simpleKanjiList is initialized for tooEasy_NoInit()
-		for (var x = 0; x < matchingTextNodeInstances.length; x++) {
-			tni = matchingTextNodeInstances[x];
-			replacementArray = [];
-			for (var y = 0; y < tni.matchInstances.length; y++) {
-				mi = tni.matchInstances[y];
-				if (!this.tooEasy_NoInit(mi.word)) {
-					replacementArray.push(mi);
+	/******************************************************************************
+	 *	Utilities, wrapped to avoid namespace clash
+	 ******************************************************************************/
+	var FuriganaInjectorUtilities = {
+
+		/***** Simple object check ******/
+		isEmpty: function (obj) {
+			for(var prop in obj) {
+				if(obj.hasOwnProperty(prop))
+					return false;
+			}
+			return true;
+		},
+		
+		/*** a mozilla-specific version number comparison function ******/
+		compareVersions: function(a,b) {
+			var x = Components.classes["@mozilla.org/xpcom/version-comparator;1"]
+				.getService(Components.interfaces.nsIVersionComparator)
+				.compare(a,b);
+
+			return x;
+		}
+	//dump("1.0pre vs 1.0 = " + compareVersions("1.0pre", "1.0"));
+
+		
+	}
+
+	/********* The contents of vocabadjuster **************/
+
+	var FIVocabAdjuster = {
+
+		//Various patterns to match different japanese scripts
+		kanjiPattern: "(?:[\u3400-\u9FBF][\u3005\u3400-\u9FBF]*)",	//"\u3005" is "々", the kanji repeater character
+		kanjiRevPattern: "[^\u3005\u3400-\u9FBF]",	//N.B. no attempt to made to avoid leading "々" char
+		hiraganaPattern: "[\u3042\u3044\u3046\u3048\u304A-\u3093]",
+		hiraganaRevPattern: "[^\u3042\u3044\u3046\u3048\u304A-\u3093]",
+		kanjiHiraganaPattern: "[\u3005\u3042\u3044\u3046\u3048\u304A-\u3093\u3400-\u9FBF]",	//N.B. no attempt to made to avoid leading "々" char
+		
+		_simpleKanjiList: null, 
+
+		tooEasy: function(word) {
+			var ignore = this.getSimpleKanjiList();	//just to make sure this._simpleKanjiList is initialized for tooEasy_NoInit()
+			return this.tooEasy_NoInit(word);
+		}, 
+
+		tooEasy_NoInit: function(word) {
+			var charTemp;
+			for (var charPos = 0; charPos < word.length; charPos++) {
+				charTemp = word.charAt(charPos);
+				if (this.isUnihanChar(charTemp) && this._simpleKanjiList.indexOf(charTemp) < 0) {
+					return false;
 				}
 			}
-			tni.matchInstances.splice(0, tni.matchInstances.length);
-			for (var y = 0; y < replacementArray.length; y++) {
-				tni.matchInstances[y] = replacementArray[y];
-			}
-		}
-		return matchingTextNodeInstances;
-	},
-	
-	addKanjiToExclusionList: function(kanjiChar) {
-		var temp_pref_string = getPref("exclusion_kanji");
-		if (temp_pref_string.indexOf(kanjiChar) >= 0) {
-			if (getPref("enable_tests"))
-				alert("addKanjiToExclusionList(): The kanji \"" + kanjiChar + "\" is already in the kanji exclusion list");
-		} else {
-			temp_pref_string += kanjiChar;
-			setPref("exclusion_kanji", temp_pref_string);
-			this.flagSimpleKanjiListForReset();
-		}
-	},
-	
-	removeKanjiFromExclusionList: function(kanjiChar) {
-		var temp_pref_string = getPref("exclusion_kanji");
-		if (temp_pref_string.indexOf(kanjiChar) < 0) {
-			if (getPref("enable_tests"))
-				alert("removeKanjiFromExclusionList(): The kanji \"" + kanjiChar + "\" is not in the kanji exclusion list");
-		} else {
-			temp_pref_string = temp_pref_string.replace(kanjiChar, "");
-			setPref("exclusion_kanji", temp_pref_string);
-			this.flagSimpleKanjiListForReset();
-		}
-	},
-	
-	/* N.B. No detection for the "CJK Compatibility Ideographs"or "CJK Ideographs Ext B"*/
-	//Todo: initialise a RegExp object, use kanjiRevPattern
-	isUnihanChar: function(testChar) {
-		return testChar >= "\u3400" && testChar <= "\u9FBF";
-	}, 
+			return true;
+		},
 
-	getSimpleKanjiList: function() {
-		if (!this._simpleKanjiList) { 
+		removeSimpleWords: function(matchingTextNodeInstances) {
+			var tni;
+			var mi;
+			var replacementArray;
+			var ignore = this.getSimpleKanjiList();	//just to make sure this._simpleKanjiList is initialized for tooEasy_NoInit()
+			for (var x = 0; x < matchingTextNodeInstances.length; x++) {
+				tni = matchingTextNodeInstances[x];
+				replacementArray = [];
+				for (var y = 0; y < tni.matchInstances.length; y++) {
+					mi = tni.matchInstances[y];
+					if (!this.tooEasy_NoInit(mi.word)) {
+						replacementArray.push(mi);
+					}
+				}
+				tni.matchInstances.splice(0, tni.matchInstances.length);
+				for (var y = 0; y < replacementArray.length; y++) {
+					tni.matchInstances[y] = replacementArray[y];
+				}
+			}
+			return matchingTextNodeInstances;
+		},
+		
+		addKanjiToExclusionList: function(kanjiChar) {
 			var temp_pref_string = getPref("exclusion_kanji");
-			this._simpleKanjiList = temp_pref_string.replace(RegExp(FIVocabAdjuster.kanjiRevPattern ,"g"), "");
+			if (temp_pref_string.indexOf(kanjiChar) >= 0) {
+				if (getPref("enable_tests"))
+					alert("addKanjiToExclusionList(): The kanji \"" + kanjiChar + "\" is already in the kanji exclusion list");
+			} else {
+				temp_pref_string += kanjiChar;
+				setPref("exclusion_kanji", temp_pref_string);
+				this.flagSimpleKanjiListForReset();
+			}
+		},
+		
+		removeKanjiFromExclusionList: function(kanjiChar) {
+			var temp_pref_string = getPref("exclusion_kanji");
+			if (temp_pref_string.indexOf(kanjiChar) < 0) {
+				if (getPref("enable_tests"))
+					alert("removeKanjiFromExclusionList(): The kanji \"" + kanjiChar + "\" is not in the kanji exclusion list");
+			} else {
+				temp_pref_string = temp_pref_string.replace(kanjiChar, "");
+				setPref("exclusion_kanji", temp_pref_string);
+				this.flagSimpleKanjiListForReset();
+			}
+		},
+		
+		/* N.B. No detection for the "CJK Compatibility Ideographs"or "CJK Ideographs Ext B"*/
+		//Todo: initialise a RegExp object, use kanjiRevPattern
+		isUnihanChar: function(testChar) {
+			return testChar >= "\u3400" && testChar <= "\u9FBF";
+		}, 
+
+		getSimpleKanjiList: function() {
+			if (!this._simpleKanjiList) { 
+				var temp_pref_string = getPref("exclusion_kanji");
+				this._simpleKanjiList = temp_pref_string.replace(RegExp(FIVocabAdjuster.kanjiRevPattern ,"g"), "");
+			}
+			return this._simpleKanjiList;
+		},
+		
+		flagSimpleKanjiListForReset: function() {
+			this._simpleKanjiList = null;
 		}
-		return this._simpleKanjiList;
-	},
-	
-	flagSimpleKanjiListForReset: function() {
-		this._simpleKanjiList = null;
+
+	};
+	/************ End of the contents of vocab adjuster ****************/
+
+	/**
+	 *	Attach mouseenter events to all <rt> elements to open translation pop-ups.
+	 */
+	function attachPopupTriggerToAllRT(window) {
+		/** 
+		 * In case of multiple execution, e.g. when furiganized text is delivered in 
+		 *   several parts, unbind all once before binding again.
+		 */
+		fiJQuery("rt", content.document.body).unbind("mouseenter", showRubyDopplegangerAndRequestGloss);
+		fiJQuery("rt", content.document.body).bind("mouseenter", showRubyDopplegangerAndRequestGloss);
+		//for (var j = 0; j < content.frames.length; j++) {
+		//	unbind, bind
+		//}
 	}
 
-};
-/************ End of the contents of vocab adjuster ****************/
+	function showRubyDopplegangerAndRequestGloss() {
+		var rt = fiJQuery(this);
+		//why won't rt.parent("ruby") bloody work?
+		var r = fiJQuery(this.parentNode);
+		while (r.length && r[0].tagName != "RUBY")
+			r = r.parent();
+		if (r.length == 0) 
+			return;
+		var r = fiJQuery(this.parentNode.tagName != "RUBY" ? this.parentNode.parentNode : this.parentNode);
+		r.find("rt").unbind("mouseenter", showRubyDopplegangerAndRequestGloss);
+		var rd = r.clone();
+		var tempObj = getDataFromRubyElem(rd[0]);
+		var word = tempObj.base_text;
+		var yomi = tempObj.yomi;
+alert("word/yomi = " + word + "/" + yomi);
+return;
+		var dictForm = rd.attr("fi_df");	//If a 'furigana injector dictionary form' attribute is found use it instead.
+		if (dictForm) {
+			try {
+				if (updateRubyDopplegangerWithDictForm(rd[0], dictForm)) {
+					word = dictForm;	// == getDataFromRubyElem(rd[0]).base_text;
+					yomi = getDataFromRubyElem(rd[0]).yomi;
+				}
+			} catch (err) {}
+		}
+
+		var oldRd = fiJQuery("#fi_ruby_doppleganger", content.document);
+		if (oldRd.length > 0) {
+			var oldOrigRuby = oldRd.prev("ruby");
+			oldOrigRuby.find("rt").bind("mouseenter", showRubyDopplegangerAndRequestGloss);
+			oldRd.remove();
+		}
+		var oldG = fiJQuery("#fi_gloss_div", content.document);
+		if (oldG.length > 0)
+			oldG.remove();
+
+		rd.attr("id", "fi_ruby_doppleganger");
+		rd.attr("temp_id", Math.random());	//used by the callback to make sure it's not attaching the gloss data 
+			// from a slow-replying ajax request to a ruby the mouse was over earlier.
+		//Devnote: I expected that the fi_ruby_doppleganger <ruby> elem's top should be set to be equal to the 
+		//  original ruby's top, but the value seems to be top of the line box instead. Using rt's top to get 
+		//  the intended value.
+		//N.B. the left position of the gloss div is set to the orig ruby left + _rd_.width(), because 
+		//  updateRubyDopplegangerWithDictForm() might change the okurigana in that ruby.
+		rd.addClass("ruby_doppleganger").css(
+			{top: rt.position().top, left: r.position().left, display: "none"}
+		);
+		r.after(rd);
+		var g = fiJQuery("<div id='fi_gloss_div'><img src='" + chrome.extension.getURL("img/gloss_div_throbber.gif") + "'/></div>", content.document);
+		g.addClass("hover_gloss").css(
+			{top: rt.position().top + rd.height(), left: r.position().left, display: "none", minHeight: rd.height() - 2}
+		);
+		g.find("img").css({paddingTop: rt.height() < 11 ? 0 : rt.height() - 11 /*height of the gloss_div_throbber.gif */});
+		rd.after(g);
+		
+		rd.fadeIn("slow");
+		g.fadeIn("slow");
+		
+		//Start async request for glosses. ("extBgPort" initialised in text_to_furigana_dom_parse.js.)
+		extBgPort.postMessage({message: "search_wwwjdic", word: word, yomi: yomi, temp_id: rd.attr("temp_id")});
+	}
+
+	function reflectWWWJDICGloss(data) {
+		var rd = fiJQuery("#fi_ruby_doppleganger[temp_id=" + data.temp_id + "]", content.document);
+		var g = fiJQuery("#fi_gloss_div", content.document);
+		if (rd.length > 0) {
+			g.html(data.gloss ? data.formattedGloss : "<ul class='p q r'><li class='s t u'><em>Sorry, no result</em></li></ul>");
+			fiJQuery(content.document).bind("mousemove", function (event) { 
+				var x = event.pageX, y = event.pageY;
+				var rdOffset = rd.offset();
+				var rdHittest = rd && x >= rdOffset.left && x <= rdOffset.left + rd.width() &&
+						y >= rdOffset.top && y <= rdOffset.top + rd.height();
+				if (rdHittest) //still within fi_ruby_doppelganger, do nothing
+					return;
+				var gOffset = g.offset();
+				var gHittest = g && x >= gOffset.left && x <= gOffset.left + g.width() &&
+					y >= gOffset.top && y <= gOffset.top + g.height();
+				if (gHittest)
+					return;
+				fiJQuery(content.document).unbind("mousemove", arguments.callee);
+				fadeOutAndRemoveRubyDplgAndGloss("fast");
+			});
+			//Adding extra, otherwise meaningless classes to make rules in ruby_gloss.css more likely to get CSS rule precedence
+			fiJQuery("#fi_gloss_div ul", content.document).addClass("p q r");
+			fiJQuery("#fi_gloss_div ul li", content.document).addClass("s t u");
+			//setTimeout(function() { fadeOutAndRemoveRubyDplgAndGloss(null); }, 5000);
+		}
+else { consoleService.logStringMessage("background returned a gloss for #fi_ruby_doppleganger[temp_id=" + data.temp_id + "] but it didn't exist/was already removed."); }
+	}
+
+	function fadeOutAndRemoveRubyDplgAndGloss(duration) {
+		var rd = fiJQuery("#fi_ruby_doppleganger", content.document);
+		if (rd)	{
+			var origRuby = rd.prev("ruby");
+			if (rd.css("display") !=  "none" && rd.css("visibility") != "hidden" && rd.css("opacity") > 0)
+				rd.fadeOut(duration, function() { fiJQuery(this).remove();} ); 
+			else
+				rd.remove();
+			origRuby.find("rt").bind("mouseenter", showRubyDopplegangerAndRequestGloss);
+		}
+		var g = fiJQuery("#fi_gloss_div", content.document);
+		if (g) {
+			if (g.css("display") !=  "none" && g.css("visibility") != "hidden" && g.css("opacity") > 0) {
+				g.fadeOut(duration, function() { fiJQuery(this).html(""); fiJQuery(this).remove(); });
+			} else {
+				g.html("");
+				g.remove();
+			}
+		}
+	}
+
+	function getDataFromRubyElem(rdElem) {//N.b. rdElem should be the core javascript DOM element, not a jquery object.
+		var base_text = "";
+		var yomi = "";
+		//var tempRubyBase = "", tempRubyText = "";
+		var tempNode = rdElem.firstChild;
+		while (tempNode) {
+			if (tempNode.nodeType == 1 && (tempNode.tagName == "RP" || tempNode.tagName == "RT" || tempNode.tagName == "RTC")) {
+				tempNode = tempNode.nextSibling;
+				continue;
+			}
+			if (tempNode.nodeType == 3)
+				base_text += tempNode.nodeData;
+			else
+				base_text += fiJQuery(tempNode).text();
+			tempNode = tempNode.nextSibling;
+		}
+		var tempNode = rdElem.firstChild;
+		while (tempNode) {
+			if (tempNode.nodeType == 1 && (tempNode.tagName == "RP" || tempNode.tagName == "RB" || tempNode.tagName == "RBC")) {
+				tempNode = tempNode.nextSibling;
+				continue;
+			}
+			if (tempNode.nodeType == 3)
+				yomi += tempNode.nodeData;
+			else
+				yomi += fiJQuery(tempNode).text();
+			tempNode = tempNode.nextSibling;
+		}
+		return {base_text: base_text, yomi: yomi};
+	}
+
+	function updateRubyDopplegangerWithDictForm(rdElem, dictForm) {	//N.b. rdElem should be the core javascript DOM element, not a jquery object.
+		//If the only difference between the dictionary form and the base text of the ruby is the 
+		//  okurigana (e.g. fi_df = "教える" when the ruby is <ruby>教<rt>おし</rt>え<rt></rt></ruby>) 
+		//  then replace just the okurigana in the ruby doppleganger.
+		//Other patterns will be ignored and the ruby left unchanged.
+		//true is returned if the ruby is altered.
+		tempNode = rdElem.firstChild;
+		var baseTextParts = [];
+		while (tempNode) {
+			if (tempNode.nodeType == 3 && tempNode.nodeValue.replace(/\s/g, ""))
+				baseTextParts.push(tempNode.nodeValue);
+			tempNode = tempNode.nextSibling;
+		}
+		var oldOkurigana = baseTextParts.pop();
+		var preOkuriganaBaseText = baseTextParts.join("");
+		if (baseTextParts.length > 0 && dictForm.match(new RegExp("^" + preOkuriganaBaseText + "[あ-ん]+$"))) {
+			tempNode = rdElem.lastChild;
+			while (tempNode && tempNode.nodeType != 3)
+				tempNode = tempNode.previousSibling;
+			if (tempNode && tempNode.nodeValue == oldOkurigana) {
+				tempNode.nodeValue = dictForm.replace(new RegExp("^" + preOkuriganaBaseText), "");	//i.e. the okurigana of the dict form
+				return true;
+			}
+		}
+		return false;
+	}
 
 //Todo find the unittests and register the relevant objects OR run the tests directly?
 
