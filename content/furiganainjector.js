@@ -37,6 +37,9 @@
 	var furiganaServiceURLsList = [ "http://fi.yayakoshi.net/furiganainjector", "http://fi2.yayakoshi.net/furiganainjector" ];
 	var wwwjdicServerURL = null;
 	var consoleService;
+	var styleSheetServiceComponent;
+	var ioServiceComponent;
+	var rubyGlossCSSUri;
 	
 	/******************************************************************************
 	 *	Event handlers
@@ -58,9 +61,14 @@
 		prefs = Components.classes["@mozilla.org/preferences-service;1"].
 			getService(Components.interfaces.nsIPrefService).getBranch("extensions.furiganainjector.");
 		FuriganaInjectorPrefsObserver.register(prefs);
-		
+			
 		consoleService = Components.classes["@mozilla.org/consoleservice;1"]
         	.getService(Components.interfaces.nsIConsoleService);
+		styleSheetServiceComponent = Components.classes["@mozilla.org/content/style-sheet-service;1"]
+				.getService(Components.interfaces.nsIStyleSheetService);
+		ioServiceComponent = Components.classes["@mozilla.org/network/io-service;1"]
+				.getService(Components.interfaces.nsIIOService);
+		rubyGlossCSSUri = ioServiceComponent.newURI("chrome://furiganainjector/skin/ruby_gloss.css", null, null);
 		
 		userKanjiRegex = new RegExp("[" + FIVocabAdjuster.getSimpleKanjiList() + "]");
 		
@@ -274,6 +282,11 @@
 				revertRuby(rubyElems[x]);
 		}
 	}
+	
+	function insertRubyGlossStylesheet() {
+		if(!styleSheetServiceComponent.sheetRegistered(rubyGlossCSSUri, styleSheetServiceComponent.AGENT_SHEET))
+			styleSheetServiceComponent.loadAndRegisterSheet(rubyGlossCSSUri, styleSheetServiceComponent.AGENT_SHEET);
+	}
   	
   	/******************************************************************************
   	 *	Meat
@@ -339,6 +352,7 @@
 		setCurrentContentProcessed(processingResult);
 		setStatusIcon(currentContentProcessed() === true ? "processed" : "failed"); 
 		attachPopupTriggerToAllRT();
+		insertRubyGlossStylesheet();
 	} 
 	
 	function processContextSection() {
@@ -425,6 +439,7 @@
 			setStatusIcon(processingResult ? "partially_processed" : "failed"); 	
 		}
 		attachPopupTriggerToAllRT();
+		insertRubyGlossStylesheet();
 	} 
 
 	function startFuriganizeAJAX(urlsList, reqTimestampId, completionCallback) {
@@ -715,8 +730,7 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 			} else {
 				throw "FuriganaInjector does not know the type of the \"" + prefName + "\" preference";
 			}
-		}
-		
+		}	
 	} 
 	
 	function setPref(prefName, newPrefVal) {
@@ -965,11 +979,9 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 		var r = fiJQuery(this.parentNode.tagName != "RUBY" ? this.parentNode.parentNode : this.parentNode);
 		r.find("rt").unbind("mouseenter", showRubyDopplegangerAndRequestGloss);
 		var rd = r.clone();
-		var tempObj = getDataFromRubyElem(rd[0]);
+		var tempObj = getDataFromRubyElem(rd);
 		var word = tempObj.base_text;
 		var yomi = tempObj.yomi;
-alert("word/yomi = " + word + "/" + yomi);
-return;
 		var dictForm = rd.attr("fi_df");	//If a 'furigana injector dictionary form' attribute is found use it instead.
 		if (dictForm) {
 			try {
@@ -1002,7 +1014,7 @@ return;
 			{top: rt.position().top, left: r.position().left, display: "none"}
 		);
 		r.after(rd);
-		var g = fiJQuery("<div id='fi_gloss_div'><img src='" + chrome.extension.getURL("img/gloss_div_throbber.gif") + "'/></div>", content.document);
+		var g = fiJQuery("<div id='fi_gloss_div' class='waiting'></div>", content.document);
 		g.addClass("hover_gloss").css(
 			{top: rt.position().top + rd.height(), left: r.position().left, display: "none", minHeight: rd.height() - 2}
 		);
@@ -1012,15 +1024,18 @@ return;
 		rd.fadeIn("slow");
 		g.fadeIn("slow");
 		
-		//Start async request for glosses. ("extBgPort" initialised in text_to_furigana_dom_parse.js.)
-		extBgPort.postMessage({message: "search_wwwjdic", word: word, yomi: yomi, temp_id: rd.attr("temp_id")});
+		//Start async request for glosses.
+try {
+		getWWWJDICEntry(word, yomi, rd.attr("temp_id"), null);
+} catch(err) { alert(err); }
 	}
 
-	function reflectWWWJDICGloss(data) {
-		var rd = fiJQuery("#fi_ruby_doppleganger[temp_id=" + data.temp_id + "]", content.document);
+	function reflectWWWJDICGloss(gloss, formattedGloss, temp_id) {
+		var rd = fiJQuery("#fi_ruby_doppleganger[temp_id=" + temp_id + "]", content.document);
 		var g = fiJQuery("#fi_gloss_div", content.document);
+		g.removeClass("waiting");
 		if (rd.length > 0) {
-			g.html(data.gloss ? data.formattedGloss : "<ul class='p q r'><li class='s t u'><em>Sorry, no result</em></li></ul>");
+			g.html(gloss ? formattedGloss : "<ul class='p q r'><li class='s t u'><em>Sorry, no result</em></li></ul>");
 			fiJQuery(content.document).bind("mousemove", function (event) { 
 				var x = event.pageX, y = event.pageY;
 				var rdOffset = rd.offset();
@@ -1065,35 +1080,15 @@ else { consoleService.logStringMessage("background returned a gloss for #fi_ruby
 		}
 	}
 
-	function getDataFromRubyElem(rdElem) {//N.b. rdElem should be the core javascript DOM element, not a jquery object.
-		var base_text = "";
-		var yomi = "";
-		//var tempRubyBase = "", tempRubyText = "";
-		var tempNode = rdElem.firstChild;
-		while (tempNode) {
-			if (tempNode.nodeType == 1 && (tempNode.tagName == "RP" || tempNode.tagName == "RT" || tempNode.tagName == "RTC")) {
-				tempNode = tempNode.nextSibling;
-				continue;
-			}
-			if (tempNode.nodeType == 3)
-				base_text += tempNode.nodeData;
-			else
-				base_text += fiJQuery(tempNode).text();
-			tempNode = tempNode.nextSibling;
+	function getDataFromRubyElem(rd) {
+		//Todo: handle the case of <rb>-less rubies, e.g. html5 ones.
+		var bt = rd.find("rb").map(function() { return fiJQuery(this).text(); }).get();
+		var yt = rd.find("rt").map(function() { return fiJQuery(this).text(); }).get();
+		for (x = 0; x < bt.length && x < yt.length; x++) {
+			if (!yt[x])
+				yt[x] = bt[x];
 		}
-		var tempNode = rdElem.firstChild;
-		while (tempNode) {
-			if (tempNode.nodeType == 1 && (tempNode.tagName == "RP" || tempNode.tagName == "RB" || tempNode.tagName == "RBC")) {
-				tempNode = tempNode.nextSibling;
-				continue;
-			}
-			if (tempNode.nodeType == 3)
-				yomi += tempNode.nodeData;
-			else
-				yomi += fiJQuery(tempNode).text();
-			tempNode = tempNode.nextSibling;
-		}
-		return {base_text: base_text, yomi: yomi};
+		return {base_text: bt.join(""), yomi: yt.join("")};
 	}
 
 	function updateRubyDopplegangerWithDictForm(rdElem, dictForm) {	//N.b. rdElem should be the core javascript DOM element, not a jquery object.
@@ -1122,6 +1117,138 @@ else { consoleService.logStringMessage("background returned a gloss for #fi_ruby
 		}
 		return false;
 	}
+
+	function utf8_encode (string) {
+		string = string.replace(/\r\n/g,"\n");
+		var utftext = "";
+		for (var n = 0; n < string.length; n++) {
+			var c = string.charCodeAt(n);
+			if (c < 128) {
+				utftext += String.fromCharCode(c);
+			} else if((c > 127) && (c < 2048)) {
+				utftext += String.fromCharCode((c >> 6) | 192);
+				utftext += String.fromCharCode((c & 63) | 128);
+			} else {
+				utftext += String.fromCharCode((c >> 12) | 224);
+				utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+				utftext += String.fromCharCode((c & 63) | 128);
+			}
+		}
+		return utftext;
+	}
+
+	function getWWWJDICEntry(word, yomi, temp_id, dict) {
+var wwwjdicServerURL = "http://www.aa.tufs.ac.jp/~jwb/cgi-bin/wwwjdic.cgi";
+		/*var cachedGloss = localStorage.getItem("WWWJDIC_GLOSS-" + word + "-" + yomi);
+		if (cachedGloss) {
+			//Todo: track how often student looks at each word, remind them if they're being too lazy?
+			var messageData = {message: "wwwjdic_gloss", gloss: cachedGloss, 
+				formattedGloss: formatGloss(cachedGloss), temp_id: temp_id};
+			port.postMessage(messageData);
+			return;
+		}*/
+		//Else - request from WWWJDIC servers
+		//See http://www.csse.monash.edu.au/~jwb/wwwjdicinf.html#backdoor_tag for explanation of query flags
+		//1 = EDICT (vs P = expanded text gloss dict), Z = raw output, U = UTF8, Q = 'exact match'
+		dict = dict ? dict : "1";	//Use EDICT as the default dictionary.
+		fiJQuery.ajax({
+			url: wwwjdicServerURL + "?" + dict + "ZUQ" + escape(utf8_encode(word)),
+			beforeSend: function(coreXHRObj){
+					coreXHRObj.setRequestHeader("FIExtraFeatures", "dictionary_form_attributes");
+			},
+			type: "get",
+			success: getWWWJDICEntryCallback,
+			error: function() {
+				consoleService.logStringMessage("Ajax request for WWWJDIC entry failed: " + textStatus);
+			},
+			word: word,
+			yomi: yomi,
+			temp_id: temp_id,
+			dict: dict
+		});
+	}
+
+	function getWWWJDICEntryCallback(data/*, textStatus, xhr*/) {
+		var thisXHR = this;
+		var formattedResults = data.replace(/\n/g,'\t').match(/<pre>(.+)<\/pre>/);
+		if (!formattedResults) {
+			if (thisXHR.dict == "1"/*Edict*/) { //Edict is the first, default dictionary that is searched.
+				//Search again using "P", the expanded text gloss dict
+				getWWWJDICEntry(thisXHR.port, thisXHR.word, thisXHR.yomi, thisXHR.temp_id, "P");
+			} else {	//Stop searching
+if (thisXHR.dict != "P") consoleService.logStringMessage("Programming error: dict \"" + thisXHR.dict + "\" encountered in getWWWJDICEntryCallback()");
+				var messageData = {message: "wwwjdic_gloss", gloss: null, temp_id: thisXHR.temp_id};
+				thisXHR.port.postMessage(messageData);
+			}
+		} else {
+			var resultLines = formattedResults[1].replace(/^\s*|\s*$/, "").split('\t');
+			var matchingGloss = null;
+			//The pattern is sometimes several alternate kanji forms e.g. "曇り(P); 曇 [くもり] /(pos) gloss/gloss/...."
+			//[\u3400-\u9FBF] used as a quick-and-easy pattern for hiragana, katakana and kanji.
+			var entryRegex = new RegExp("^(?:.*[^\\u3400-\\u9FBF])?" + thisXHR.word + "(?:[^\\u3400-\\u9FBF].*)? \\[(?:.*[^\\u3400-\\u9FBF])?" + thisXHR.yomi + "(?:[^\\u3400-\\u9FBF].*)?\\]\\s+(.*)$");
+			//Devnote: unhandled exception case - two [よみ] fields, such as 
+			//  "昭島 [あきしま] Akishima (p,s) [あきじま] Akijima (s)" from ENAMDICT.
+			for (var x = 0; x < resultLines.length; x++) {
+				//var entryParts = resultLines[x].match(/^(\S+)\s+\[([^\]]+)\]\s+(.+)$/);
+				var entryParts = entryRegex.exec(resultLines[x]);
+				if (entryParts) {
+	//Todo replace the error logging below with a break once confirmed the duplicates error only happens rarely.
+	if (matchingGloss) console.log("Error: " + thisXHR.word + "-" + thisXHR.yomi + " matched to \"" + entryParts[1] + "\" as well as \"" + matchingGloss + "\""); else
+					matchingGloss = entryParts[1];
+					if (thisXHR.dict == "P")
+						matchingGloss = matchingGloss.replace(/ ?[A-Z][A-Z]\\?\d?\/?$/, "");	//trim dictionary code off.
+				}
+			}
+			if (matchingGloss) {
+				reflectWWWJDICGloss(matchingGloss, formatGloss(matchingGloss), thisXHR.temp_id);
+				localStorage.setItem("WWWJDIC_GLOSS-" + thisXHR.word + "-" + thisXHR.yomi, matchingGloss);
+			} else if (thisXHR.dict == "1"/*EDICT*/) {	//Edict is the first, default dictionary that is searched.
+				//Search again using "P", the expanded text gloss dict
+				getWWWJDICEntry(thisXHR.word, thisXHR.yomi, thisXHR.temp_id, "P"/* P = expanded text gloss dict */);
+			} else {
+				reflectWWWJDICGloss(matchingGloss, null, thisXHR.temp_id);
+			}
+		}
+	}
+
+	//See http://www.csse.monash.edu.au/~jwb/edict_doc.html for dictionary format explanation
+	//Sample gloss result: " /(n) (1) teacher/master/doctor/(suf) (2) with names of teachers, etc. as an honorific/(P)/"
+	// Noun, 1st sense
+	//   teacher
+	//   master
+	//   doctor
+	// Suffix, 2nd sense
+	//   with names of teachers, etc. as an honorific
+	// Flagged as a 'Priority' word (one of the most commonly used 20,000)
+	function formatGloss(rawGloss) {
+		var glossObj = { sense: new Array(), pos: new Array(), generalInfo: new Array() };
+		var senses = new Array();
+		var glossParts = rawGloss.match(/[^\/]+/g);
+		var currSense = 1;
+		var tempMatches;
+		for (var x = 0; x < glossParts.length; x++) {
+			currGlossPart = glossParts[x];
+			if (tempMatches = currGlossPart.match(/^(?:\([^\)]+\))?\s*\((\d{1,2})\)/))
+				currSense = tempMatches[1];
+			if (!senses[currSense])
+				senses[currSense] = {vals: new Array(), generalInfo: ""};
+			if (tempMatches = currGlossPart.match(/^\(([^\)]+)\)/))
+				senses[currSense].generalInfo += (senses[currSense].generalInfo ? "," : "") + tempMatches[1];
+			if (tempMatches = currGlossPart.match(/^\(([^\)]+)\)\s*$/))	//e.g. when it's just "/(P)/"
+				continue;
+			tempMatches = currGlossPart.match(/^(\([^\)]+\)\s*)?(\([^\)]+\)\s*)?(.+)$/);
+	if (!tempMatches) alert("failed to regex match ordinary part of " + currGlossPart);
+			senses[currSense].vals.push(tempMatches[3]);
+		}
+		var htmlVal = "<ul>";
+		for (var x = 1; x < senses.length; x++) {	//N.B. there is no 0'th item
+			htmlVal += "<li" + (senses[x].generalInfo ? " info='" + senses[x].generalInfo + "'" : "") + ">" + 
+				senses[x].vals.join("<br/>") + "</li>";
+		}
+		htmlVal += "</ul>";
+		return htmlVal;
+	}
+
 
 //Todo find the unittests and register the relevant objects OR run the tests directly?
 
