@@ -3,7 +3,7 @@
 <!DOCTYPE overlay SYSTEM "chrome://furiganainjector/locale/furiganainjector.dtd">
 <overlay id="furiganainjector-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<script src="jquery.js"/>
+	<script src="jquery-1.4.4.js"/>
 	<script src="furiganainjector.js"/>
 	<script src="server_selector_obj.js"/>
 	<script src="activate_wwwjdic_lookup.js"/>

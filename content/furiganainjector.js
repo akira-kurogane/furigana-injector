@@ -1013,6 +1013,7 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 		rd.addClass("ruby_doppleganger").css(
 			{top: rt.position().top, left: r.position().left, display: "none"}
 		);
+
 		r.after(rd);
 		var g = fiJQuery("<div id='fi_gloss_div' class='waiting'></div>", content.document);
 		g.addClass("hover_gloss").css(
@@ -1141,10 +1142,9 @@ else { consoleService.logStringMessage("background returned a gloss for #fi_ruby
 var wwwjdicServerURL = "http://www.aa.tufs.ac.jp/~jwb/cgi-bin/wwwjdic.cgi";
 		/*var cachedGloss = localStorage.getItem("WWWJDIC_GLOSS-" + word + "-" + yomi);
 		if (cachedGloss) {
+alert("yay, found '" + cachedGloss + "'");
 			//Todo: track how often student looks at each word, remind them if they're being too lazy?
-			var messageData = {message: "wwwjdic_gloss", gloss: cachedGloss, 
-				formattedGloss: formatGloss(cachedGloss), temp_id: temp_id};
-			port.postMessage(messageData);
+			reflectWWWJDICGloss(cachedGloss, formatGloss(cachedGloss), temp_id);
 			return;
 		}*/
 		//Else - request from WWWJDIC servers
@@ -1174,11 +1174,10 @@ var wwwjdicServerURL = "http://www.aa.tufs.ac.jp/~jwb/cgi-bin/wwwjdic.cgi";
 		if (!formattedResults) {
 			if (thisXHR.dict == "1"/*Edict*/) { //Edict is the first, default dictionary that is searched.
 				//Search again using "P", the expanded text gloss dict
-				getWWWJDICEntry(thisXHR.port, thisXHR.word, thisXHR.yomi, thisXHR.temp_id, "P");
+				getWWWJDICEntry(thisXHR.word, thisXHR.yomi, thisXHR.temp_id, "P");
 			} else {	//Stop searching
 if (thisXHR.dict != "P") consoleService.logStringMessage("Programming error: dict \"" + thisXHR.dict + "\" encountered in getWWWJDICEntryCallback()");
-				var messageData = {message: "wwwjdic_gloss", gloss: null, temp_id: thisXHR.temp_id};
-				thisXHR.port.postMessage(messageData);
+				reflectWWWJDICGloss(null, null, thisXHR.temp_id);
 			}
 		} else {
 			var resultLines = formattedResults[1].replace(/^\s*|\s*$/, "").split('\t');
@@ -1201,7 +1200,7 @@ if (thisXHR.dict != "P") consoleService.logStringMessage("Programming error: dic
 			}
 			if (matchingGloss) {
 				reflectWWWJDICGloss(matchingGloss, formatGloss(matchingGloss), thisXHR.temp_id);
-				localStorage.setItem("WWWJDIC_GLOSS-" + thisXHR.word + "-" + thisXHR.yomi, matchingGloss);
+				/*localStorage.setItem("WWWJDIC_GLOSS-" + thisXHR.word + "-" + thisXHR.yomi, matchingGloss);*/
 			} else if (thisXHR.dict == "1"/*EDICT*/) {	//Edict is the first, default dictionary that is searched.
 				//Search again using "P", the expanded text gloss dict
 				getWWWJDICEntry(thisXHR.word, thisXHR.yomi, thisXHR.temp_id, "P"/* P = expanded text gloss dict */);
