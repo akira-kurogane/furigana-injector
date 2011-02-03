@@ -74,6 +74,7 @@
 		
 		//ServerSelector defined in server_selector_obj.js. Selects a working furiganaServerUrl asynchronously.
 		var fiSvrSel = new ServerSelector(furiganaServiceURLsList, onServerConfirm, onNoFuriganaServerFound );
+		var wwwjdicSvrSel = new ServerSelector(wwwjdicServiceURLsList, onWWWWJDICServerConfirm, onNoWWWJDICServerFound );
 
 		try {
 			document.getElementById("open-tests-window-menuitem").hidden = !getPref("enable_tests");
@@ -986,8 +987,8 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 		if (dictForm) {
 			try {
 				if (updateRubyDopplegangerWithDictForm(rd[0], dictForm)) {
-					word = dictForm;	// == getDataFromRubyElem(rd[0]).base_text;
 					yomi = getDataFromRubyElem(rd[0]).yomi;
+					word = dictForm;
 				}
 			} catch (err) {}
 		}
@@ -1002,6 +1003,7 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 		if (oldG.length > 0)
 			oldG.remove();
 
+		rd.addClass('ruby_doppleganger');
 		rd.attr("id", "fi_ruby_doppleganger");
 		rd.attr("temp_id", Math.random());	//used by the callback to make sure it's not attaching the gloss data 
 			// from a slow-replying ajax request to a ruby the mouse was over earlier.
@@ -1010,20 +1012,26 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 		//  the intended value.
 		//N.B. the left position of the gloss div is set to the orig ruby left + _rd_.width(), because 
 		//  updateRubyDopplegangerWithDictForm() might change the okurigana in that ruby.
-		rd.addClass("ruby_doppleganger").css(
-			{top: rt.position().top, left: r.position().left, display: "none"}
-		);
 
-		r.after(rd);
 		var g = fiJQuery("<div id='fi_gloss_div' class='waiting'></div>", content.document);
-		g.addClass("hover_gloss").css(
-			{top: rt.position().top + rd.height(), left: r.position().left, display: "none", minHeight: rd.height() - 2}
-		);
 		g.find("img").css({paddingTop: rt.height() < 11 ? 0 : rt.height() - 11 /*height of the gloss_div_throbber.gif */});
-		rd.after(g);
+		g.addClass('hover_gloss');
 		
-		rd.fadeIn("slow");
-		g.fadeIn("slow");
+		/*
+			add to container and position container - less styles to worry about
+			removed 'position:absolute' styles from .ruby_doppleganger and .hover_gloss since rdContainer will handle positioning
+			may need to change element removal logic - currently the rdContainer is not removed on mouseout
+		*/
+		var rdContainer = fiJQuery(content.document.createElement('div'));
+		rdContainer.css(
+			{top: r.position().top, left: r.position().left, display: "block", position:'absolute'}
+		);
+		rdContainer.addClass("rd_gd_wrapper");
+		rdContainer.append(rd);
+		rdContainer.append(g);
+		rdContainer.hide();
+		r.after(rdContainer);
+		rdContainer.fadeIn('slow');
 		
 		//Start async request for glosses.
 try {
@@ -1055,7 +1063,6 @@ try {
 			//Adding extra, otherwise meaningless classes to make rules in ruby_gloss.css more likely to get CSS rule precedence
 			fiJQuery("#fi_gloss_div ul", content.document).addClass("p q r");
 			fiJQuery("#fi_gloss_div ul li", content.document).addClass("s t u");
-			//setTimeout(function() { fadeOutAndRemoveRubyDplgAndGloss(null); }, 5000);
 		}
 else { consoleService.logStringMessage("background returned a gloss for #fi_ruby_doppleganger[temp_id=" + data.temp_id + "] but it didn't exist/was already removed."); }
 	}
@@ -1139,7 +1146,6 @@ else { consoleService.logStringMessage("background returned a gloss for #fi_ruby
 	}
 
 	function getWWWJDICEntry(word, yomi, temp_id, dict) {
-var wwwjdicServerURL = "http://www.aa.tufs.ac.jp/~jwb/cgi-bin/wwwjdic.cgi";
 		/*var cachedGloss = localStorage.getItem("WWWJDIC_GLOSS-" + word + "-" + yomi);
 		if (cachedGloss) {
 alert("yay, found '" + cachedGloss + "'");
