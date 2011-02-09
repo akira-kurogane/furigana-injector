@@ -17,6 +17,10 @@ div#fi_gloss_div.waiting {
 	width: auto !important;
 }
 
+div#rd_gd_wrapper {
+	background-color: #ffffff !important;
+}
+
 ruby.ruby_doppleganger rt {
 	color: black;
 	border-top-left-radius: 4px !important;
@@ -27,8 +31,8 @@ ruby.ruby_doppleganger {
 	color: black !important;
 	z-index: 2 !important;
 	background-color: #ffffff !important;
-	border-top-left-radius: 4px !important;
-	box-shadow: 3px 3px 2px #A0A0A0, -1px -1px 1px #A0A0A0 !important;
+	-moz-border-top-left-radius: 4px !important;
+	-moz-box-shadow: 3px 3px 2px #A0A0A0, -1px -1px 1px #A0A0A0 !important;
 }
 
 div#fi_gloss_div.hover_gloss {
@@ -38,10 +42,10 @@ div#fi_gloss_div.hover_gloss {
 	background-image: url(chrome://furiganainjector/skin/gloss_div_upper_border.png) !important;
 	background-repeat: no-repeat !important;
 	padding: 1px 1px 1px 5px !important;
-	border-top-right-radius: 4px !important;
-	border-bottom-right-radius: 4px !important;
-	border-bottom-left-radius: 4px !important;
-	box-shadow: 3px 3px 2px #a0a0a0, -1px 1px 1px #A0A0A0 !important;
+	-moz-border-top-right-radius: 4px !important;
+	-moz-border-bottom-right-radius: 4px !important;
+	-moz-border-bottom-left-radius: 4px !important;
+	-moz-box-shadow: 3px 3px 2px #a0a0a0, -1px 1px 1px #A0A0A0 !important;
 }
 div#fi_gloss_div.hover_gloss img {
 	padding-right: 6px !important;

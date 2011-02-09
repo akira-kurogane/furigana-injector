@@ -4,3 +4,5 @@
 <!ENTITY exclusion_kanji.accesskey "k">
 <!ENTITY process_link_text.label "Proses teks pada tautan">
 <!ENTITY process_link_text.accesskey "T">
+<!ENTITY show_translation_popups.label "Show popup translations">
+<!ENTITY show_translation_popups.accesskey "T">
