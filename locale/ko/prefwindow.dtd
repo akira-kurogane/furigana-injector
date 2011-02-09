@@ -6,3 +6,5 @@
 <!ENTITY exclusion_kanji.accesskey "E">
 <!ENTITY process_link_text.label "링크 안의 한자에도 후리가나 표시">
 <!ENTITY process_link_text.accesskey "L">
+<!ENTITY show_translation_popups.label "Show popup translations">
+<!ENTITY show_translation_popups.accesskey "T">

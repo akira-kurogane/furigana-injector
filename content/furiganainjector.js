@@ -61,7 +61,7 @@
 		prefs = Components.classes["@mozilla.org/preferences-service;1"].
 			getService(Components.interfaces.nsIPrefService).getBranch("extensions.furiganainjector.");
 		FuriganaInjectorPrefsObserver.register(prefs);
-			
+alert("show_translation_popups = " + getPref("show_translation_popups"));
 		consoleService = Components.classes["@mozilla.org/consoleservice;1"]
         	.getService(Components.interfaces.nsIConsoleService);
 		styleSheetServiceComponent = Components.classes["@mozilla.org/content/style-sheet-service;1"]
@@ -352,8 +352,10 @@
 	function processWholeDocumentCallback(processingResult) {
 		setCurrentContentProcessed(processingResult);
 		setStatusIcon(currentContentProcessed() === true ? "processed" : "failed"); 
-		attachPopupTriggerToAllRT();
-		insertRubyGlossStylesheet();
+		if (getPref("show_translation_popups")) {
+			attachPopupTriggerToAllRT();
+			insertRubyGlossStylesheet();
+		}
 	} 
 	
 	function processContextSection() {
@@ -439,8 +441,10 @@
 			setCurrentContentProcessed(processingResult ? "partially_processed" : false);
 			setStatusIcon(processingResult ? "partially_processed" : "failed"); 	
 		}
-		attachPopupTriggerToAllRT();
-		insertRubyGlossStylesheet();
+		if (getPref("show_translation_popups")) {
+			attachPopupTriggerToAllRT();
+			insertRubyGlossStylesheet();
+		}
 	} 
 
 	function startFuriganizeAJAX(urlsList, reqTimestampId, completionCallback) {
@@ -1026,7 +1030,7 @@ if (!foundNode) alert("Error: the getPrevTextOrElemNode() function went beyond t
 		rdContainer.css(
 			{top: r.position().top, left: r.position().left, display: "block", position:'absolute'}
 		);
-		rdContainer.addClass("rd_gd_wrapper");
+		rdContainer.attr("id", "rd_gd_wrapper");
 		rdContainer.append(rd);
 		rdContainer.append(g);
 		rdContainer.hide();
@@ -1041,13 +1045,19 @@ try {
 
 	function reflectWWWJDICGloss(gloss, formattedGloss, temp_id) {
 		var rd = fiJQuery("#fi_ruby_doppleganger[temp_id=" + temp_id + "]", content.document);
-		var g = fiJQuery("#fi_gloss_div", content.document);
-		g.removeClass("waiting");
 		if (rd.length > 0) {
+			var rdContainer = rd.parent("#rd_gd_wrapper");
+			var g = fiJQuery("#fi_gloss_div", content.document);
+			g.removeClass("waiting");
 			g.html(gloss ? formattedGloss : "<ul class='p q r'><li class='s t u'><em>Sorry, no result</em></li></ul>");
 			fiJQuery(content.document).bind("mousemove", function (event) { 
 				var x = event.pageX, y = event.pageY;
-				var rdOffset = rd.offset();
+				var rdCOffset = rdContainer.offset();
+				var rdCHittest = rdContainer && x >= rdCOffset.left && x <= rdCOffset.left + rdContainer.width() &&
+						y >= rdCOffset.top && y <= rdCOffset.top + rdContainer.height();
+				if (rdCHittest) //still within rd_gd_wrapper, do nothing
+					return;
+				/*var rdOffset = rd.offset();
 				var rdHittest = rd && x >= rdOffset.left && x <= rdOffset.left + rd.width() &&
 						y >= rdOffset.top && y <= rdOffset.top + rd.height();
 				if (rdHittest) //still within fi_ruby_doppelganger, do nothing
@@ -1056,7 +1066,7 @@ try {
 				var gHittest = g && x >= gOffset.left && x <= gOffset.left + g.width() &&
 					y >= gOffset.top && y <= gOffset.top + g.height();
 				if (gHittest)
-					return;
+					return;*/
 				fiJQuery(content.document).unbind("mousemove", arguments.callee);
 				fadeOutAndRemoveRubyDplgAndGloss("fast");
 			});
@@ -1068,7 +1078,16 @@ else { consoleService.logStringMessage("background returned a gloss for #fi_ruby
 	}
 
 	function fadeOutAndRemoveRubyDplgAndGloss(duration) {
-		var rd = fiJQuery("#fi_ruby_doppleganger", content.document);
+		var rdContainer = fiJQuery("#rd_gd_wrapper", content.document);
+		if (rdContainer)	{
+			var origRuby = rdContainer.prev("ruby");
+			if (rdContainer.css("display") !=  "none" && rdContainer.css("visibility") != "hidden" && rdContainer.css("opacity") > 0)
+				rdContainer.fadeOut(duration, function() { fiJQuery(this).remove();} ); 
+			else
+				rdContainer.remove();
+			origRuby.find("rt").bind("mouseenter", showRubyDopplegangerAndRequestGloss);
+		}
+		/*var rd = fiJQuery("#fi_ruby_doppleganger", content.document);
 		if (rd)	{
 			var origRuby = rd.prev("ruby");
 			if (rd.css("display") !=  "none" && rd.css("visibility") != "hidden" && rd.css("opacity") > 0)
@@ -1085,7 +1104,7 @@ else { consoleService.logStringMessage("background returned a gloss for #fi_ruby
 				g.html("");
 				g.remove();
 			}
-		}
+		}*/
 	}
 
 	function getDataFromRubyElem(rd) {
