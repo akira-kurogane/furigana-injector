@@ -61,7 +61,7 @@
 		prefs = Components.classes["@mozilla.org/preferences-service;1"].
 			getService(Components.interfaces.nsIPrefService).getBranch("extensions.furiganainjector.");
 		FuriganaInjectorPrefsObserver.register(prefs);
-alert("show_translation_popups = " + getPref("show_translation_popups"));
+
 		consoleService = Components.classes["@mozilla.org/consoleservice;1"]
         	.getService(Components.interfaces.nsIConsoleService);
 		styleSheetServiceComponent = Components.classes["@mozilla.org/content/style-sheet-service;1"]
