@@ -29,13 +29,13 @@
 
 	var initialized = false;
 	var furiganaServerUrl;
+	var furiganaServiceURLsList = [ "http://fi.yayakoshi.net/furiganainjector", "http://fi2.yayakoshi.net/furiganainjector" ];
+	var wwwjdicServerURL = null;
 	var prefs;
 	var userKanjiRegex;
 	var kanjiAdjustMenuItems = [];
 	var strBundle = null;
 	var furiganaSvrReqBatches = {}; //This object will be used like a hash. Todo: use a jquery $H()?
-	var furiganaServiceURLsList = [ "http://fi.yayakoshi.net/furiganainjector", "http://fi2.yayakoshi.net/furiganainjector" ];
-	var wwwjdicServerURL = null;
 	var consoleService;
 	var styleSheetServiceComponent;
 	var ioServiceComponent;
@@ -61,6 +61,14 @@
 		prefs = Components.classes["@mozilla.org/preferences-service;1"].
 			getService(Components.interfaces.nsIPrefService).getBranch("extensions.furiganainjector.");
 		FuriganaInjectorPrefsObserver.register(prefs);
+		
+		//Initialize show_translation_popups preference to true for new users but false for
+ 		//  all users who are upgrading from an earlier version.
+		var newInstall = prefs.getChildList("", {}).indexOf("firstrun") < 0;
+		if (prefs.getChildList("", {}).indexOf("show_translation_popups") < 0)
+			setPref("show_translation_popups", newInstall ? true : false);
+		//When new version has propagated delete all of the above and put the below in the preferences file.
+		//pref("extensions.furiganainjector.show_translation_popups", true);
 
 		consoleService = Components.classes["@mozilla.org/consoleservice;1"]
         	.getService(Components.interfaces.nsIConsoleService);
@@ -74,7 +82,10 @@
 		
 		//ServerSelector defined in server_selector_obj.js. Selects a working furiganaServerUrl asynchronously.
 		var fiSvrSel = new ServerSelector(furiganaServiceURLsList, onServerConfirm, onNoFuriganaServerFound );
-		var wwwjdicSvrSel = new ServerSelector(wwwjdicServiceURLsList, onWWWWJDICServerConfirm, onNoWWWJDICServerFound );
+		var wwwjdicSvrSel = new ServerSelector([ "http://www.csse.monash.edu.au/~jwb/cgi-bin/wwwjdic.cgi", "http://ryouko.imsb.nrc.ca/cgi-bin/wwwjdic", 
+			"http://jp.msmobiles.com/cgi-bin/wwwjdic", "http://www.aa.tufs.ac.jp/~jwb/cgi-bin/wwwjdic.cgi", 
+			"http://wwwjdic.sys5.se/cgi-bin/wwwjdic.cgi", "http://www.edrdg.org/cgi-bin/wwwjdic/wwwjdic"], 
+			confirmWWWJDICServer, onNoWWWJDICServerFound );
 
 		try {
 			document.getElementById("open-tests-window-menuitem").hidden = !getPref("enable_tests");
