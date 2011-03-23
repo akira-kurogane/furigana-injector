@@ -65,8 +65,7 @@
 		//Initialize show_translation_popups preference to true for new users but false for
  		//  all users who are upgrading from an earlier version.
 		var newInstall = prefs.getChildList("", {}).indexOf("firstrun") < 0;
-		if (prefs.getChildList("", {}).indexOf("show_translation_popups") < 0)
-			setPref("show_translation_popups", newInstall ? true : false);
+		setPref("show_translation_popups", newInstall ? true : false);
 		//When new version has propagated delete all of the above and put the below in the preferences file.
 		//pref("extensions.furiganainjector.show_translation_popups", true);
 

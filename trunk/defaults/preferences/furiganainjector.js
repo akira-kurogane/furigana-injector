@@ -2,3 +2,4 @@ pref("extensions.furiganainjector.exclusion_kanji", "日一国会人年大十二
 pref("extensions.furiganainjector.enable_tests", false);
 pref("extensions.furiganainjector.process_link_text", false);
 pref("extensions.furiganainjector.last_version", "");
+pref("extensions.furiganainjector.show_translation_popups", false);
