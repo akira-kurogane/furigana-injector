@@ -80,12 +80,13 @@
 		userKanjiRegex = new RegExp("[" + FIVocabAdjuster.getSimpleKanjiList() + "]");
 		
 		//ServerSelector defined in server_selector_obj.js. Selects a working furiganaServerUrl asynchronously.
-		var fiSvrSel = new ServerSelector(furiganaServiceURLsList, onServerConfirm, onNoFuriganaServerFound );
-		var wwwjdicSvrSel = new ServerSelector([ "http://www.csse.monash.edu.au/~jwb/cgi-bin/wwwjdic.cgi", "http://ryouko.imsb.nrc.ca/cgi-bin/wwwjdic", 
+		//var fiSvrSel = new ServerSelector(furiganaServiceURLsList, onServerConfirm, onNoFuriganaServerFound );
+		furiganaServerUrl = furiganaServiceURLsList[0];	//emergency fix (bypassing looping lookup)
+		/*var wwwjdicSvrSel = new ServerSelector([ "http://www.csse.monash.edu.au/~jwb/cgi-bin/wwwjdic.cgi", "http://ryouko.imsb.nrc.ca/cgi-bin/wwwjdic", 
 			"http://jp.msmobiles.com/cgi-bin/wwwjdic", "http://www.aa.tufs.ac.jp/~jwb/cgi-bin/wwwjdic.cgi", 
 			"http://wwwjdic.sys5.se/cgi-bin/wwwjdic.cgi", "http://www.edrdg.org/cgi-bin/wwwjdic/wwwjdic"], 
-			confirmWWWJDICServer, onNoWWWJDICServerFound );
-
+			confirmWWWJDICServer, onNoWWWJDICServerFound );*/
+		wwwjdicServerURL = "http://www.csse.monash.edu.au/~jwb/cgi-bin/wwwjdic.cgi";	//emergency fix (bypassing looping lookup)
 		try {
 			document.getElementById("open-tests-window-menuitem").hidden = !getPref("enable_tests");
 		} catch (err) {
