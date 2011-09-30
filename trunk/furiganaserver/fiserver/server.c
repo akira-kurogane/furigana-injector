@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <signal.h>
 #include <time.h>
 #include <stdarg.h>
 #include <pthread.h>
@@ -11,9 +12,14 @@
 #include "mongoose.h"
 #include "json.h"
 
+static int exit_flag; //global var that signal handlers will set.
 static size_t mg_read_max_req_size; //Will be initialized after mongoose context is created.
 //N.B. The Mecab lib doesn't seem to have maximum buffer size for node parsing. The mecab executable does 
 //  but that's not relevant.
+
+static void signal_handler(int sig_num) {
+  exit_flag = sig_num;
+}
 
 static const char *ajax_service_url = "/furiganainjector";
 static const char *test_form_url = "/test_form";
@@ -58,8 +64,8 @@ static void print_robots_txt(struct mg_connection *conn) {
 // Split up form data values as required, print the result from furigana_decorate
 static void handle_furigana_request(struct mg_connection *conn) {
 
-  char tmp_inp_copy_filename[] = "/tmp/fiserver_input_copy_XXXXXX"; //The XXXXXX will be updated with a random value
-  int ic_tmp_fd = mkstemp(tmp_inp_copy_filename); //Debug use
+  //File tracing: char tmp_inp_copy_filename[] = "/tmp/fiserver_input_copy_XXXXXX"; //The XXXXXX will be updated with a random value
+  //File tracing: int ic_tmp_fd = mkstemp(tmp_inp_copy_filename); //Debug use
   //printf("Copy of input being saved at %s\n", tmp_inp_copy_filename);
 
   unsigned int buf_chunks = 2; //multiple of mg_read_max_req_size to make the buf size
@@ -67,14 +73,14 @@ static void handle_furigana_request(struct mg_connection *conn) {
   buf[0] = '\0'; //in case mg_read doesn't return anything
   char* decorated_result;
   size_t curr_buf_len = 0, temp_len;
-  while (temp_len = mg_read(conn, buf + curr_buf_len, mg_read_max_req_size)) { //Eh? Doesn't mg_read() alter the last parameter?
+  while ((temp_len = mg_read(conn, buf + curr_buf_len, mg_read_max_req_size))) {
     curr_buf_len += temp_len;
     if (curr_buf_len >= mg_read_max_req_size * (buf_chunks - 1))
       buf = (char*)realloc(buf, mg_read_max_req_size * ++buf_chunks);
   }
   *(buf + curr_buf_len) = '\0';
-  write(ic_tmp_fd, buf, strlen(buf)); //debug use
-  close(ic_tmp_fd); //This file will be deleted at the end of this function. I.e. it will only survive if the program aborts due to a segfault/etc.
+  //File tracing: write(ic_tmp_fd, buf, strlen(buf)); //debug use
+  //File tracing: close(ic_tmp_fd); //This file will be deleted at the end of this function. I.e. it will only survive if the program aborts due to a segfault/etc.
   char* tok_start_ptr = buf;  //buf pointer that will set to null after the first use in strtok_r()
   char* key;
   char* val;
@@ -110,6 +116,7 @@ static void handle_furigana_request(struct mg_connection *conn) {
 
   mg_printf(conn, "HTTP/1.1 200 OK\r\n"
     "Server: Mongoose-not-mod_furiganainjector\r\n" //Have to include the substring "mod_furiganainjector" until clients re-written
+    "Connection: close\r\n"
     "Content-Type: application/json\r\n"
     "\r\n");
   //Todo: process in chunks < 4096
@@ -117,7 +124,7 @@ static void handle_furigana_request(struct mg_connection *conn) {
   mg_write(conn, temp_json_str, strlen(temp_json_str));
 
 	json_object_put(reply_json_obj);
-  unlink(tmp_inp_copy_filename);
+  //File tracing: unlink(tmp_inp_copy_filename);
 }
 
 static void *fiserver_event_handler(enum mg_event event,
@@ -152,12 +159,11 @@ static void *fiserver_event_handler(enum mg_event event,
 static const char *options[] = {
   "enable_directory_listing", "no",
   //"document_root", "html",
-  "listening_ports", "8081",
+  "listening_ports", "80",
   //"ssl_certificate", "ssl_cert.pem",
-  //"access_log_file", "fiserver.access.log",
-  //"error_log_file", "fiserver.err.log",
   "num_threads", "5",
   "max_request_size", "16384",
+  //"enable_keep_alive", "no",
   NULL
 };
 
@@ -167,15 +173,25 @@ int main(void) {
 
   init_mecab_context(/*args*/);
 
+  /* Setup signal handler: quit on Ctrl-C */
+  signal(SIGTERM, signal_handler);
+  signal(SIGINT, signal_handler);
+
   // Setup and start Mongoose
   ctx = mg_start(&fiserver_event_handler, NULL, options);
   assert(ctx != NULL);
   mg_read_max_req_size = atoi(mg_get_option(ctx, "max_request_size"));
 
-  // Wait until enter is pressed, then exit
-  printf("Furigana Injector server started on port(s) %s, press enter to quit.\n",
-         mg_get_option(ctx, "listening_ports"));
-  getchar();
+  //// Wait until enter is pressed, then exit
+  //printf("Furigana Injector server started on port(s) %s, press enter to quit.\n",
+  //       mg_get_option(ctx, "listening_ports"));
+  //getchar();
+  while (exit_flag == 0) {
+    sleep(1);
+  }
+  printf("Exiting on signal %d, waiting for all threads to finish...",
+         exit_flag);
+  fflush(stdout);
   mg_stop(ctx);
   printf("%s\n", "Furigana Injector server stopped.");
 
