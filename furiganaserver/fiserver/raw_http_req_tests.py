@@ -43,7 +43,7 @@ def __socket_req_test(buf, sample_filename, skip_known_bad_samples=False):
             elif hrt == "POST" and re.search("User-Agent: Pingdom", buf):
                 r.update({"expected_fail": True, "fail_reason": "Pingdom POST"})
             else:
-                print("Non-OK response to {0}:\n  {1} ({2} chars) ...{3}".format(sample_filename, buf[:10], len(buf), buf[-10:-4]))
+                print("Non-OK response to {0}:\n  {1} ({2} chars) ...{3}".format(sample_filename, buf[:10], len(buf), buf[-10:].rstrip()))
                 r.update({"raw_reply": repl_data})
 
         elif hrt == "HEAD":
@@ -59,7 +59,7 @@ def __socket_req_test(buf, sample_filename, skip_known_bad_samples=False):
                 except Exception:
                     r["fail_reason"] = "Invalid json"
                     r.update({"raw_reply": repl_data})
-                    print("JSON parsing failed on the response to {0}:\n  {1} ({2} chars) ...{3}".format(sample_filename, repl_content[:20], len(repl_content), repl_data[-10:]))
+                    print("JSON parsing failed on the response to {0}:\n  {1} ({2} chars) ...{3}".format(sample_filename, repl_content[:20], len(repl_content), repl_data[-10:].rstrip()))
 
 
     except (socket.timeout, socket.error) as ex:
@@ -74,9 +74,9 @@ def __socket_req_test(buf, sample_filename, skip_known_bad_samples=False):
             r.update({"expected_fail": True, "fail_reason": "whitespace-only request"})
         else:
             if ex is socket.timeout:
-                print("Socket timeout on {0}:\n  {1} ({2} chars) ...{3}".format(sample_filename, buf[:10], len(buf), buf[-10:-4]))
+                print("Socket timeout on {0}:\n  {1} ({2} chars) ...{3}".format(sample_filename, buf[:10], len(buf), buf[-10:].rstrip()))
             else:
-                print("Socket error on {0}:\n  {1} ({2} chars) ...{3}".format(sample_filename, buf[:10], len(buf), buf[-10:-4]))
+                print("Socket error on {0}:\n  {1} ({2} chars) ...{3}".format(sample_filename, buf[:10], len(buf), buf[-10:].rstrip()))
     finally:
         s.close()
 
@@ -90,6 +90,7 @@ def __iterate_sample_files():
     for req_file in os.listdir(__http_dump_dir):
     #for req_file in ["002.102.167.116.64079-192.168.011.016.00080"]:
     #for req_file in ["219.110.205.086.56328-192.168.011.016.00080"]:
+    #for req_file in ["069.011.096.181.63083-192.168.011.016.00080", "069.011.096.181.62841-192.168.011.016.00080", "061.114.219.065.03200-192.168.011.016.00080", "061.114.219.065.03217-192.168.011.016.00080", "076.114.133.223.40003-192.168.011.016.00080", "114.042.238.129.13825-192.168.011.016.00080"]: #cases of post data that seems to be truncated according to this script
         buf = ""
         hs = open(__http_dump_dir + "/" + req_file)
 
@@ -148,11 +149,13 @@ def __tally(results):
         req_cnts[hrt] += 1
 
         if hrt == "HEAD" and not "head_reply_ok" in r:
+            req_cnts[hrt] -= 1
             if "expected_fail" in r:
                 exp_fail_cnts[hrt] += 1
             else:
                 fail_cnts[hrt] += 1
         elif hrt == "POST" and not "jbody" in r:
+            req_cnts[hrt] -= 1
             if "expected_fail" in r:
                 exp_fail_cnts[hrt] += 1
             else:
@@ -161,7 +164,7 @@ def __tally(results):
     stats = {
         "tests_datetime": datetime.datetime.now(),
         "POST_count": req_cnts.get("POST", 0),
-        "POST_avg_time_µs": reqtime_sums["POST"] / req_cnts["POST"] * 1000000 if req_cnts["POST"] else "N/A",
+        "POST_avg_time_µs": reqtime_sums["POST"] / req_cnts["POST"] * 1000000 if req_cnts["POST"] else None,
         "POST_fail_count": fail_cnts.get("POST", 0),
         "POST_expected_fail_count" : exp_fail_cnts.get("POST", 0), 
         "GET_count": req_cnts.get("GET", 0),
@@ -171,20 +174,34 @@ def __tally(results):
         "HEAD_avg_time_µs": reqtime_sums["HEAD"] / req_cnts["HEAD"] * 1000000 if "HEAD" in req_cnts else None,
         "HEAD_fail_count": fail_cnts.get("HEAD", 0),
         "HEAD_expected_fail_count" : exp_fail_cnts.get("HEAD", 0), 
-        "longest_req": longest_req if longest_req else "N/A",
-        "longest_req_time": longest_req_time * 1000000 if longest_req_time else "--",
+        "longest_req": longest_req if longest_req else None,
+        "longest_req_time": longest_req_time * 1000000 if longest_req_time else None,
         }
 
     return stats
 
 def __print_summary(stats):
-    print("""POST: {POST_count} requests at average of {POST_avg_time_µs:.0f} µs each.
-  {POST_fail_count} POSTs unexpectedly failed. ({POST_expected_fail_count} known bad request samples ignored.)
-HEAD: {HEAD_count} requests at average of {HEAD_avg_time_µs:.0f} µs each.
-  {HEAD_fail_count} HEADs unexpectedly failed. ({HEAD_expected_fail_count} known bad request samples ignored.)
-Other: {GET_count} GET and {No_http_type_count} other junk requests processed at avg of {junk_req_avg_time_µs:.0f} µs each.
-Longest-running request: {longest_req_time:.0f} µs for {longest_req}.
-""".format(**stats))
+    if "POST_avg_time_µs" in stats and stats["POST_avg_time_µs"]:
+        print("POST: {POST_count} requests at average of {POST_avg_time_µs:.0f} µs each.".format(**stats))
+    else:
+        print("POST: {POST_count} requests (no avg time info- all failed?).".format(**stats))
+    if stats["POST_fail_count"] or stats["POST_expected_fail_count"]:
+        print("  {POST_fail_count} POSTs unexpectedly failed. ({POST_expected_fail_count} known bad request samples ignored.)".format(**stats))
+    if "HEAD_avg_time_µs" in stats and stats["HEAD_avg_time_µs"]:
+        print("HEAD: {HEAD_count} requests at average of {HEAD_avg_time_µs:.0f} µs each.".format(**stats))
+    elif not stats["HEAD_count"]:
+        pass
+    else:
+        print("HEAD: {HEAD_count} requests (no avg time info- all failed?).".format(**stats))
+    if stats["HEAD_fail_count"] or stats["HEAD_expected_fail_count"]:
+        print("  {HEAD_fail_count} HEADs unexpectedly failed. ({HEAD_expected_fail_count} known bad request samples ignored.)".format(**stats))
+    if stats["GET_count"] or stats["No_http_type_count"]:
+        if "junk_req_avg_time_µs" in stats and stats["junk_req_avg_time_µs"]:
+            print("Other: {GET_count} GET and {No_http_type_count} other junk requests processed at avg of {junk_req_avg_time_µs:.0f} µs each.".format(**stats))
+        else:
+            print("Other: {GET_count} GET and {No_http_type_count} other junk requests processed (no avg time info- all failed?).".format(**stats))
+    if "longest_req_time" in stats and "longest_req" in stats and stats["longest_req"]:
+        print("Longest-running request: {longest_req_time:.0f} µs for {longest_req}.".format(**stats))
 
 
 def __log_perf_stats(stats):
