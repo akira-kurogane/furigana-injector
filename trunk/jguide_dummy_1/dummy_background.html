@@ -1,0 +1,31 @@
+<html>
+<script>
+
+function submitTextForAsyncVocabDetection(s) {
+	setTimeout(pickSomeWords, 100, s);
+}
+
+function pickSomeWords(s) {
+	var words = s.split(' ');
+	var a = [];
+	for (x = 0; x < words.length; x++) {
+		var w = words[x];
+		if (w.length > 2 && w.match(/^\w\S+\w$/) && Math.random() * 3 < 1) {
+			if (w.length >= 5 && w.match(/ed$/))
+				w = w.substr(0, w.length - 2);
+			if (w.length >= 6 && w.match(/[bdhlm]ing$/))
+				w = w.substr(0, w.length - 3) + "e";
+			if (w.length >= 6 && w.match(/ing$/))
+				w = w.substr(0, w.length - 3);
+			a.push(w);
+		}
+	}
+	return acceptAsyncVocabResults(a);
+}
+
+function acceptAsyncVocabResults(r) {
+	alert(r);
+}
+
+</script>
+</html>
