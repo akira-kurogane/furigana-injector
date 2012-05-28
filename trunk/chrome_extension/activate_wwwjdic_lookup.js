@@ -1,7 +1,14 @@
 /**
- *	Attach events to all <rt> elements
+ *	Attach mouseenter events to all <rt> elements to open translation pop-ups.
  */
-$("rt").bind("mouseenter", showRubyDopplegangerAndRequestGloss);
+function attachPopupTriggerToAllRT() {
+	/** 
+	 * In case of multiple execution, e.g. when furiganized text is delivered in 
+	 *   several parts, unbind all once before binding again.
+	 */
+	$("rt").unbind("mouseenter", showRubyDopplegangerAndRequestGloss);
+	$("rt").bind("mouseenter", showRubyDopplegangerAndRequestGloss);
+}
 
 function showRubyDopplegangerAndRequestGloss() {
 	var rt = $(this);
@@ -60,19 +67,24 @@ function showRubyDopplegangerAndRequestGloss() {
 }
 
 function reflectWWWJDICGloss(data) {
-	if ($("#fi_ruby_doppleganger[temp_id=" + data.temp_id + "]").length > 0) {
-		$("#fi_gloss_div").html(data.gloss ? data.formattedGloss : "<ul class='p q r'><li class='s t u'><em>Sorry, no result</em></li></ul>");
-		$("#fi_ruby_doppleganger").one("mouseleave", function(event) { //one() is a bind() that always unbinds after one invocation
-			var g = $("#fi_gloss_div");
+	var rd = $("#fi_ruby_doppleganger[temp_id=" + data.temp_id + "]");
+	var g = $("#fi_gloss_div");
+	if (rd.length > 0) {
+		g.html(data.gloss ? data.formattedGloss : "<ul class='p q r'><li class='s t u'><em>Sorry, no result</em></li></ul>");
+		$(window).bind("mousemove", function (event) { 
+			var x = event.pageX, y = event.pageY;
+			var rdOffset = rd.offset();
+			var rdHittest = rd && x >= rdOffset.left && x <= rdOffset.left + rd.width() &&
+					y >= rdOffset.top && y <= rdOffset.top + rd.height();
+			if (rdHittest) //still within fi_ruby_doppelganger, do nothing
+				return;
 			var gOffset = g.offset();
-			if (g && event.pageX >= gOffset.left && event.pageX <= gOffset.left + g.width() &&
-				event.pageY >= gOffset.top && event.pageY <= gOffset.top + g.height()) {	//hit on gloss div rectangle
-				g.bind("mouseleave", function(event) { 
-					fadeOutAndRemoveRubyDplgAndGloss("fast");
-				});
-			} else {
-				fadeOutAndRemoveRubyDplgAndGloss("fast");
-			} 
+			var gHittest = g && x >= gOffset.left && x <= gOffset.left + g.width() &&
+				y >= gOffset.top && y <= gOffset.top + g.height();
+			if (gHittest)
+				return;
+			$(window).unbind("mousemove", arguments.callee);
+			fadeOutAndRemoveRubyDplgAndGloss("fast");
 		});
 		//Adding extra, otherwise meaningless classes to make rules in ruby_gloss.css more likely to get CSS rule precedence
 		$("#fi_gloss_div ul").addClass("p q r");
@@ -83,7 +95,7 @@ else { console.log("background returned a gloss for #fi_ruby_doppleganger[temp_i
 }
 
 function fadeOutAndRemoveRubyDplgAndGloss(duration) {
-	rd = $("#fi_ruby_doppleganger");
+	var rd = $("#fi_ruby_doppleganger");
 	if (rd)	{
 		var origRuby = rd.prev("ruby");
 		if (rd.css("display") !=  "none" && rd.css("visibility") != "hidden" && rd.css("opacity") > 0)

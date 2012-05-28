@@ -108,26 +108,27 @@ function isEmpty(obj) {
 	return true;
 }
 
+function toggleFurigana() {
+	if (document.body.hasAttribute("fiprocessed")) {
+		revertRubies();
+		extBgPort.postMessage({message: "reset_page_action_icon"});	//icon can only be changed by background page
+		kanjiTextNodes = {};
+	} else if (document.body.hasAttribute("fiprocessing")) {
+		//alert("Wait a sec, still awaiting a reply from the furigana server.");
+	} else {
+		extBgPort.postMessage({message: "execute_css_fontsize_fix_for_rt"});	//send a request to have "css_fontsize_fix_for_rt.js" executed on this page
+		kanjiTextNodes = scanForKanjiTextNodes();
+		if (!isEmpty(kanjiTextNodes)) {
+			document.body.setAttribute("fiprocessing", "true");
+			submitKanjiTextNodes(false);	//The background page will respond with data including a "furiganizedTextNodes" member, see below.
+		} else {
+			alert("No text with kanji above your level found. Sorry, false alarm!");
+		}
+	}
+}
 /*** Events ***/
 function onExtBgMsgReceived(data) {
-	if (data.message && data.message == "toggle_furigana") {
-		if (document.body.hasAttribute("fiprocessed")) {
-			revertRubies();
-			extBgPort.postMessage({message: "reset_page_action_icon"});	//icon can only be changed by background page
-			kanjiTextNodes = {};
-		} else if (document.body.hasAttribute("fiprocessing")) {
-			//alert("Wait a sec, still awaiting a reply from the furigana server.");
-		} else {
-			extBgPort.postMessage({message: "execute_css_fontsize_fix_for_rt"});	//send a request to have "css_fontsize_fix_for_rt.js" executed on this page
-			kanjiTextNodes = scanForKanjiTextNodes();
-			if (!isEmpty(kanjiTextNodes)) {
-				document.body.setAttribute("fiprocessing", "true");
-				submitKanjiTextNodes(false);	//The background page will respond with data including a "furiganizedTextNodes" member, see below.
-			} else {
-				alert("No text with kanji above your level found. Sorry, false alarm!");
-			}
-		}
-	} else if (data.furiganizedTextNodes) {	//i.e. the response from submitKanjiTextNodes()
+	if (data.furiganizedTextNodes) {	//i.e. the response from submitKanjiTextNodes()
 		for (key in data.furiganizedTextNodes) {
 			if (submittedKanjiTextNodes[key]) {	//Todo: check the node still valid?
 				var tempDocFrag = document.createDocumentFragment();
