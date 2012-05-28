@@ -142,11 +142,14 @@ function furiganizeAJAXStateChangeHandler() {
 			}
 			this.replyTabPort.postMessage({furiganizedTextNodes: returnData});
 			delete furiganaServerRequestsQueue[this.reqTimestampId];	//dequeue
-			if (!this.replyTabPort.wwwjdicJSAndCSSIncluded && JSON.parse(localStorage.getItem("show_translations"))) {
+			var showTranslationPopups = JSON.parse(localStorage.getItem("show_translations"));
+			if (!this.replyTabPort.wwwjdicJSAndCSSIncluded && showTranslationPopups) {
 				chrome.tabs.executeScript(this.replyTabPort.tab.id, {file: "activate_wwwjdic_lookup.js"/*, allFrames: false*/});
 				chrome.tabs.insertCSS(this.replyTabPort.tab.id, {file: "ruby_gloss.css"/*, allFrames: false*/});
 				this.replyTabPort.wwwjdicJSAndCSSIncluded = true;
 			}
+			if (showTranslationPopups)
+				chrome.tabs.executeScript(this.replyTabPort.tab.id, {code: "attachPopupTriggerToAllRT();"});
 		} else {
 			this.urlsList = $.map(this.urlsList, function(itm) { return itm == furiganaServerUrl ? null : itm; });
 			if (this.urlsList.length == 0)
@@ -273,7 +276,8 @@ if (thisXHR.dict != "P") console.log("Programming error: dict \"" + thisXHR.dict
 		var resultLines = formattedResults[1].replace(/^\s*|\s*$/, "").split('\t');
 		var matchingGloss = null;
 		//The pattern is sometimes several alternate kanji forms e.g. "曇り(P); 曇 [くもり] /(pos) gloss/gloss/...."
-		var entryRegex = new RegExp("^(?:[^;]+;)*" + thisXHR.word + "(?:[\\(\\)a-zA-Z])?(?:;[^;]+)* \\[" + thisXHR.yomi +"\\]\\s+(.+)$");	//(?: [A-Z][A-Z][12]?)?
+		//[\u3400-\u9FBF] used as a quick-and-easy pattern for hiragana, katakana and kanji.
+		var entryRegex = new RegExp("^(?:.*[^\\u3400-\\u9FBF])?" + thisXHR.word + "(?:[^\\u3400-\\u9FBF].*)? \\[(?:.*[^\\u3400-\\u9FBF])?" + thisXHR.yomi + "(?:[^\\u3400-\\u9FBF].*)?\\]\\s+(.*)$");
 		//Devnote: unhandled exception case - two [よみ] fields, such as 
 		//  "昭島 [あきしま] Akishima (p,s) [あきじま] Akijima (s)" from ENAMDICT.
 		for (var x = 0; x < resultLines.length; x++) {
@@ -345,19 +349,8 @@ if (!tempMatches) alert("failed to regex match ordinary part of " + currGlossPar
  *	Chrome events
  *****************/
 //Page action listener
-chrome.pageActions["ToggleFurigana"].addListener(function(pageaction) {
-	chrome.windows.getCurrent(function(currentWindow) {
-		chrome.tabs.getSelected(currentWindow.id, function(currTab) {
-			if (!furiganaServerUrl)	{
-				alert("Furigana server is offline");
-				return;
-			}
-			if (tabPorts[currTab.id])	//Todo: delete this if() and the alert if nobody ever reports it occuring.
-				tabPorts[currTab.id].postMessage({message: "toggle_furigana"}); //will remove furigana if already processed.
-			else
-				alert("Sorry, Furigana Injector has had an error. After receiving the reply from the server it couldn't communicate with the tab, which is an internal Chrome extensions error.\n(N.b. If you know how to replicate this error please contact the developer.)");
-		});
-	});
+chrome.pageAction.onClicked.addListener(function(tab) {
+	chrome.tabs.executeScript(tab.id, {code:"toggleFurigana();"});
 });
 
 //Extension requests listener. Used mainly by kanji_content_detect.js, but also by text_to_furigana_dom_parse.js to init config values.
@@ -380,13 +373,6 @@ chrome.extension.onRequest.addListener(
 //Extension connect() listener. Called everytime a new page is loaded ... in either a new tab or existing one.
 //text_to_furigana_dom_parse.js is the only script that has sends messages this way, and which has a listener on the other side.
 chrome.extension.onConnect.addListener(function(port) {
-	tabPorts[port.tab.id] = port;
-	port.onDisconnect.addListener(function(disconnected_port) {
-		var where = tabPorts ? tabPorts.indexOf(disconnected_port) : -1;
-		if (where != -1) {
-			tabPorts.splice(where, 1);
-		}
-	});
 	//Devnote: there is a bug in the options page according to the open source for AdBlockPlus for Chrome.
 	//  Basically the options page doesn't trigger the onDisconnect. Separate handling for it is necessary 
 	//  if you want to avoid issues there.
