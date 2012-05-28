@@ -50,10 +50,10 @@
 	}
 	
 	function alignRubyDplgnrAndGloss() {
-		//var or = $("#orig_ruby");	//I think I should only need the ruby's position to set the doppleganger 
-		var or = $("#orig_ruby rt");	//  ruby's position top, but it seems I have to use the <rt> elem instead.
-		$("#fi_ruby_doppleganger").css({top: or.position().top, left: or.position().left});
-		$("#fi_gloss_div").css({top: or.position().top, left: or.position().left + or.width()});
+		var or = $("#orig_ruby");	//I think I should only need the ruby's position to set the doppleganger 
+		var ort = $("#orig_ruby rt");	//  ruby's position top, but it seems I have to use the <rt> elem instead.
+		$("#fi_ruby_doppleganger").css({top: ort.position().top, left: or.position().left});
+		$("#fi_gloss_div").css({top: or.position().top + or.height(), left: or.position().left});
 	}
 	
 	$(window).resize(function() { alignRubyDplgnrAndGloss(); });
@@ -77,7 +77,7 @@
 	</div>
 
 	<div>
-		<label for="show_translations_inp">Show translations (from <a href="http://www.aa.tufs.ac.jp/~jwb/cgi-bin/wwwjdic.cgi?1C">WWWJDIC</a>) <input type="checkbox" id="show_translations_inp"/></label> <span style="margin-left: 24px;">...渡辺先生<!--ruby id="fi_ruby_doppleganger" class="ruby_doppleganger">先生<rt>せんせい</rt></ruby><div id="fi_gloss_div" class="hover_gloss" style="display: inline; top: 0; left: 0;"><ul><li>teacher<br/>master<br/>doctor</li><li>with names of teachers, etc. as an honorific</li></ul></div-->の仕事と<ruby id="orig_ruby">素顔<rt>すがお</rt></ruby><ruby id="fi_ruby_doppleganger" class="ruby_doppleganger" style="display: none;">素顔<rt>すがお</rt></ruby><div id="fi_gloss_div" class="hover_gloss" style="display: none;"><ul><li>face with no make-up<br/>unpainted face<br/>honesty<br/>frankness</li></ul></div>と時々愉快な仲間達...</span>
+		<label for="show_translations_inp">Show translations (from <a href="http://www.aa.tufs.ac.jp/~jwb/cgi-bin/wwwjdic.cgi?1C">WWWJDIC</a>) <input type="checkbox" id="show_translations_inp"/></label> <span style="margin-left: 24px;">...渡辺先生<!--ruby id="fi_ruby_doppleganger" class="ruby_doppleganger">先生<rt>せんせい</rt></ruby><div id="fi_gloss_div" class="hover_gloss" style="display: inline; top: 0; left: 0;"><ul><li>teacher<br/>master<br/>doctor</li><li>with names of teachers, etc. as an honorific</li></ul></div-->の仕事と<ruby id="orig_ruby">素顔<rt>すがお</rt></ruby><ruby id="fi_ruby_doppleganger" class="ruby_doppleganger" style="display: none;">素顔<rt>すがお</rt></ruby><div id="fi_gloss_div" class="hover_gloss" style="display: none;"><ul class="p q r"><li class="s t u">face with no make-up<br/>unpainted face<br/>honesty<br/>frankness</li></ul></div>と時々愉快な仲間達...</span>
 	</div>
 	
 	<p><a href="installation_welcome.html">See "Welcome" page again</a></p>

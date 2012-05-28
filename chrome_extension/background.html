@@ -3,7 +3,7 @@
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="server_selector_obj.js"></script>
 <script type="text/javascript">
-var serverUrl = null;	//Will be set once serverSelector completes it's test loop.
+var furiganaServerUrl = null;	//Will be set once the fiSvrSel ServerSelector object completes it's test loop.
 var wwwjdicServerURL = null;
 var tabPorts = [];	//manually kept list of tabs that connect.
 
@@ -28,74 +28,103 @@ if (localStorage.getItem("include_link_text") === null) {
 }
 if (localStorage.getItem("show_translations") === null) {
 	console.log("The localStorage \"show_translations\" value was null. It will be initialised to false.");
-	localStorage.setItem("show_translations", false);	//the default value for including links
+	localStorage.setItem("show_translations", true);	//the default value for showing translations
 }
 
-//serverSelector defined in server_selector_obj.js. Selects a working serverUrl asynchronously.
-serverSelector.startTestLoop(
-	/*These URLs must match URL patterns in the "permissions" item in the manifest file. */
-	[ "http://fi.yayakoshi.net/furiganainjector", "http://fi2.yayakoshi.net/furiganainjector" ], 
-	confirmServerUrl, onNoServerFound, "mod_furiganainjector");
+var furiganaServerRequestsQueue = {};	//This object will be used like a hash
+/*These URLs must match URL patterns in the "permissions" item in the manifest file. */
+var furiganaServiceURLsList = [ "http://fi.yayakoshi.net/furiganainjector", "http://fi2.yayakoshi.net/furiganainjector" ];
+/*ServerSelector defined in server_selector_obj.js. Selects a working furiganaServerUrl asynchronously.*/
+var fiSvrSel = new ServerSelector(furiganaServiceURLsList, confirmServerUrl, onNoFuriganaServerFound, "mod_furiganainjector");
 
 /*****************
  *	Functions
  *****************/
-function confirmServerUrl(svrUrl) {
-	serverUrl = svrUrl;
+function enableTabForFI(tab) {
+	chrome.pageActions.enableForTab('ToggleFurigana', 
+			{tabId: tab.id, url: tab.url, title: "Insert furigana ...", iconId: defaultIconIdx});
+	chrome.tabs.executeScript(tab.id, {file: "text_to_furigana_dom_parse.js"/*, allFrames: false*/});
+}
+
+function confirmServerUrl(svrUrl/*, contextObj*/) {
+	furiganaServerUrl = svrUrl;
 	console.log("FuriganaInjector service at " + svrUrl + " confirmed");
-	/* TODO re-enable the below when timed service checks are implemented
-	chrome.windows.getCurrent(function(currentWindow) {
-		chrome.tabs.getSelected(currentWindow.id, function(currTab) {
-			if (tabPorts && tabPorts[currTab.id])
-				tabPorts[currTab.id].postMessage({message: "serverconfirmed"}); 
-		});
-	});*/
+	
+	//Iterate every tab that would already have kanji_content_detect.js installed.
+	chrome.windows.getAll({populate: true}, function(allWindows) {	//{populate: true} causes the tabs property to be filled in each window object.
+		var i;
+		for (i = 0; i < allWindows.length; i++) {
+//console.log("fetched window #" + allWindows[i].id);
+			if (allWindows[i].type == "app")	//i.e. it's the background window
+				continue;
+			var tabs = allWindows[i].tabs;
+			var j;
+			for (j = 0; j < tabs.length; j++) {
+				var currTab = tabs[j];
+				if (!currTab.url.match(/^https?:\/\//))
+					continue;
+//console.log("fetched tab #" + currTab.id + " " + currTab.url);
+try {
+					enableTabForFI(currTab);
+} catch (err) { console.log(err); }
+			};
+		}
+	});
+	
 	//Now find a WWWJDIC server
-	serverSelector.startTestLoop(
+	var wwwjdicSvrSel = new ServerSelector(
 		[ "http://www.csse.monash.edu.au/~jwb/cgi-bin/wwwjdic.cgi", "http://ryouko.imsb.nrc.ca/cgi-bin/wwwjdic", 
 			"http://jp.msmobiles.com/cgi-bin/wwwjdic", "http://www.aa.tufs.ac.jp/~jwb/cgi-bin/wwwjdic.cgi", 
 			"http://wwwjdic.sys5.se/cgi-bin/wwwjdic.cgi", "http://www.edrdg.org/cgi-bin/wwwjdic/wwwjdic"],
 		confirmWWWJDICServer, onNoWWWJDICServerFound);
 }
 
-function onNoServerFound() {
-	console.log("Error: none of the servers could be connected to.");
+function onNoFuriganaServerFound(/*contextObj*/) {
+	if (!window["serverRecheckInterval"])
+		serverRecheckInterval = 30000;	//30 secs
+	console.log("Notice: none of the furigana servers could be connected to. Scheduling another check in " + serverRecheckInterval/1000 + " secs.");
+	setTimeout(function() {
+			if (!furiganaServerUrl) //Just in the server was selected somehow in the meantime.
+				fiSvrSel = new ServerSelector(furiganaServiceURLsList, confirmServerUrl, onNoFuriganaServerFound, "mod_furiganainjector");
+		}, serverRecheckInterval);
+	serverRecheckInterval *= 2;
+	if (serverRecheckInterval >= 3600000)
+		serverRecheckInterval = 3600000;	//cap at 1hr.
 }
 
-function confirmWWWJDICServer(svrUrl) {
+function confirmWWWJDICServer(svrUrl/*, contextObj*/) {
 	wwwjdicServerURL = svrUrl;
 	console.log("WWWJDIC service at " + svrUrl + " confirmed");
 }
 
-function onNoWWWJDICServerFound() {
+function onNoWWWJDICServerFound(/*contextObj*/) {
 	console.log("Error: none of the WWWJDIC servers could be connected to.");
 }
 
-function startFuriganizeAJAX(stringsHash, tabPort, keepAllRuby) {
-	if (!serverUrl) {
-		console.log("Programming error: startFuriganizeAJAX() called before serverUrl confirmed.");
+function startFuriganizeAJAX(urlsList, reqTimestampId) {
+	if (!furiganaServerUrl) {
+		console.log("Programming error: startFuriganizeAJAX() called before furiganaServerUrl confirmed.");
 		return;
 	}
+	data = furiganaServerRequestsQueue[reqTimestampId];
 	var postData = "";
-	//Todo: send as JSON instead?
-	for (key in stringsHash)
-		postData += "&" + key + "=" + encodeURIComponent(stringsHash[key]);
+	for (key in data.textToFuriganize)
+		postData += "&" + key + "=" + encodeURIComponent(data.textToFuriganize[key]);
 	postData = postData.substr(1);
 	var xhr = new XMLHttpRequest();
-	xhr.replyTabPort = tabPort;	//adding custom property to known where to reply to.
-	xhr.keepAllRuby = keepAllRuby;
+	xhr.reqTimestampId = reqTimestampId;
+	xhr.urlsList = urlsList;
+	xhr.replyTabPort = data.port;	//adding custom property to determine where to reply to.
+	xhr.keepAllRuby = data.keepAllRuby;
 	xhr.onreadystatechange = furiganizeAJAXStateChangeHandler; // Implemented elsewhere.
 	xhr.onerror = function(error) {
 		console.log("XHR error during startFuriganizeAJAX(): " + JSON.stringify(error));
 	};
-	xhr.open("POST", serverUrl, true);
+	xhr.open("POST", furiganaServerUrl, true);
 	xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 	//xhr.setRequestHeader("Content-Length", postData.length); //Apparently this is illegal for chrome
 	xhr.send(postData);
-	xhr.requestTimer = setTimeout(function(xhr) { 	//N.B. passing the current xhr reference as a timeout parameter to avoid aborting a different XHR sent in the meantime.
-			xhr.timedOut = true; 
-			xhr.abort(); 
-		}, 2000 + (postData.length / 10), xhr);	//e.g. a 33kb post request will get 5.3secs.
+	xhr.requestTimer = setTimeout(function(_xhr) { _xhr.abort(); }, 2000 + (postData.length / 10), xhr);	//e.g. a 33kb post request will get 5.3secs.
 }
 
 function furiganizeAJAXStateChangeHandler() {
@@ -112,17 +141,32 @@ function furiganizeAJAXStateChangeHandler() {
 				this.replyTabPort.jqueryIncluded = true;
 			}
 			this.replyTabPort.postMessage({furiganizedTextNodes: returnData});
+			delete furiganaServerRequestsQueue[this.reqTimestampId];	//dequeue
 			if (!this.replyTabPort.wwwjdicJSAndCSSIncluded && JSON.parse(localStorage.getItem("show_translations"))) {
 				chrome.tabs.executeScript(this.replyTabPort.tab.id, {file: "activate_wwwjdic_lookup.js"/*, allFrames: false*/});
 				chrome.tabs.insertCSS(this.replyTabPort.tab.id, {file: "ruby_gloss.css"/*, allFrames: false*/});
 				this.replyTabPort.wwwjdicJSAndCSSIncluded = true;
 			}
-		} else if (this.timedOut) {
-			this.replyTabPort.postMessage({message: "xhr_request_timeout", status: this.status});
 		} else {
-			this.replyTabPort.postMessage({message: "xhr_request_failed", status: this.status});
+			this.urlsList = $.map(this.urlsList, function(itm) { return itm == furiganaServerUrl ? null : itm; });
+			if (this.urlsList.length == 0)
+				onNoServerFoundAfterReseek(this);
+			else
+				var tempSvrSel = new ServerSelector(this.urlsList, updateServerURLAfterRequestFailure, onNoServerFoundAfterReseek, "mod_furiganainjector", this/*including the xhr object so it can be passed back from the callback*/);
 		}
 	}
+}
+
+function updateServerURLAfterRequestFailure(svrUrl, failedXHR) {
+	var oldServerUrl = furiganaServerUrl;
+	furiganaServerUrl = svrUrl;
+	console.log("FuriganaInjector service at " + svrUrl + " selected after failure requesting from " + oldServerUrl);
+	startFuriganizeAJAX(failedXHR.urlsList, failedXHR.reqTimestampId);
+}
+
+function onNoServerFoundAfterReseek(failedXHR) {
+	delete furiganaServerRequestsQueue[failedXHR.reqTimestampId];	//dequeue
+	failedXHR.replyTabPort.postMessage({message: "xhr_request_failed", status: failedXHR.status});
 }
 
 function stripRubyForSimpleKanji(origStr) {
@@ -304,7 +348,7 @@ if (!tempMatches) alert("failed to regex match ordinary part of " + currGlossPar
 chrome.pageActions["ToggleFurigana"].addListener(function(pageaction) {
 	chrome.windows.getCurrent(function(currentWindow) {
 		chrome.tabs.getSelected(currentWindow.id, function(currTab) {
-			if (!serverUrl)	{
+			if (!furiganaServerUrl)	{
 				alert("Furigana server is offline");
 				return;
 			}
@@ -316,19 +360,17 @@ chrome.pageActions["ToggleFurigana"].addListener(function(pageaction) {
 	});
 });
 
-//Extension requests listener. Used mainly by kanji_content_detect.js, but also by parser.js to init config values.
+//Extension requests listener. Used mainly by kanji_content_detect.js, but also by text_to_furigana_dom_parse.js to init config values.
 chrome.extension.onRequest.addListener(
 	function(request, sender, sendResponseCallback) {
 		if (request.message == "config_values_request") {
 			sendResponseCallback({userKanjiList: localStorage.getItem("user_kanji_list"), includeLinkText: localStorage.getItem("include_link_text")});
 		} else if (request.message == "init_tab_for_fi") {
-			if (!serverUrl) {
+			if (!furiganaServerUrl) {
 				chrome.pageActions.enableForTab('ToggleFurigana', 
 					{tabId: sender.tab.id, url: sender.tab.url, title: "Furigana server offline", iconId: disabledIconIdx});
 			} else {
-				chrome.pageActions.enableForTab('ToggleFurigana', 
-						{tabId: sender.tab.id, url: sender.tab.url, title: "Insert furigana ...", iconId: defaultIconIdx});
-				chrome.tabs.executeScript(sender.tab.id, {file: "parser.js"/*, allFrames: false*/});
+				enableTabForFI(sender.tab);
 			}
 		} else {
 			console.log("Programming error: a request with the unexpected \"message\" value \"" + request.message + "\" was received in the background page.");
@@ -336,7 +378,7 @@ chrome.extension.onRequest.addListener(
 	});
   
 //Extension connect() listener. Called everytime a new page is loaded ... in either a new tab or existing one.
-//parser.js is the only script that has sends messages this way, and which has a listener on the other side.
+//text_to_furigana_dom_parse.js is the only script that has sends messages this way, and which has a listener on the other side.
 chrome.extension.onConnect.addListener(function(port) {
 	tabPorts[port.tab.id] = port;
 	port.onDisconnect.addListener(function(disconnected_port) {
@@ -348,22 +390,31 @@ chrome.extension.onConnect.addListener(function(port) {
 	//Devnote: there is a bug in the options page according to the open source for AdBlockPlus for Chrome.
 	//  Basically the options page doesn't trigger the onDisconnect. Separate handling for it is necessary 
 	//  if you want to avoid issues there.
+	
 	port.onMessage.addListener(function(data) {
-		if (data.message && data.message == "text_to_furiganize") {
-			startFuriganizeAJAX(data.textToFuriganize, port, data.keepAllRuby ? true : false);
+		if (!data.message) {
+			console.log("Development error: data was sent from the port to tab id = " + port.tab.id + 
+				" that did not have a \"message\" property.");
+		} else if (data.message && data.message == "text_to_furiganize") {
+			delete data["message"];
+			data.port = port;
+			data.keepAllRuby = data.keepAllRuby ? true : false;	//forcing boolean type
+			var tmpDt = new Date();
+			var reqTimestampId = tmpDt.getTime();
+			furiganaServerRequestsQueue[reqTimestampId] = data;
+			startFuriganizeAJAX(furiganaServiceURLsList, reqTimestampId);
 			chrome.pageActions.enableForTab('ToggleFurigana', 
 				{tabId: port.tab.id, url: port.tab.url, title: "Sending request to server...", iconId: processingIconIdx});
 		} else if (data.message && data.message == "show_page_processed") {
 			chrome.pageActions.enableForTab('ToggleFurigana', 
 				{tabId: port.tab.id, url: port.tab.url, title: "Remove furigana ...", iconId: processedIconIdx});
-		//} else if (data.message && data.message == "disablepageaction") {
-		//	chrome.pageActions.enableForTab('ToggleFurigana', 
-		//		{tabId: port.tab.id, url: port.tab.url, title: "Simple kanji only. Disabled for this page.", iconId: disabledIconIdx});
 		} else if (data.message && data.message == "reset_page_action_icon") {
 			chrome.pageActions.enableForTab('ToggleFurigana', 
 					{tabId: port.tab.id, url: port.tab.url, title: "Insert furigana ...", iconId: defaultIconIdx});
 		} else if (data.message && data.message == "search_wwwjdic") {	
 			getWWWJDICEntry(port, data.word, data.yomi, data.temp_id /*, dict (use default)*/);
+		} else if (data.message == "execute_css_fontsize_fix_for_rt") {
+			chrome.tabs.executeScript(port.tab.id, {file: "css_fontsize_fix_for_rt.js"/*, allFrames: false*/});
 		} else {
 			console.log("Development error: unexpected message \"" + data.message + "\"");
 		}
@@ -373,7 +424,7 @@ chrome.extension.onConnect.addListener(function(port) {
 //Storage events
 window.addEventListener("storage",
 	function(e) {
-		if (e.key == "user_kanji_list") {	//re-initialize the data in each tab.
+		if (e.key == "user_kanji_list") {	//re-initialize the data in each tab (when they reload or they move to a new page)
 			//N.B. localStorage.getItem("user_kanji_list")) will equal e.newValue, not e.oldValue
 			userKanjiRegexp = new RegExp("[" + localStorage.getItem("user_kanji_list") + "]");
 		}
