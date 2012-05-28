@@ -61,7 +61,7 @@ function showRubyDopplegangerAndRequestGloss() {
 
 function reflectWWWJDICGloss(data) {
 	if ($("#fi_ruby_doppleganger[temp_id=" + data.temp_id + "]").length > 0) {
-		$("#fi_gloss_div").html(data.gloss ? data.formattedGloss : "<ul><li><em>Sorry, no result</em></li></ul>");
+		$("#fi_gloss_div").html(data.gloss ? data.formattedGloss : "<ul class='p q r'><li class='s t u'><em>Sorry, no result</em></li></ul>");
 		$("#fi_ruby_doppleganger").one("mouseleave", function(event) { //one() is a bind() that always unbinds after one invocation
 			var g = $("#fi_gloss_div");
 			var gOffset = g.offset();
@@ -74,6 +74,9 @@ function reflectWWWJDICGloss(data) {
 				fadeOutAndRemoveRubyDplgAndGloss("fast");
 			} 
 		});
+		//Adding extra, otherwise meaningless classes to make rules in ruby_gloss.css more likely to get CSS rule precedence
+		$("#fi_gloss_div ul").addClass("p q r");
+		$("#fi_gloss_div ul li").addClass("s t u");
 		//setTimeout(function() { fadeOutAndRemoveRubyDplgAndGloss(null); }, 5000);
 	}
 else { console.log("background returned a gloss for #fi_ruby_doppleganger[temp_id=" + data.temp_id + "] but it didn't exist/was already removed."); }
