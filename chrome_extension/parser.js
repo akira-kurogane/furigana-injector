@@ -20,7 +20,6 @@ function scanForKanjiTextNodes() {
 
 	var foundNodes = {};
 	var maxTextLength = 2730;	//There's a input buffer length limit in Mecab.
-	var splitNodes = {};	//for holding nodes that need to be split up due to excessive string length.
 	try {
 		var iterator = document.evaluate(xPathPattern, document.body, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
 		var nodeCtr = 100;
@@ -29,34 +28,12 @@ function scanForKanjiTextNodes() {
 			if (thisNode.textContent.match(/[\u3400-\u9FBF]/)) {
 				if (hasOnlySimpleKanji(thisNode.textContent) === false) {
 					foundNodes[nodeCtr] = thisNode;
-					if (thisNode.textContent.length > maxTextLength) {
-						splitNodes[nodeCtr] = shortTextParts(thisNode.textContent, maxTextLength);
-						nodeCtr += splitNodes[nodeCtr].length - 1;	//make a gap in the idx range to splice these in later.
-					}
 				}
 			}
 			nodeCtr++;
 		}
 	} catch (e) {
 		alert( 'Error during XPath document iteration: ' + e );
-	}
-	//Devnote: doing this split of long text nodes after the XPath iteration above 
-	//   because editing any node above apparently invalidates the iterator
-	for (x in splitNodes) {
-		x = x - 0;	//force x to be numeric type
-		var currNode = foundNodes[x];
-		var textParts = splitNodes[x];
-		currNode.data = textParts[0];
-		//if (!currNode.data.match(/[\u3400-\u9FBF]/) || hasOnlySimpleKanji(currNode.data) !== false)
-		//	delete foundNodes[x];
-		for (var y = 1; y < textParts.length; y++) {
-			if (currNode.nextSibling)
-				currNode = currNode.parentNode.insertBefore(document.createTextNode(textParts[y]), currNode.nextSibling);
-			else
-				currNode = currNode.parentNode.appendChild(document.createTextNode(textParts[y]));
-			//if (currNode.data.match(/[\u3400-\u9FBF]/) || hasOnlySimpleKanji(currNode.data) === false)
-				foundNodes[x + y] = currNode;	
-		}
 	}
 	return foundNodes;
 }

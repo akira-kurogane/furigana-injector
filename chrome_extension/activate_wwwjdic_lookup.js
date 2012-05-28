@@ -1,12 +1,12 @@
 /**
  *	Attach events to all <rt> elements
  */
-
-$('rt').bind('mouseenter', showRubyDopplegangerAndRequestGloss);
+$("rt").bind("mouseenter", showRubyDopplegangerAndRequestGloss);
 
 function showRubyDopplegangerAndRequestGloss() {
 	var rt = $(this);
 	var r = $(this.parentNode); //The <ruby> element
+	r.find("rt").unbind("mouseenter", showRubyDopplegangerAndRequestGloss);
 	var rd = r.clone();
 	var tempObj = getDataFromRubyElem(rd[0]);
 	var word = tempObj.base_text;
@@ -24,8 +24,11 @@ function showRubyDopplegangerAndRequestGloss() {
 	}
 
 	var oldRd = $("#fi_ruby_doppleganger");
-	if (oldRd.length > 0)
+	if (oldRd.length > 0) {
+		var oldOrigRuby = oldRd.prev("ruby");
+		oldOrigRuby.find("rt").bind("mouseenter", showRubyDopplegangerAndRequestGloss);
 		oldRd.remove();
+	}
 	var oldG = $("#fi_gloss_div");
 	if (oldG.length > 0)
 		oldG.remove();
@@ -44,7 +47,7 @@ function showRubyDopplegangerAndRequestGloss() {
 	r.after(rd);
 	var g = $("<div id='fi_gloss_div'><img src='" + chrome.extension.getURL("img/gloss_div_throbber.gif") + "'/></div>");
 	g.addClass("hover_gloss").css(
-		{top: rt.position().top, left: r.position().left + rd.width() - 1, display: "none", minHeight: rd.height() - 2}
+		{top: rt.position().top + rd.height(), left: r.position().left, display: "none", minHeight: rd.height() - 2}
 	);
 	g.find("img").css({paddingTop: rt.height() < 11 ? 0 : rt.height() - 11 /*height of the gloss_div_throbber.gif */});
 	rd.after(g);
@@ -59,10 +62,42 @@ function showRubyDopplegangerAndRequestGloss() {
 function reflectWWWJDICGloss(data) {
 	if ($("#fi_ruby_doppleganger[temp_id=" + data.temp_id + "]").length > 0) {
 		$("#fi_gloss_div").html(data.gloss ? data.formattedGloss : "<ul><li><em>Sorry, no result</em></li></ul>");
-		$("#fi_ruby_doppleganger").delay(3000).fadeOut(null, function() { $(this).remove(); });
-		$("#fi_gloss_div").delay(3000).fadeOut(null, function() { $(this).html(""); $(this).remove(); });
+		$("#fi_ruby_doppleganger").one("mouseleave", function(event) { //one() is a bind() that always unbinds after one invocation
+			var g = $("#fi_gloss_div");
+			var gOffset = g.offset();
+			if (g && event.pageX >= gOffset.left && event.pageX <= gOffset.left + g.width() &&
+				event.pageY >= gOffset.top && event.pageY <= gOffset.top + g.height()) {	//hit on gloss div rectangle
+				g.bind("mouseleave", function(event) { 
+					fadeOutAndRemoveRubyDplgAndGloss("fast");
+				});
+			} else {
+				fadeOutAndRemoveRubyDplgAndGloss("fast");
+			} 
+		});
+		//setTimeout(function() { fadeOutAndRemoveRubyDplgAndGloss(null); }, 5000);
 	}
-else { console.log("background returned a gloss for #fi_ruby_doppleganger[temp_id=" + data.temp_id + "] but it didn't exist/was already hidden."); }
+else { console.log("background returned a gloss for #fi_ruby_doppleganger[temp_id=" + data.temp_id + "] but it didn't exist/was already removed."); }
+}
+
+function fadeOutAndRemoveRubyDplgAndGloss(duration) {
+	rd = $("#fi_ruby_doppleganger");
+	if (rd)	{
+		var origRuby = rd.prev("ruby");
+		if (rd.css("display") !=  "none" && rd.css("visibility") != "hidden" && rd.css("opacity") > 0)
+			rd.fadeOut(duration, function() { $(this).remove();} ); 
+		else
+			rd.remove();
+		origRuby.find("rt").bind("mouseenter", showRubyDopplegangerAndRequestGloss);
+	}
+	var g = $("#fi_gloss_div");
+	if (g) {
+		if (g.css("display") !=  "none" && g.css("visibility") != "hidden" && g.css("opacity") > 0) {
+			g.fadeOut(duration, function() { $(this).html(""); $(this).remove(); });
+		} else {
+			g.html("");
+			g.remove();
+		}
+	}
 }
 
 function getDataFromRubyElem(rdElem) {//N.b. rdElem should be the core javascript DOM element, not a jquery object.
