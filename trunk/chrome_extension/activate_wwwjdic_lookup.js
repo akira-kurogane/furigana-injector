@@ -55,7 +55,7 @@ function showRubyDopplegangerAndRequestGloss() {
 	rd.fadeIn("slow");
 	g.fadeIn("slow");
 	
-	//Start async request for glosses. ("extBgPort" initialised in parser.js.)
+	//Start async request for glosses. ("extBgPort" initialised in text_to_furigana_dom_parse.js.)
 	extBgPort.postMessage({message: "search_wwwjdic", word: word, yomi: yomi, temp_id: rd.attr("temp_id")});
 }
 

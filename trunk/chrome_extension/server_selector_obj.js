@@ -21,26 +21,24 @@ ServerSelector.prototype.startTestLoop = function() {
 
 ServerSelector.prototype.sendTestRequest = function(url) {
 	var xhr = new XMLHttpRequest();
-	xhr.serverSelector = this;	//keep a reference that the onreadystatechange handler can use
+	var serverSelectorSelfRef = this;
 	xhr.testUrl = url;
-	xhr.onreadystatechange = this.xhrStateChangeHandler,
+	xhr.onreadystatechange = function() {
+		var svrSelObj = serverSelectorSelfRef;
+		if(this.readyState == 4) {
+			if (this.status == 200 && (!svrSelObj.serverHeaderToMatch ||
+				(this.getResponseHeader("Server") && this.getResponseHeader("Server").match(svrSelObj.serverHeaderToMatch)))) {
+				if (!svrSelObj.serverSelected) {
+					svrSelObj.serverSelected = true;
+					svrSelObj.confirmServerCallback(this.testUrl, svrSelObj.callbackContext);
+				}
+			} else {
+				svrSelObj.failedCandidates.push(this.testUrl);
+				if (svrSelObj.failedCandidates.length == svrSelObj.candidateQueue.length)
+					svrSelObj.reportNoServerCallback(svrSelObj.callbackContext);
+			}
+		}
+	};
 	xhr.open("HEAD", xhr.testUrl, true);
 	xhr.send();
-}
-
-ServerSelector.prototype.xhrStateChangeHandler = function() {
-	var svrSelObj = this.serverSelector;
-	if(this.readyState == 4) {
-		if (this.status == 200 && (!svrSelObj.serverHeaderToMatch ||
-			(this.getResponseHeader("Server") && this.getResponseHeader("Server").match(svrSelObj.serverHeaderToMatch)))) {
-			if (!svrSelObj.serverSelected) {
-				svrSelObj.serverSelected = true;
-				svrSelObj.confirmServerCallback(this.testUrl, svrSelObj.callbackContext);
-			}
-		} else {
-			svrSelObj.failedCandidates.push(this.testUrl);
-			if (svrSelObj.failedCandidates.length == svrSelObj.candidateQueue.length)
-				svrSelObj.reportNoServerCallback(svrSelObj.callbackContext);
-		}
-	}
 }
