@@ -84,7 +84,7 @@ function onNoFuriganaServerFound(/*contextObj*/) {
 		serverRecheckInterval = 30000;	//30 secs
 	console.log("Notice: none of the furigana servers could be connected to. Scheduling another check in " + serverRecheckInterval/1000 + " secs.");
 	setTimeout(function() {
-			if (!furiganaServerUrl) //Just in the server was selected somehow in the meantime.
+			if (!furiganaServerUrl) //Just in case the server was selected somehow in the meantime.
 				fiSvrSel = new ServerSelector(furiganaServiceURLsList, confirmServerUrl, onNoFuriganaServerFound, "mod_furiganainjector");
 		}, serverRecheckInterval);
 	serverRecheckInterval *= 2;

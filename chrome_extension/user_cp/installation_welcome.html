@@ -5,9 +5,9 @@
 	<meta http-equiv="Content-Language" content="en" />
 	<title>Welcome to Furigana Injector</title>
 	<link rel="stylesheet" type="text/css" media="all" href="user_guides.css" />
-	<script type="text/javascript" src="../parser.js"></script>
+	<script type="text/javascript" src="../text_to_furigana_dom_parse.js"></script>
 	<script type="text/javascript">
-		//No idea why this, combined with parser.js inclusion above, works when
+		//No idea why this, combined with text_to_furigana_dom_parse.js inclusion above, works when
 		//  using a postMessage instead wont.
 		chrome.extension.sendRequest({message: "init_tab_for_fi"});
 	</script>
@@ -38,7 +38,6 @@
 		<div id="project_homepage">
 			<h3><a href="http://code.google.com/p/furigana-injector/">Development homepage</a></h3>
 
-			<!-- DISABLED for the while. Cant Form POST from an extension page due to chrome bug, see http://code.google.com/p/chromium/issues/detail?id=39025
 			<form style="display: inline;" action="https://www.paypal.com/cgi-bin/webscr" method="post">
 			<p><b>Like it?</b> Paypal donations appreciated ...
 				<input type="hidden" name="cmd" value="_s-xclick">
@@ -46,7 +45,7 @@
 				<input type="image" src="https://www.paypal.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
 				<img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1">
 			</p>
-			</form-->
+			</form>
 		</div>
 
 	</div>
