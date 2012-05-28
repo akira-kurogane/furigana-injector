@@ -77,6 +77,7 @@ function startFuriganizeAJAX(stringsHash, tabPort, keepAllRuby) {
 		return;
 	}
 	var postData = "";
+	//Todo: send as JSON instead?
 	for (key in stringsHash)
 		postData += "&" + key + "=" + encodeURIComponent(stringsHash[key]);
 	postData = postData.substr(1);
@@ -106,11 +107,15 @@ function furiganizeAJAXStateChangeHandler() {
 				for (key in returnData)
 					returnData[key] = stripRubyForSimpleKanji(returnData[key]);
 			}
+			if (!this.replyTabPort.jqueryIncluded) {
+				chrome.tabs.executeScript(this.replyTabPort.tab.id, {file: "jquery.js"/*, allFrames: false*/});
+				this.replyTabPort.jqueryIncluded = true;
+			}
 			this.replyTabPort.postMessage({furiganizedTextNodes: returnData});
-			chrome.tabs.executeScript(this.replyTabPort.tab.id, {file: "jquery.js"/*, allFrames: false*/});
-			if (JSON.parse(localStorage.getItem("show_translations"))) {
+			if (!this.replyTabPort.wwwjdicJSAndCSSIncluded && JSON.parse(localStorage.getItem("show_translations"))) {
 				chrome.tabs.executeScript(this.replyTabPort.tab.id, {file: "activate_wwwjdic_lookup.js"/*, allFrames: false*/});
 				chrome.tabs.insertCSS(this.replyTabPort.tab.id, {file: "ruby_gloss.css"/*, allFrames: false*/});
+				this.replyTabPort.wwwjdicJSAndCSSIncluded = true;
 			}
 		} else if (this.timedOut) {
 			this.replyTabPort.postMessage({message: "xhr_request_timeout", status: this.status});
@@ -270,7 +275,7 @@ function formatGloss(rawGloss) {
 	var tempMatches;
 	for (var x = 0; x < glossParts.length; x++) {
 		currGlossPart = glossParts[x];
-		if (tempMatches = currGlossPart.match(/^\([^\)]+\)\s*\((\d{1,2})\)/))
+		if (tempMatches = currGlossPart.match(/^(?:\([^\)]+\))?\s*\((\d{1,2})\)/))
 			currSense = tempMatches[1];
 		if (!senses[currSense])
 			senses[currSense] = {vals: new Array(), generalInfo: ""};
@@ -364,13 +369,6 @@ chrome.extension.onConnect.addListener(function(port) {
 		}
 	});
 });
-
-/* 
-//Tabs onRemoved() listener. 
-//REPLACED BY port.onDisconnect above
-chrome.tabs.onRemoved.addListener(function(tabId) {
-	delete tabPorts[tabId]	;	//Just a little cleanup.
-});*/
 
 //Storage events
 window.addEventListener("storage",

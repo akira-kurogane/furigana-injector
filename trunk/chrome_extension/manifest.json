@@ -1,6 +1,6 @@
 {
 	"name": "__MSG_manifestExtName__",
-	"version": "0.9",
+	"version": "1.0",
 	"background_page": "background.html",
 	"content_scripts": [ {
 		"js": ["kanji_content_detect.js"],
