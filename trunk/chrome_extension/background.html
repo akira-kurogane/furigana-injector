@@ -41,8 +41,9 @@ var fiSvrSel = new ServerSelector(furiganaServiceURLsList, confirmServerUrl, onN
  *	Functions
  *****************/
 function enableTabForFI(tab) {
-	chrome.pageActions.enableForTab('ToggleFurigana', 
-			{tabId: tab.id, url: tab.url, title: "Insert furigana ...", iconId: defaultIconIdx});
+	chrome.pageAction.setIcon({iconIndex: defaultIconIdx, tabId: tab.id});
+	chrome.pageAction.setTitle({title: "Insert furigana ...", tabId: tab.id});
+	chrome.pageAction.show(tab.id);
 	chrome.tabs.executeScript(tab.id, {file: "text_to_furigana_dom_parse.js"/*, allFrames: false*/});
 }
 
@@ -363,8 +364,8 @@ chrome.extension.onRequest.addListener(
 			sendResponseCallback({userKanjiList: localStorage.getItem("user_kanji_list"), includeLinkText: localStorage.getItem("include_link_text")});
 		} else if (request.message == "init_tab_for_fi") {
 			if (!furiganaServerUrl) {
-				chrome.pageActions.enableForTab('ToggleFurigana', 
-					{tabId: sender.tab.id, url: sender.tab.url, title: "Furigana server offline", iconId: disabledIconIdx});
+				chrome.pageAction.setIcon({iconIndex: disabledIconIdx, tabId: tab.id});
+				chrome.pageAction.setTitle({title: "Furigana server offline", tabId: tab.id});
 			} else {
 				enableTabForFI(sender.tab);
 			}
@@ -392,14 +393,14 @@ chrome.extension.onConnect.addListener(function(port) {
 			var reqTimestampId = tmpDt.getTime();
 			furiganaServerRequestsQueue[reqTimestampId] = data;
 			startFuriganizeAJAX(furiganaServiceURLsList, reqTimestampId);
-			chrome.pageActions.enableForTab('ToggleFurigana', 
-				{tabId: port.tab.id, url: port.tab.url, title: "Sending request to server...", iconId: processingIconIdx});
+			chrome.pageAction.setIcon({iconIndex: processingIconIdx, tabId: port.tab.id});
+			chrome.pageAction.setTitle({title: "Sending request to server...", tabId: port.tab.id});
 		} else if (data.message && data.message == "show_page_processed") {
-			chrome.pageActions.enableForTab('ToggleFurigana', 
-				{tabId: port.tab.id, url: port.tab.url, title: "Remove furigana ...", iconId: processedIconIdx});
+			chrome.pageAction.setIcon({iconIndex: processedIconIdx, tabId: port.tab.id});
+			chrome.pageAction.setTitle({title: "Remove furigana ...", tabId: port.tab.id});
 		} else if (data.message && data.message == "reset_page_action_icon") {
-			chrome.pageActions.enableForTab('ToggleFurigana', 
-					{tabId: port.tab.id, url: port.tab.url, title: "Insert furigana ...", iconId: defaultIconIdx});
+			chrome.pageAction.setIcon({iconIndex: defaultIconIdx, tabId: port.tab.id});
+			chrome.pageAction.setTitle({title: "Insert furigana ...", tabId: port.tab.id});
 		} else if (data.message && data.message == "search_wwwjdic") {	
 			getWWWJDICEntry(port, data.word, data.yomi, data.temp_id /*, dict (use default)*/);
 		} else if (data.message == "execute_css_fontsize_fix_for_rt") {
