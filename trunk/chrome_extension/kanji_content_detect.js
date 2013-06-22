@@ -5,7 +5,7 @@ var userKanjiRegexp;
 var includeLinkText = false;
 var insertedNodesToCheck = [];
 var insertedNodeCheckTimer = null;
-chrome.extension.sendRequest({message: "config_values_request"}, function(response) {
+chrome.extension.sendMessage({message: "config_values_request"}, function(response) {
 	userKanjiRegexp = new RegExp("[" + response.userKanjiList + "]");
 	includeLinkText = JSON.parse(response.includeLinkText);
 	//Having received the config data, start searching for relevant kanji

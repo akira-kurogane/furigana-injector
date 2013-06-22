@@ -5,7 +5,7 @@ var includeLinkText;
 var kanjiTextNodes = {};	//This object will be used like a hash
 var submittedKanjiTextNodes = {};
 
-chrome.extension.sendRequest({message: "config_values_request"}, function(response) {
+chrome.extension.sendMessage({message: "config_values_request"}, function(response) {
 	userKanjiRegexp = new RegExp("[" + response.userKanjiList + "]");
 	includeLinkText = JSON.parse(response.includeLinkText);
 	//Init anything for the page?

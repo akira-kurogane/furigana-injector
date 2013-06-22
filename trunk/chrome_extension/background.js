@@ -1,16 +1,8 @@
-﻿<html>
-<head>
-<script type="text/javascript" src="jquery.js"></script>
-<script type="text/javascript" src="server_selector_obj.js"></script>
-<script type="text/javascript">
+﻿
 var furiganaServerUrl = null;	//Will be set once the fiSvrSel ServerSelector object completes it's test loop.
 var wwwjdicServerURL = null;
 var tabPorts = [];	//manually kept list of tabs that connect.
 
-var defaultIconIdx = 0;
-var processedIconIdx = 1;
-var disabledIconIdx = 2;
-var processingIconIdx = 3;
 
 if (!localStorage) 
 	console.log("Error: localStorage not available to background page. Has local storage been disabled in this instance of Chrome?");
@@ -41,7 +33,7 @@ var fiSvrSel = new ServerSelector(furiganaServiceURLsList, confirmServerUrl, onN
  *	Functions
  *****************/
 function enableTabForFI(tab) {
-	chrome.pageAction.setIcon({iconIndex: defaultIconIdx, tabId: tab.id});
+	chrome.pageAction.setIcon({path: "img/icons/default_16_16.png", tabId: tab.id});
 	chrome.pageAction.setTitle({title: "Insert furigana ...", tabId: tab.id});
 	chrome.pageAction.show(tab.id);
 	chrome.tabs.executeScript(tab.id, {file: "text_to_furigana_dom_parse.js"/*, allFrames: false*/});
@@ -138,15 +130,15 @@ function furiganizeAJAXStateChangeHandler() {
 					returnData[key] = stripRubyForSimpleKanji(returnData[key]);
 			}
 			if (!this.replyTabPort.jqueryIncluded) {
-				chrome.tabs.executeScript(this.replyTabPort.tab.id, {file: "jquery.js"/*, allFrames: false*/});
+				chrome.tabs.executeScript(this.replyTabPort.sender.id, {file: "jquery.js"/*, allFrames: false*/});
 				this.replyTabPort.jqueryIncluded = true;
 			}
 			this.replyTabPort.postMessage({furiganizedTextNodes: returnData});
 			delete furiganaServerRequestsQueue[this.reqTimestampId];	//dequeue
 			var showTranslationPopups = JSON.parse(localStorage.getItem("show_translations"));
-			var replyTabId = this.replyTabPort.tab.id;
+			var replyTabId = this.replyTabPort.sender.id;
 			if (!this.replyTabPort.wwwjdicJSAndCSSIncluded && showTranslationPopups) {
-				chrome.tabs.executeScript(this.replyTabPort.tab.id, 
+				chrome.tabs.executeScript(this.replyTabPort.sender.id, 
 					{file: "activate_wwwjdic_lookup.js"/*, allFrames: false*/}, 
 					function() { chrome.tabs.executeScript(replyTabId, {code: "attachPopupTriggerToAllRT();"}); });
 				chrome.tabs.insertCSS(replyTabId, {file: "ruby_gloss.css"/*, allFrames: false*/});
@@ -358,13 +350,13 @@ chrome.pageAction.onClicked.addListener(function(tab) {
 });
 
 //Extension requests listener. Used mainly by kanji_content_detect.js, but also by text_to_furigana_dom_parse.js to init config values.
-chrome.extension.onRequest.addListener(
+chrome.extension.onMessage.addListener(
 	function(request, sender, sendResponseCallback) {
 		if (request.message == "config_values_request") {
 			sendResponseCallback({userKanjiList: localStorage.getItem("user_kanji_list"), includeLinkText: localStorage.getItem("include_link_text")});
 		} else if (request.message == "init_tab_for_fi") {
 			if (!furiganaServerUrl) {
-				chrome.pageAction.setIcon({iconIndex: disabledIconIdx, tabId: tab.id});
+				chrome.pageAction.setIcon({path: "img/icons/disabled_16_16.png", tabId: tab.id});
 				chrome.pageAction.setTitle({title: "Furigana server offline", tabId: tab.id});
 			} else {
 				enableTabForFI(sender.tab);
@@ -383,7 +375,7 @@ chrome.extension.onConnect.addListener(function(port) {
 	
 	port.onMessage.addListener(function(data) {
 		if (!data.message) {
-			console.log("Development error: data was sent from the port to tab id = " + port.tab.id + 
+			console.log("Development error: data was sent from the port to tab id = " + port.sender.id + 
 				" that did not have a \"message\" property.");
 		} else if (data.message && data.message == "text_to_furiganize") {
 			delete data["message"];
@@ -393,18 +385,18 @@ chrome.extension.onConnect.addListener(function(port) {
 			var reqTimestampId = tmpDt.getTime();
 			furiganaServerRequestsQueue[reqTimestampId] = data;
 			startFuriganizeAJAX(furiganaServiceURLsList, reqTimestampId);
-			chrome.pageAction.setIcon({iconIndex: processingIconIdx, tabId: port.tab.id});
-			chrome.pageAction.setTitle({title: "Sending request to server...", tabId: port.tab.id});
+			chrome.pageAction.setIcon({path: "img/icons/processing_16_16.png", tabId: port.sender.id});
+			chrome.pageAction.setTitle({title: "Sending request to server...", tabId: port.sender.id});
 		} else if (data.message && data.message == "show_page_processed") {
-			chrome.pageAction.setIcon({iconIndex: processedIconIdx, tabId: port.tab.id});
-			chrome.pageAction.setTitle({title: "Remove furigana ...", tabId: port.tab.id});
+			chrome.pageAction.setIcon({path: "img/icons/processed_16_16.png", tabId: port.sender.id});
+			chrome.pageAction.setTitle({title: "Remove furigana ...", tabId: port.sender.id});
 		} else if (data.message && data.message == "reset_page_action_icon") {
-			chrome.pageAction.setIcon({iconIndex: defaultIconIdx, tabId: port.tab.id});
-			chrome.pageAction.setTitle({title: "Insert furigana ...", tabId: port.tab.id});
+			chrome.pageAction.setIcon({path: "img/icons/default_16_16.png", tabId: port.sender.id});
+			chrome.pageAction.setTitle({title: "Insert furigana ...", tabId: port.sender.id});
 		} else if (data.message && data.message == "search_wwwjdic") {	
 			getWWWJDICEntry(port, data.word, data.yomi, data.temp_id /*, dict (use default)*/);
 		} else if (data.message == "execute_css_fontsize_fix_for_rt") {
-			chrome.tabs.executeScript(port.tab.id, {file: "css_fontsize_fix_for_rt.js"/*, allFrames: false*/});
+			chrome.tabs.executeScript(port.sender.id, {file: "css_fontsize_fix_for_rt.js"/*, allFrames: false*/});
 		} else {
 			console.log("Development error: unexpected message \"" + data.message + "\"");
 		}
@@ -419,8 +411,4 @@ window.addEventListener("storage",
 			userKanjiRegexp = new RegExp("[" + localStorage.getItem("user_kanji_list") + "]");
 		}
 	}, false);
-</script>
-</head>
-<body>
-</body>
-</html>
+
