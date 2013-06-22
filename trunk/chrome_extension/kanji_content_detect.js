@@ -11,7 +11,7 @@ chrome.extension.sendMessage({message: "config_values_request"}, function(respon
 	//Having received the config data, start searching for relevant kanji
 	//If none find, do nothing for now except start a listener for node insertions
 	if (document.body.innerText.match(/[\u3400-\u9FBF]/))
-		chrome.extension.sendRequest({message: "init_tab_for_fi"});
+		chrome.extension.sendMessage({message: "init_tab_for_fi"});
 	else
 		document.addEventListener("DOMNodeInserted", DOMNodeInsertedHandler);
 //document.addEventListener("DOMCharacterDataModified", function(e) { alert("DOMCharacterDataModified: " + e.newValue); } );
@@ -40,7 +40,7 @@ function checkInsertedNodes() {
 	var s = a.join("");	
 	if (s.match(/[\u3400-\u9FBF]/)) {
 		document.removeEventListener("DOMNodeInserted", DOMNodeInsertedHandler);
-		chrome.extension.sendRequest({message: "init_tab_for_fi"});
+		chrome.extension.sendMessage({message: "init_tab_for_fi"});
 		return;
 	}
 }
