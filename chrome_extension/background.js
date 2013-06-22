@@ -66,9 +66,9 @@ try {
 	
 	//Now find a WWWJDIC server
 	var wwwjdicSvrSel = new ServerSelector(
-		[ "http://www.csse.monash.edu.au/~jwb/cgi-bin/wwwjdic.cgi", "http://ryouko.imsb.nrc.ca/cgi-bin/wwwjdic", 
-			"http://jp.msmobiles.com/cgi-bin/wwwjdic", "http://www.aa.tufs.ac.jp/~jwb/cgi-bin/wwwjdic.cgi", 
-			"http://wwwjdic.sys5.se/cgi-bin/wwwjdic.cgi", "http://www.edrdg.org/cgi-bin/wwwjdic/wwwjdic"],
+		[ "http://www.csse.monash.edu.au/~jwb/cgi-bin/wwwjdic.cgi", "http://ryouko.imsb.nrc.ca/cgi-bin/wwwjdic",
+		  "http://jp.celltica.com/cgi-bin/wwwjdic", "http://gengo.com/wwwjdic/cgi-data/wwwjdic", 
+		  "http://wwwjdic.se/cgi-bin/wwwjdic.cgi", "http://www.edrdg.org/cgi-bin/wwwjdic/wwwjdic"],
 		confirmWWWJDICServer, onNoWWWJDICServerFound);
 }
 
@@ -130,15 +130,15 @@ function furiganizeAJAXStateChangeHandler() {
 					returnData[key] = stripRubyForSimpleKanji(returnData[key]);
 			}
 			if (!this.replyTabPort.jqueryIncluded) {
-				chrome.tabs.executeScript(this.replyTabPort.sender.id, {file: "jquery.js"/*, allFrames: false*/});
+				chrome.tabs.executeScript(/*this.replyTabport.sender.tab.id*/null, {file: "jquery-2.0.2.js"/*, allFrames: false*/});
 				this.replyTabPort.jqueryIncluded = true;
 			}
 			this.replyTabPort.postMessage({furiganizedTextNodes: returnData});
 			delete furiganaServerRequestsQueue[this.reqTimestampId];	//dequeue
 			var showTranslationPopups = JSON.parse(localStorage.getItem("show_translations"));
-			var replyTabId = this.replyTabPort.sender.id;
+			var replyTabId = this.replyTabport.sender.tab.id;
 			if (!this.replyTabPort.wwwjdicJSAndCSSIncluded && showTranslationPopups) {
-				chrome.tabs.executeScript(this.replyTabPort.sender.id, 
+				chrome.tabs.executeScript(this.replyTabport.sender.tab.id, 
 					{file: "activate_wwwjdic_lookup.js"/*, allFrames: false*/}, 
 					function() { chrome.tabs.executeScript(replyTabId, {code: "attachPopupTriggerToAllRT();"}); });
 				chrome.tabs.insertCSS(replyTabId, {file: "ruby_gloss.css"/*, allFrames: false*/});
@@ -356,8 +356,8 @@ chrome.extension.onMessage.addListener(
 			sendResponseCallback({userKanjiList: localStorage.getItem("user_kanji_list"), includeLinkText: localStorage.getItem("include_link_text")});
 		} else if (request.message == "init_tab_for_fi") {
 			if (!furiganaServerUrl) {
-				chrome.pageAction.setIcon({path: "img/icons/disabled_16_16.png", tabId: tab.id});
-				chrome.pageAction.setTitle({title: "Furigana server offline", tabId: tab.id});
+				chrome.pageAction.setIcon({path: "img/icons/disabled_16_16.png", tabId: sender.tab.id});
+				chrome.pageAction.setTitle({title: "Furigana server offline", tabId: sender.tab.id});
 			} else {
 				enableTabForFI(sender.tab);
 			}
@@ -375,7 +375,7 @@ chrome.extension.onConnect.addListener(function(port) {
 	
 	port.onMessage.addListener(function(data) {
 		if (!data.message) {
-			console.log("Development error: data was sent from the port to tab id = " + port.sender.id + 
+			console.log("Development error: data was sent from the port to tab id = " + port.sender.tab.id + 
 				" that did not have a \"message\" property.");
 		} else if (data.message && data.message == "text_to_furiganize") {
 			delete data["message"];
@@ -385,18 +385,18 @@ chrome.extension.onConnect.addListener(function(port) {
 			var reqTimestampId = tmpDt.getTime();
 			furiganaServerRequestsQueue[reqTimestampId] = data;
 			startFuriganizeAJAX(furiganaServiceURLsList, reqTimestampId);
-			chrome.pageAction.setIcon({path: "img/icons/processing_16_16.png", tabId: port.sender.id});
-			chrome.pageAction.setTitle({title: "Sending request to server...", tabId: port.sender.id});
+			chrome.pageAction.setIcon({path: "img/icons/processing_16_16.png", tabId: port.sender.tab.id});
+			chrome.pageAction.setTitle({title: "Sending request to server...", tabId: port.sender.tab.id});
 		} else if (data.message && data.message == "show_page_processed") {
-			chrome.pageAction.setIcon({path: "img/icons/processed_16_16.png", tabId: port.sender.id});
-			chrome.pageAction.setTitle({title: "Remove furigana ...", tabId: port.sender.id});
+			chrome.pageAction.setIcon({path: "img/icons/processed_16_16.png", tabId: port.sender.tab.id});
+			chrome.pageAction.setTitle({title: "Remove furigana ...", tabId: port.sender.tab.id});
 		} else if (data.message && data.message == "reset_page_action_icon") {
-			chrome.pageAction.setIcon({path: "img/icons/default_16_16.png", tabId: port.sender.id});
-			chrome.pageAction.setTitle({title: "Insert furigana ...", tabId: port.sender.id});
+			chrome.pageAction.setIcon({path: "img/icons/default_16_16.png", tabId: port.sender.tab.id});
+			chrome.pageAction.setTitle({title: "Insert furigana ...", tabId: port.sender.tab.id});
 		} else if (data.message && data.message == "search_wwwjdic") {	
 			getWWWJDICEntry(port, data.word, data.yomi, data.temp_id /*, dict (use default)*/);
 		} else if (data.message == "execute_css_fontsize_fix_for_rt") {
-			chrome.tabs.executeScript(port.sender.id, {file: "css_fontsize_fix_for_rt.js"/*, allFrames: false*/});
+			chrome.tabs.executeScript(port.sender.tab.id, {file: "css_fontsize_fix_for_rt.js"/*, allFrames: false*/});
 		} else {
 			console.log("Development error: unexpected message \"" + data.message + "\"");
 		}
