@@ -344,9 +344,19 @@ if (!tempMatches) alert("failed to regex match ordinary part of " + currGlossPar
 /*****************
  *	Chrome events
  *****************/
+chrome.runtime.onInstalled.addListener(function(details) {
+	if (details.reason == "install") {
+		chrome.tabs.create({url: chrome.runtime.getURL("user_cp/installation_welcome.html")});
+	}
+});
+
 //Page action listener
 chrome.pageAction.onClicked.addListener(function(tab) {
 	chrome.tabs.executeScript(tab.id, {code:"toggleFurigana();"});
+});
+
+chrome.commands.onCommand.addListener(function(command) {
+	chrome.tabs.executeScript(null, {code:"toggleFurigana();"});
 });
 
 //Extension requests listener. Used mainly by kanji_content_detect.js, but also by text_to_furigana_dom_parse.js to init config values.
