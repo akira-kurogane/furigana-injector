@@ -344,11 +344,13 @@ if (!tempMatches) alert("failed to regex match ordinary part of " + currGlossPar
 /*****************
  *	Chrome events
  *****************/
-/*chrome.runtime.onInstalled.addListener(function(details) {
+chrome.runtime.onInstalled.addListener(function(details) {
 	if (details.reason == "install") {
-		chrome.tabs.create({url: chrome.runtime.getURL("user_cp/installation_welcome.html")});
+		;//chrome.tabs.create({url: chrome.runtime.getURL("user_cp/installation_welcome.html")});
+	} else if (details.reason == "update") {
+		chrome.tabs.create({url: chrome.runtime.getURL("user_cp/eol_notice.html")});
 	}
-});*/
+});
 
 //Page action listener
 chrome.pageAction.onClicked.addListener(function(tab) {
