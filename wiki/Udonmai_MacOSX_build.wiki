@@ -17,9 +17,9 @@ after install, I modify one place in file ficommon.c
 
 which is really important, right~
 
-2. then, the most tricky one, the libs to import. I spend almost most of my day thinking about it and finally got it.
+2. the most tricky one is the libs to import. Udonmai-san reports that he spent most of the day thinking about it before finally getting it.
 
-I modified the Makefile.(In this part, as we all know, the Makefile is free format for every and mine is below.)
+He modified the Makefile so:
 	
   <pre>CC=gcc 
   SERVER_PROG=fiserver 
@@ -32,11 +32,11 @@ I modified the Makefile.(In this part, as we all know, the Makefile is free form
   <pre>$(CC) $(CFLAGS) $(INCS) ficommon.c server.c ../mongoose/mongoose.c $(LIBS) $(ADD) -o $(SERVER_PROG) 
 $(CC) $(CFLAGS) $(INCS) ../mongoose/mongoose.c ficommon.c unit_tests.c $(LIBS) $(ADD) -o $(UNITTEST_PROG) ./$(UNITTEST_PROG)</pre>
 
-In fact I didn't change the core content, but the json lib should be paid attention to. It should be -ljson-c on a Mac OSX. I don't know why.
+So in fact he didn't change the core content, but the json lib should be paid attention to. It should be -ljson-c on a Mac OSX.
 
-I also tried to use brew to install the json-c lib and mongoose. But at last I found that the mongoose in brew is too update so that it goes wrong with your code. I remove the brew mongoose. I left the brew installed json-c there but I think it did nothing as well.
+He also tried to use brew to install the json-c lib and mongoose. But at last he found that the mongoose in brew is too new a version so that it goes wrong with your code, so he unistalled it. He left the brew installed json-c there but thinks it did nothing.
 
-3. in server.c, I find a problem and modified one line of the code:
+3. in the compilation of server.c, he find a problem and modified one line of the code:
 
   line 133: void `*`processed = "yes"
 
