@@ -10,7 +10,10 @@ udonmai-san has built the furigana*server on MacOSX, so that he can run it all l
 His github of his own version is at https://github.com/udonmai/furigana-injector/. The instructions of his changes are on the following wiki page: <a href="http://code.google.com/p/furigana-injector/wiki/Udonmai_MacOSX_build">Udonmai_MacOSX_build</a>.
 
 <h3>Furigana Injector was ...</h3>
-the sum of these parts:
+
+a Mozilla Firefox and Google Chrome extension that inserts furigana for kanji words.
+
+It was the sum of these parts:
 * <a href="http://mecab.sourceforge.net/">MeCab</a> natural-language parser (server or XPCOM component.)
 * Adjustable array of user's known kanji (javascript)
 * Webpage-text parsing (javascript)
