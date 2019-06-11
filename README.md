@@ -3,7 +3,7 @@
 <h3>Furigana Injector has been shutdown (as of Dec 31 2013)</h3>
 Feel free to fork any code here if you'd like to make a replacement.
 
-N.b. the <a href="https://addons.mozilla.org/en-US/firefox/addon/furigana-inserter/">Furigana Inserter</a> fork is still alive and well.
+~N.b. the Furigana Inserter fork is still alive and well.~ Furigana Inserter seems to be gone, but there are several more furigana-inserting addons in chrome and firefox these days.
 
 udonmai-san has built the furigana*server on MacOSX, so that he can run it all locally on his desktop/laptop.
 
